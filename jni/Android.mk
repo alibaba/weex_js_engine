@@ -44,8 +44,10 @@ v8basepath := $(LOCAL_PATH)/v8core/v8
 v8libpath := $(v8basepath)/out/android_$(ARCH).release//obj.target/tools/gyp/
 v8libs := $(v8libpath)/libv8_base.a $(v8libpath)/libpreparser_lib.a $(v8libpath)/libv8_nosnapshot.a
 
+$(v8libs): MY_ARCH_ABI := $(TARGET_ARCH_ABI)
+
 $(v8libs):
-	cd $(v8basepath) && TARGET_ARCH=$(TARGET_ARCH_ABI) ./build.sh
+	cd $(v8basepath) && TARGET_ARCH=$(MY_ARCH_ABI) ./build.sh
 
 $(TARGET_OUT)/libweexcore.so: $(v8libs)
 

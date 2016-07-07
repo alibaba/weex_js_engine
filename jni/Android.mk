@@ -14,11 +14,11 @@
 #
 LOCAL_PATH := $(call my-dir)
 
-
 # libweexcore
 include $(CLEAR_VARS)
 LOCAL_C_INCLUDES := $(JNI_H_INCLUDE) \
-		            $(LOCAL_PATH)/v8core
+		            $(LOCAL_PATH)/v8core \
+					$(LOCAL_PATH)/v8core/v8/include
 			
 LOCAL_MODULE    := weexcore
 
@@ -26,17 +26,29 @@ v8_CPP_LIST += $(wildcard $(LOCAL_PATH)/v8core/*.cpp)
 
 
 LOCAL_SRC_FILES := $(v8_CPP_LIST:$(LOCAL_PATH)/%=%)
+LOCAL_CFLAGS += -ffunction-sections -fdata-sections
 
 
-LOCAL_LDFLAGS := -Wl,--allow-multiple-definition
+LOCAL_LDFLAGS := -Wl,--allow-multiple-definition \
+                 -Wl,--version-script=$(LOCAL_PATH)/version_script.txt \
+				 -Wl,--gc-sections
 
-LOCAL_LDLIBS := -L$(SYSROOT)/usr/lib -llog -L$(LOCAL_PATH)
-ifeq ($(TARGET_ARCH),arm)
-  LOCAL_LDFLAGS += -lv8_base_arm -lv8_snapshot_arm
+
+ifeq ($(TARGET_ARCH_ABI), x86)
+    ARCH := ia32
 else
-  ifeq ($(TARGET_ARCH),x86)
-    LOCAL_LDFLAGS += -lv8_base_x86 -lpreparser_lib_x86 -lv8_nosnapshot_x86 
-  endif
+    ARCH := arm
 endif
+
+v8basepath := $(LOCAL_PATH)/v8core/v8
+v8libpath := $(v8basepath)/out/android_$(ARCH).release//obj.target/tools/gyp/
+v8libs := $(v8libpath)/libv8_base.a $(v8libpath)/libpreparser_lib.a $(v8libpath)/libv8_nosnapshot.a
+
+$(v8libs):
+	cd $(v8basepath) && TARGET_ARCH=$(TARGET_ARCH_ABI) ./build.sh
+
+$(TARGET_OUT)/libweexcore.so: $(v8libs)
+
+LOCAL_LDLIBS := -llog -L$(v8libpath) -lv8_base -lpreparser_lib -lv8_nosnapshot
 
 include $(BUILD_SHARED_LIBRARY)

@@ -1,5 +1,5 @@
 # weex_v8core
- Weex JavaScript Runtime based on  google v8 JavaScript engine !
+ Weex JavaScript Runtime based on  google v8 JavaScript engine!
  
 ## How to build
 ##### 1.Download NDK and Set Environment PATH  

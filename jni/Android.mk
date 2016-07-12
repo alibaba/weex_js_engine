@@ -31,7 +31,8 @@ LOCAL_CFLAGS += -ffunction-sections -fdata-sections
 
 LOCAL_LDFLAGS := -Wl,--allow-multiple-definition \
                  -Wl,--version-script=$(LOCAL_PATH)/version_script.txt \
-				 -Wl,--gc-sections
+				 -Wl,--gc-sections \
+				 -Wl,--build-id=sha1
 
 
 ifeq ($(TARGET_ARCH_ABI), x86)

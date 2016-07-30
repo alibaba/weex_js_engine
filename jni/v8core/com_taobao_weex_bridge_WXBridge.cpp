@@ -1,4 +1,6 @@
-#include "jni.h"
+
+#include "com_taobao_weex_bridge_WXBridge.h"
+
 #include "android/log.h"
 #include "LogUtils.h"
 
@@ -10,34 +12,49 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 
-
+static
 jclass jBridgeClazz;
+static
 jobject jThis;
+static
 JavaVM *sVm = NULL;
 
+static
 void ReportException(v8::Isolate *isolate, v8::TryCatch *try_catch, jstring jinstanceid,
                      const char *func);
 
+static
 bool ExecuteJavaScript(v8::Isolate *isolate,
                        v8::Handle<v8::String> source,
                        bool report_exceptions);
 
+static
 v8::Persistent<v8::Context> CreateShellContext();
 
+static
 v8::Handle<v8::Value> callNative(const v8::Arguments &args);
 
+static
 v8::Handle<v8::Value> setTimeoutNative(const v8::Arguments &args);
 
+static
 v8::Handle<v8::String> nativeLog(const char *name);
 
+static
 v8::Persistent<v8::Context> V8context;
+static
 v8::Isolate *globalIsolate;
+static
 v8::Handle<v8::Object> json;
+static
 v8::Handle<v8::Function> json_parse;
+static
 v8::Handle<v8::Function> json_stringify;
 
+static
 v8::Handle<v8::ObjectTemplate> WXEnvironment;
 
+static
 JNIEnv *getJNIEnv() {
     JNIEnv *env = NULL;
     if ((sVm)->GetEnv((void **) &env, JNI_VERSION_1_4) != JNI_OK) {
@@ -46,12 +63,12 @@ JNIEnv *getJNIEnv() {
     return env;
 }
 
+static
 const char *ToCString(const v8::String::Utf8Value &value) {
     return *value ? *value : "<string conversion failed>";
 }
 
-extern "C"
-{
+static
 v8::Handle<v8::Value> jString2V8String(JNIEnv *env, jstring str) {
     if (str != NULL) {
         const char *c_str = env->GetStringUTFChars(str, NULL);
@@ -133,8 +150,7 @@ jint Java_com_taobao_weex_bridge_WXBridge_initFramework(JNIEnv *env,
     return true;
 }
 
-
-
+static
 void jString2Log(JNIEnv *env, jstring instance, jstring str) {
     if (str != NULL) {
         const char *c_instance = env->GetStringUTFChars(instance, NULL);
@@ -219,7 +235,6 @@ jint Java_com_taobao_weex_bridge_WXBridge_execJS(JNIEnv *env, jobject this1, jst
     env->DeleteLocalRef(jfunction);
     return true;
 }
-}
 
 /**
  * this function is to execute a section of JavaScript content.
@@ -255,6 +270,7 @@ bool ExecuteJavaScript(v8::Isolate *isolate,
     }
 }
 
+static
 void reportException(jstring jInstanceId, const char *func, const char *exception_string) {
     JNIEnv *env = getJNIEnv();
     jstring jExceptionString = (env)->NewStringUTF(exception_string);
@@ -365,6 +381,7 @@ v8::Handle<v8::Value> setTimeoutNative(const v8::Arguments &args) {
 /**
  * JS log output.
  */
+static
 v8::Handle<v8::Value> nativeLog(const v8::Arguments &args) {
 
     char s[1000] = "";

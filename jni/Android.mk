@@ -22,17 +22,14 @@ LOCAL_C_INCLUDES := $(JNI_H_INCLUDE) \
 			
 LOCAL_MODULE    := weexcore
 
-v8_CPP_LIST += $(wildcard $(LOCAL_PATH)/v8core/*.cpp)
+LOCAL_SRC_FILES := v8core/com_taobao_weex_bridge_WXBridge.cpp
 
+LOCAL_CFLAGS := -fvisibility=hidden \
+                -Werror=missing-declarations \
 
-LOCAL_SRC_FILES := $(v8_CPP_LIST:$(LOCAL_PATH)/%=%)
-LOCAL_CFLAGS += -ffunction-sections -fdata-sections
-
-
-LOCAL_LDFLAGS := -Wl,--allow-multiple-definition \
-                 -Wl,--version-script=$(LOCAL_PATH)/version_script.txt \
-				 -Wl,--gc-sections \
-				 -Wl,--build-id=sha1
+LOCAL_LDFLAGS := -Wl,--gc-sections \
+                 -Wl,--build-id=sha1 \
+                 -Wl,--exclude-libs,ALL \
 
 
 ifeq ($(TARGET_ARCH_ABI), x86)

@@ -9730,12 +9730,12 @@ RUNTIME_FUNCTION(MaybeObject*, Runtime_ArrayConcat) {
   bool fast_case = (estimate_nof_elements * 2) >= estimate_result_length;
 
   Handle<FixedArray> storage;
+  bool failure = false;
   if (fast_case) {
     if (kind == FAST_DOUBLE_ELEMENTS) {
       Handle<FixedDoubleArray> double_storage =
           isolate->factory()->NewFixedDoubleArray(estimate_result_length);
       int j = 0;
-      bool failure = false;
       for (int i = 0; i < argument_count; i++) {
         Handle<Object> obj(elements->get(i), isolate);
         if (obj->IsSmi()) {
@@ -9756,6 +9756,11 @@ RUNTIME_FUNCTION(MaybeObject*, Runtime_ArrayConcat) {
                   FixedDoubleArray::cast(array->elements());
               for (uint32_t i = 0; i < length; i++) {
                 if (elements->is_the_hole(i)) {
+                  // TODO(jkummerow/verwaest): We could be a bit more clever
+                  // here: Check if there are no elements/getters on the
+                  // prototype chain, and if so, allow creation of a holey
+                  // result array.
+                  // Same thing below (holey smi case).
                   failure = true;
                   break;
                 }
@@ -9782,6 +9787,7 @@ RUNTIME_FUNCTION(MaybeObject*, Runtime_ArrayConcat) {
               break;
             }
             case FAST_HOLEY_ELEMENTS:
+            case FAST_ELEMENTS:
               ASSERT_EQ(0, length);
               break;
             default:
@@ -9790,14 +9796,17 @@ RUNTIME_FUNCTION(MaybeObject*, Runtime_ArrayConcat) {
         }
         if (failure) break;
       }
-      Handle<JSArray> array = isolate->factory()->NewJSArray(0);
-      Smi* length = Smi::FromInt(j);
-      Handle<Map> map;
-      map = isolate->factory()->GetElementsTransitionMap(array, kind);
-      array->set_map(*map);
-      array->set_length(length);
-      array->set_elements(*double_storage);
-      return *array;
+      if (!failure) {
+        Handle<JSArray> array = isolate->factory()->NewJSArray(0);
+        Smi* length = Smi::FromInt(j);
+        Handle<Map> map;
+        map = isolate->factory()->GetElementsTransitionMap(array, kind);
+        array->set_map(*map);
+        array->set_length(length);
+        array->set_elements(*double_storage);
+        return *array;
+      }
+    // In case of failure, fall through.
     }
     // The backing storage array must have non-existing elements to preserve
     // holes across concat operations.

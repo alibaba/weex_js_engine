@@ -505,7 +505,14 @@ BasicJsonStringifier::Result BasicJsonStringifier::SerializeJSArray(
     case FAST_ELEMENTS: {
       Handle<FixedArray> elements(
           FixedArray::cast(object->elements()), isolate_);
+      Handle<Object> old_length(object->length(), isolate_);
+
       for (int i = 0; i < length; i++) {
+        if (object->length() != *old_length ||
+                object->GetElementsKind() != FAST_ELEMENTS) {
+            // Fall back to slow path.
+            break;
+        }
         if (i > 0) Append(',');
         Result result =
             SerializeElement(isolate_,

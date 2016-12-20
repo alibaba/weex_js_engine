@@ -20,9 +20,9 @@ LOCAL_C_INCLUDES := $(JNI_H_INCLUDE) \
 		            $(LOCAL_PATH)/v8core \
 					$(LOCAL_PATH)/v8core/v8/include
 			
-LOCAL_MODULE    := weexcore
+LOCAL_MODULE    := weexv8
 
-v8_CPP_LIST += $(wildcard $(LOCAL_PATH)/v8core/*.cpp)
+v8_CPP_LIST += $(wildcard $(LOCAL_PATH)/v8core/*.cpp) $(wildcard $(LOCAL_PATH)/v8core/*.c)
 
 
 LOCAL_SRC_FILES := $(v8_CPP_LIST:$(LOCAL_PATH)/%=%)
@@ -50,8 +50,9 @@ $(v8libs): MY_ARCH_ABI := $(TARGET_ARCH_ABI)
 $(v8libs):
 	cd $(v8basepath) && TARGET_ARCH=$(MY_ARCH_ABI) ./build.sh
 
-$(TARGET_OUT)/libweexcore.so: $(v8libs)
+$(TARGET_OUT)/libweexv8.so: $(v8libs)
 
-LOCAL_LDLIBS := -llog -L$(v8libpath) -lv8_base -lpreparser_lib -lv8_nosnapshot
+LOCAL_LDLIBS := -llog -L$(v8libpath) -lv8_base -lpreparser_lib \
+				-lv8_nosnapshot
 
 include $(BUILD_SHARED_LIBRARY)

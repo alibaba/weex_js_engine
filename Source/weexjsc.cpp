@@ -332,6 +332,11 @@ String jString2String(JNIEnv* env, jstring str)
 static JSValue jString2JSValue(JNIEnv* env, ExecState* state, jstring str)
 {
     String s = jString2String(env, str);
+    if (s.isEmpty()) {
+        return jsEmptyString(&state->vm());
+    } else if (s.length() == 1) {
+        return jsSingleCharacterString(&state->vm(), s[0]);
+    }
     return jsNontrivialString(&state->vm(), s);
 }
 
@@ -341,7 +346,7 @@ static jstring getArgumentAsJString(JNIEnv* env, ExecState* state, int argument)
     JSValue val = state->argument(argument);
     if (!val.isUndefined()) {
         String s = val.toWTFString(state);
-        ret = env->NewString(s.characters16(), s.length());
+        ret = env->NewStringUTF(s.utf8().data());
     }
     return ret;
 }
@@ -609,7 +614,8 @@ EncodedJSValue JSC_HOST_CALL functionNativeLog(ExecState* state)
 
     if (!sb.isEmpty()) {
         env = getJNIEnv();
-        jstring str_msg = env->NewString(sb.characters16(), sb.length());
+        String s = sb.toString();
+        jstring str_msg = env->NewStringUTF(s.utf8().data());
         jclass clazz = env->FindClass("com/taobao/weex/utils/WXLogUtils");
         if (clazz != NULL) {
             if (jLogMethodId == NULL) {
@@ -873,8 +879,9 @@ void setJSFVersion(JNIEnv* env, JSGlobalObject* globalObject)
     jmethodID tempMethodId = env->GetMethodID(jBridgeClazz,
         "setJSFrmVersion",
         "(Ljava/lang/String;)V");
-    LOGA("init JSFrm version %s", str.utf8().data());
-    jstring jversion = env->NewString(str.characters16(), str.length());
+    CString utf8 = str.utf8();
+    LOGA("init JSFrm version %s", utf8.data());
+    jstring jversion = env->NewStringUTF(utf8.data());
     env->CallVoidMethod(jThis, tempMethodId, jversion);
     env->DeleteLocalRef(jversion);
 }
@@ -888,6 +895,8 @@ jint native_execJSService(JNIEnv* env,
         ScopedJString scopedJString(env, script);
         const char* scriptStr = scopedJString.getChars();
         String source = String::fromUTF8(scriptStr);
+        VM& vm = *globalVM.get();
+        JSLockHolder locker(&vm);
         if (scriptStr == NULL || !ExecuteJavaScript(globalObject, source, true)) {
             LOGE("jsLog JNI_Error >>> scriptStr :%s", scriptStr);
             return false;
@@ -942,7 +951,6 @@ static jint native_initFramework(JNIEnv* env,
         }
 
         setJSFVersion(env, globalObject);
-        env->ReleaseStringUTFChars(script, scriptStr);
     }
     return true;
 }
@@ -969,6 +977,8 @@ jint native_execJS(JNIEnv* env,
     }
     MarkedArgumentBuffer obj;
     JSGlobalObject* globalObject = _globalObject.get();
+    VM& vm = *globalVM.get();
+    JSLockHolder locker(&vm);
     ExecState* state = globalObject->globalExec();
 
     jclass jsObjectClazz = env->FindClass("com/taobao/weex/bridge/WXJSObject");
@@ -1012,7 +1022,6 @@ jint native_execJS(JNIEnv* env,
     }
     env->DeleteLocalRef(jsObjectClazz);
 
-    VM& vm = globalObject->vm();
     String func = jString2String(env, jfunction);
     base::debug::TraceScope traceScope("weex", "exeJS", "function", func.utf8().data());
     Identifier funcIdentifier = Identifier::fromString(&vm, func);
@@ -1250,6 +1259,7 @@ void JNI_OnUnload(JavaVM* vm, void* reserved)
     LOGD("beigin JNI_OnUnload");
     JNIEnv* env;
     _globalObject.clear();
+
     globalVM.release();
     /* Get environment */
     if ((vm)->GetEnv((void**)&env, JNI_VERSION_1_4) != JNI_OK) {

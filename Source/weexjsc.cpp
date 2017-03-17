@@ -75,6 +75,7 @@
 #include "WasmFaultSignalHandler.h"
 #include "WasmMemory.h"
 #include "WasmPlan.h"
+#include "StrongInlines.h"
 #include <locale.h>
 #include <math.h>
 #include <stdio.h>
@@ -896,13 +897,13 @@ jint native_execJSService(JNIEnv* env,
     return false;
 }
 
-void native_takeHeapSnapshot(JNIEnv* env,
+static void native_takeHeapSnapshot(JNIEnv* env,
     jobject object,
     jstring name)
 {
 }
 
-jint native_initFramework(JNIEnv* env,
+static jint native_initFramework(JNIEnv* env,
     jobject object,
     jstring script,
     jobject params)

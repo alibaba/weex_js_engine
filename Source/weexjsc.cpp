@@ -67,6 +67,7 @@
 #include "SamplingProfiler.h"
 #include "ShadowChicken.h"
 #include "StackVisitor.h"
+#include "StrongInlines.h"
 #include "StructureInlines.h"
 #include "StructureRareDataInlines.h"
 #include "SuperSampler.h"
@@ -75,7 +76,6 @@
 #include "WasmFaultSignalHandler.h"
 #include "WasmMemory.h"
 #include "WasmPlan.h"
-#include "StrongInlines.h"
 #include <locale.h>
 #include <math.h>
 #include <stdio.h>
@@ -806,14 +806,14 @@ void GlobalObject::initFunction()
     reifyStaticProperties(vm, JSEventTargetPrototypeTableValues, *this);
 }
 
-JNIEnv *getJNIEnv() {
-    JNIEnv *env = NULL;
-    if ((sVm)->GetEnv((void **) &env, JNI_VERSION_1_4) != JNI_OK) {
+JNIEnv* getJNIEnv()
+{
+    JNIEnv* env = NULL;
+    if ((sVm)->GetEnv((void**)&env, JNI_VERSION_1_4) != JNI_OK) {
         return JNI_FALSE;
     }
     return env;
 }
-
 }
 
 static RefPtr<VM> globalVM;

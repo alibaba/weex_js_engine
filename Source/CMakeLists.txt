@@ -9,6 +9,7 @@ include(WebKitCommon)
 set(weexv8_SOURCES
 weexjsc.cpp
 Trace.cpp
+Compatible.cpp
 )
 
 set(weexv8_LIBRARY_TYPE SHARED)

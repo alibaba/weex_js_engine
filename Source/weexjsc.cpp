@@ -212,10 +212,10 @@ protected:
         putDirect(vm, identifier, JSFunction::create(vm, this, arguments, identifier.string(), function, NoIntrinsic, function));
     }
 
-    void addString(VM& vm, JSObject* object, const char* name, const String& value)
+    void addString(VM& vm, JSObject* object, const char* name, String&& value)
     {
         Identifier identifier = Identifier::fromString(&vm, name);
-        JSString* jsString = jsNontrivialString(&vm, value);
+        JSString* jsString = jsNontrivialString(&vm, WTFMove(value));
         object->putDirect(vm, identifier, jsString);
     }
 
@@ -337,7 +337,7 @@ static JSValue jString2JSValue(JNIEnv* env, ExecState* state, jstring str)
     } else if (s.length() == 1) {
         return jsSingleCharacterString(&state->vm(), s[0]);
     }
-    return jsNontrivialString(&state->vm(), s);
+    return jsNontrivialString(&state->vm(), WTFMove(s));
 }
 
 static jstring getArgumentAsJString(JNIEnv* env, ExecState* state, int argument)
@@ -1005,7 +1005,7 @@ jint native_execJS(JNIEnv* env,
         } else if (jTypeInt == 3) {
             JSValue jsonObj;
             String s = jString2String(env, (jstring)jDataObj);
-            jsonObj = jsNontrivialString(state, s);
+            jsonObj = jsNontrivialString(state, WTFMove(s));
             NakedPtr<Exception> returnedException;
             JSValue o = parseToObject(state, jsonObj, returnedException);
             obj.append(o);

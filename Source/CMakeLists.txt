@@ -11,6 +11,8 @@ weexjsc.cpp
 Trace.cpp
 )
 
+set(weexv8_LIBRARY_TYPE SHARED)
+
 set(weexv8_LIBRARIES
 JavaScriptCore
 log)

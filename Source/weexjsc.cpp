@@ -19,7 +19,8 @@
  *  Boston, MA 02110-1301, USA.
  *
  */
-
+#define HAVE_CONFIG_H 1
+#define BUILDING_WITH_CMAKE 1
 #include "config.h"
 
 #include "ArrayBuffer.h"

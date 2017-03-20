@@ -22,13 +22,15 @@ SET(CMAKE_ANDROID_STL_INCLUDE $ENV{NDK_ROOT}/sources/cxx-stl/llvm-libc++/include
 SET(CMAKE_ANDROID_STL_BITS_INCLUDE $ENV{NDK_ROOT}/sources/cxx-stl/llvm-libc++abi/include)
 SET(CMAKE_C_COMPILER ${CMAKE_TOOLCHAIN_PATH}/clang)
 SET(CMAKE_CXX_COMPILER ${CMAKE_TOOLCHAIN_PATH}/clang++)
+SET(CMAKE_AR ${CMAKE_BINARY_PATH}/ar)
 
 SET(ANDROID "1" CACHE STRING "ANDROID" FORCE)
 
-SET(ANDROID_COMMON_FLAGS "-target armv7-linux-android --sysroot=${CMAKE_ANDROID_SYSROOT} -isystem ${CMAKE_ANDROID_STL_INCLUDE} -isystem ${CMAKE_ANDROID_STL_BITS_INCLUDE} -B${CMAKE_BINARY_PATH}")
+SET(ANDROID_COMMON_FLAGS "-target armv7-linux-android -mthumb --sysroot=${CMAKE_ANDROID_SYSROOT} -isystem ${CMAKE_ANDROID_STL_INCLUDE} -isystem ${CMAKE_ANDROID_STL_BITS_INCLUDE} -B${CMAKE_BINARY_PATH} -ffunction-sections -fdata-sections")
 SET(CMAKE_C_FLAGS "${ANDROID_COMMON_FLAGS}" CACHE STRING "toolchain_cflags" FORCE)
 SET(CMAKE_CXX_FLAGS "${ANDROID_COMMON_FLAGS} -std=gnu++1y" CACHE STRING "toolchain_cxxflags" FORCE)
 SET(CMAKE_EXE_LINKER_FLAGS "-pie" CACHE STRING "toolchain_exelinkflags" FORCE)
+SET(CMAKE_SHARED_LINKER_FLAGS "-Wl,--gc-sections" CACHE STRING "toolchain_exelinkflags" FORCE)
 link_libraries("-lc++_static -lc++abi -lunwind -landroid_support")
 link_directories(
 $ENV{NDK_ROOT}/toolchains/arm-linux-androideabi-4.9/prebuilt/linux-x86_64/lib/gcc/arm-linux-androideabi/4.9.x/armv7-a/thumb/

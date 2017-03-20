@@ -357,18 +357,13 @@ static jbyteArray getArgumentAsJByteArrayJSON(JNIEnv* env, ExecState* state, int
     JSValue val = state->argument(argument);
     VM& vm = state->vm();
     if (val.isObject()) {
-        JSGlobalObject* globalObject = state->lexicalGlobalObject();
-        PropertyName json(Identifier::fromString(&vm, "JSON"));
-        PropertyName stringify(Identifier::fromString(&vm, "stringify"));
-        JSValue jsonObject = globalObject->get(state, json);
-        JSValue stringifyFunction = jsonObject.toObject(state)->get(state, stringify);
-        MarkedArgumentBuffer args;
-        args.append(val);
-        CallData callData;
-        CallType callType = getCallData(stringifyFunction, callData);
-        NakedPtr<Exception> returnedException;
-        JSValue ret = JSC::call(globalObject->globalExec(), stringifyFunction, callType, callData, globalObject, args, returnedException);
-        String str(ret.toWTFString(state));
+        String str = JSONStringify(state, val, 0);
+        JSC::VM& vm = state->vm();
+        auto scope = DECLARE_CATCH_SCOPE(vm);
+        if (UNLIKELY(scope.exception())) {
+            scope.clearException();
+            return nullptr;
+        }
         CString strData = str.utf8();
         int strLen = strData.length();
         ba = env->NewByteArray(strLen);

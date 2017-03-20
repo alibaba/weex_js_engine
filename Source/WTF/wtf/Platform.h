@@ -753,7 +753,7 @@
    values get stored to atomically. This is trivially true on 64-bit platforms,
    but not true at all on 32-bit platforms where values are composed of two
    separate sub-values. */
-#if ENABLE(DFG_JIT) && USE(JSVALUE64)
+#if ENABLE(DFG_JIT) && (USE(JSVALUE64) || defined(__ANDROID__))
 #define ENABLE_CONCURRENT_JS 1
 #endif
 

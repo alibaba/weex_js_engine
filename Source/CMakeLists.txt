@@ -4,19 +4,19 @@ add_subdirectory(icu)
 add_subdirectory(WTF)
 add_subdirectory(JavaScriptCore)
 
-set(WEEX_SOURCES
+include(WebKitCommon)
+
+set(weexv8_SOURCES
 weexjsc.cpp
 Trace.cpp
 )
 
-add_library(weexv8 SHARED
-${WEEX_SOURCES}
-)
-
-target_link_libraries(weexv8
+set(weexv8_LIBRARIES
 JavaScriptCore
-log
-)
+log)
+
+WEBKIT_FRAMEWORK(weexv8)
+
 
 set_target_properties(weexv8
 PROPERTIES

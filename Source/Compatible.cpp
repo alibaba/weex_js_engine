@@ -26,32 +26,44 @@
  * SUCH DAMAGE.
  */
 
+#include <ctype.h>
 #include <errno.h>
+#include <grp.h>
+#include <mntent.h>
+#include <netdb.h>
+#include <pthread.h>
+#include <pwd.h>
 #include <signal.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
-int sigemptyset(sigset_t* set) {
-  if (set == NULL) {
-    errno = EINVAL;
-    return -1;
-  }
-  memset(set, 0, sizeof(sigset_t));
-  return 0;
+int sigemptyset(sigset_t* set)
+{
+    if (set == NULL) {
+        errno = EINVAL;
+        return -1;
+    }
+    memset(set, 0, sizeof(sigset_t));
+    return 0;
 }
 
-int sigfillset(sigset_t* set) {
-  if (set == NULL) {
-    errno = EINVAL;
-    return -1;
-  }
-  memset(set, ~0, sizeof(sigset_t));
-  return 0;
+int sigfillset(sigset_t* set)
+{
+    if (set == NULL) {
+        errno = EINVAL;
+        return -1;
+    }
+    memset(set, ~0, sizeof(sigset_t));
+    return 0;
 }
 
-int sigaddset(sigset_t* set, int signum) {
+int sigaddset(sigset_t* set, int signum)
+{
     int bit = signum - 1; // Signal numbers start at 1, but bit positions start at 0.
     unsigned long* local_set = reinterpret_cast<unsigned long*>(set);
-    if (set == NULL || bit < 0 || bit >= static_cast<int>(8*sizeof(sigset_t))) {
+    if (set == NULL || bit < 0 || bit >= static_cast<int>(8 * sizeof(sigset_t))) {
         errno = EINVAL;
         return -1;
     }
@@ -59,13 +71,22 @@ int sigaddset(sigset_t* set, int signum) {
     return 0;
 }
 
-int sigdelset(sigset_t* set, int signum) {
+int sigdelset(sigset_t* set, int signum)
+{
     int bit = signum - 1; // Signal numbers start at 1, but bit positions start at 0.
     unsigned long* local_set = reinterpret_cast<unsigned long*>(set);
-    if (set == NULL || bit < 0 || bit >= static_cast<int>(8*sizeof(sigset_t))) {
+    if (set == NULL || bit < 0 || bit >= static_cast<int>(8 * sizeof(sigset_t))) {
         errno = EINVAL;
         return -1;
     }
     local_set[bit / LONG_BIT] &= ~(1UL << (bit % LONG_BIT));
     return 0;
 }
+
+int getpagesize()
+{
+    // We dont use sysconf(3) here because that drags in stdio, which makes static binaries fat.
+    return PAGE_SIZE;
+}
+
+void srandom(unsigned int __s) { srand48(__s); }

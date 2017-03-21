@@ -96,3 +96,13 @@ int isinf(double n)
 {
     return __builtin_isinf(n);
 }
+
+int posix_memalign(void** memptr, size_t alignment, size_t bytes)
+{
+    if (!memptr)
+        return EINVAL;
+    *memptr = memalign(alignment, bytes);
+    if (!*memptr)
+        return ENOMEM;
+    return 0;
+}

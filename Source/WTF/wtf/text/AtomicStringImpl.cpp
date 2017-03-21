@@ -33,7 +33,7 @@
 #include "StringPrintStream.h"
 #include "Threading.h"
 #include "WTFThreadData.h"
-#include <wtf/unicode/UTF8.h>
+#include <wtf/unicode/WTFUTF8.h>
 
 #if USE(WEB_THREAD)
 #include "Lock.h"

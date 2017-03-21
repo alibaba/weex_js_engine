@@ -34,7 +34,7 @@
 #include <wtf/Vector.h>
 #include <wtf/dtoa.h>
 #include <wtf/unicode/CharacterNames.h>
-#include <wtf/unicode/UTF8.h>
+#include <wtf/unicode/WTFUTF8.h>
 
 namespace WTF {
 

@@ -29,7 +29,7 @@
 
 #include "InitializeThreading.h"
 #include "OpaqueJSString.h"
-#include <wtf/unicode/UTF8.h>
+#include <wtf/unicode/WTFUTF8.h>
 
 using namespace JSC;
 using namespace WTF::Unicode;

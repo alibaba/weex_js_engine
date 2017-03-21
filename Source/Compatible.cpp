@@ -29,6 +29,7 @@
 #include <ctype.h>
 #include <errno.h>
 #include <grp.h>
+#include <math.h>
 #include <mntent.h>
 #include <netdb.h>
 #include <pthread.h>
@@ -90,3 +91,8 @@ int getpagesize()
 }
 
 void srandom(unsigned int __s) { srand48(__s); }
+
+int isinf(double n)
+{
+    return __builtin_isinf(n);
+}

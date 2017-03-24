@@ -1,4 +1,5 @@
-export NDK_ROOT=/Users/zhengshihan/android-ndk-r13b
+export NDK_ROOT=`dirname $(which ndk-build)`
+echo $NDK_ROOT
 export APILEVEL=21
 export BINARY_PATH=`dirname $(find $NDK_ROOT/toolchains $NDK_ROOT/build  -name 'arm*' -name '*-g++' | sort  -r| head -n 1)`/../arm-linux-androideabi/bin
 HOST=$(uname -s)-$(uname -m)

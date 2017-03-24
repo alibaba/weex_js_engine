@@ -148,6 +148,8 @@ static EncodedJSValue JSC_HOST_CALL functionMarkupState(ExecState*);
 static JNIEnv* getJNIEnv();
 
 static jclass jBridgeClazz;
+static jclass jWXJSObject;
+static jclass jWXLogUtils;
 static jmethodID jCallAddElementMethodId;
 static jmethodID jDoubleValueMethodId;
 static jmethodID jSetTimeoutNativeMethodId;
@@ -471,11 +473,9 @@ EncodedJSValue JSC_HOST_CALL functionCallNativeModule(ExecState* state)
     jobject result = env->CallObjectMethod(jThis, jCallNativeModuleMethodId, jInstanceId, jmodule, jmethod, jArgString, jOptString);
     JSValue ret;
 
-    jclass jsObjectClazz = env->FindClass("com/taobao/weex/bridge/WXJSObject");
-
-    jfieldID jTypeId = env->GetFieldID(jsObjectClazz, "type", "I");
+    jfieldID jTypeId = env->GetFieldID(jWXJSObject, "type", "I");
     jint jTypeInt = env->GetIntField(result, jTypeId);
-    jfieldID jDataId = env->GetFieldID(jsObjectClazz, "data", "Ljava/lang/Object;");
+    jfieldID jDataId = env->GetFieldID(jWXJSObject, "data", "Ljava/lang/Object;");
     jobject jDataObj = env->GetObjectField(result, jDataId);
     if (jTypeInt == 1) {
         if (jDoubleValueMethodId == NULL) {
@@ -610,20 +610,18 @@ EncodedJSValue JSC_HOST_CALL functionNativeLog(ExecState* state)
         env = getJNIEnv();
         String s = sb.toString();
         jstring str_msg = env->NewStringUTF(s.utf8().data());
-        jclass clazz = env->FindClass("com/taobao/weex/utils/WXLogUtils");
-        if (clazz != NULL) {
+        if (jWXLogUtils != NULL) {
             if (jLogMethodId == NULL) {
-                jLogMethodId = env->GetStaticMethodID(clazz, "d", "(Ljava/lang/String;Ljava/lang/String;)V");
+                jLogMethodId = env->GetStaticMethodID(jWXLogUtils, "d", "(Ljava/lang/String;Ljava/lang/String;)V");
             }
             if (jLogMethodId != NULL) {
                 jstring str_tag = env->NewStringUTF("jsLog");
                 // str_msg = env->NewStringUTF(s);
-                env->CallStaticVoidMethod(clazz, jLogMethodId, str_tag, str_msg);
+                env->CallStaticVoidMethod(jWXLogUtils, jLogMethodId, str_tag, str_msg);
                 result = true;
                 env->DeleteLocalRef(str_msg);
                 env->DeleteLocalRef(str_tag);
             }
-            env->DeleteLocalRef(clazz);
         }
     }
     return JSValue::encode(jsBoolean(true));
@@ -975,14 +973,13 @@ jint native_execJS(JNIEnv* env,
     JSLockHolder locker(&vm);
     ExecState* state = globalObject->globalExec();
 
-    jclass jsObjectClazz = env->FindClass("com/taobao/weex/bridge/WXJSObject");
     for (int i = 0; i < length; i++) {
         jobject jArg = env->GetObjectArrayElement(jargs, i);
 
-        jfieldID jTypeId = env->GetFieldID(jsObjectClazz, "type", "I");
+        jfieldID jTypeId = env->GetFieldID(jWXJSObject, "type", "I");
         jint jTypeInt = env->GetIntField(jArg, jTypeId);
 
-        jfieldID jDataId = env->GetFieldID(jsObjectClazz, "data", "Ljava/lang/Object;");
+        jfieldID jDataId = env->GetFieldID(jWXJSObject, "data", "Ljava/lang/Object;");
         jobject jDataObj = env->GetObjectField(jArg, jDataId);
         if (jTypeInt == 1) {
             if (jDoubleValueMethodId == NULL) {
@@ -1007,14 +1004,12 @@ jint native_execJS(JNIEnv* env,
                 ReportException(globalObject, returnedException.get(), jinstanceid, s.utf8().data());
                 env->DeleteLocalRef(jDataObj);
                 env->DeleteLocalRef(jArg);
-                env->DeleteLocalRef(jsObjectClazz);
                 return false;
             }
         }
         env->DeleteLocalRef(jDataObj);
         env->DeleteLocalRef(jArg);
     }
-    env->DeleteLocalRef(jsObjectClazz);
 
     String func = jString2String(env, jfunction);
     base::debug::TraceScope traceScope("weex", "exeJS", "function", func.utf8().data());
@@ -1198,12 +1193,11 @@ static int registerNativeMethods(JNIEnv* env,
     JNINativeMethod* methods,
     int numMethods)
 {
-    jclass clazz = (env)->FindClass("com/taobao/weex/bridge/WXBridge");
-    if (clazz == NULL) {
+    if (jBridgeClazz == NULL) {
         LOGE("registerNativeMethods failed to find class '%s'", className);
         return JNI_FALSE;
     }
-    if ((env)->RegisterNatives(clazz, methods, numMethods) < 0) {
+    if ((env)->RegisterNatives(jBridgeClazz, methods, numMethods) < 0) {
         LOGE("registerNativeMethods failed to register native methods for class '%s'",
             className);
         return JNI_FALSE;
@@ -1238,8 +1232,15 @@ jint JNI_OnLoad(JavaVM* vm, void* reserved)
     jclass tempClass = env->FindClass(
         "com/taobao/weex/bridge/WXBridge");
     jBridgeClazz = (jclass)env->NewGlobalRef(tempClass);
-    env->DeleteLocalRef(tempClass);
 
+    tempClass = env->FindClass("com/taobao/weex/bridge/WXJSObject");
+    jWXJSObject = (jclass)env->NewGlobalRef(tempClass);
+
+    tempClass = env->FindClass("com/taobao/weex/utils/WXLogUtils");
+    jWXLogUtils = (jclass)env->NewGlobalRef(tempClass);
+
+
+    env->DeleteLocalRef(tempClass);
     if (registerNatives(env) != JNI_TRUE) {
         return JNI_FALSE;
     }
@@ -1260,6 +1261,8 @@ void JNI_OnUnload(JavaVM* vm, void* reserved)
         return;
     }
     env->DeleteGlobalRef(jBridgeClazz);
+    env->DeleteGlobalRef(jWXJSObject);
+    env->DeleteGlobalRef(jWXLogUtils);
     env->DeleteGlobalRef(jThis);
 
     using base::debug::TraceEvent;

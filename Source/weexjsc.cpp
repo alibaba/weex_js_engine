@@ -410,7 +410,7 @@ static jbyteArray getArgumentAsJByteArray(JNIEnv* env, ExecState* state, int arg
 EncodedJSValue JSC_HOST_CALL functionGCAndSweep(ExecState* exec)
 {
     JSLockHolder lock(exec);
-    exec->heap()->collectAsync();
+    exec->heap()->collectAllGarbage();
     return JSValue::encode(jsNumber(exec->heap()->sizeAfterLastFullCollection()));
 }
 

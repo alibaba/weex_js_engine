@@ -364,7 +364,7 @@ static void recomputeDependentOptions()
     Options::useFTLJIT() = false;
 #endif
     
-#if !CPU(X86_64) && !CPU(ARM64) && !defined(__ANDROID__)
+#if !CPU(X86_64) && !CPU(ARM64)
     Options::useConcurrentGC() = false;
 #endif
     

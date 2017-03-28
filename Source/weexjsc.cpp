@@ -995,12 +995,12 @@ jint native_execJS(JNIEnv* env,
             obj.append(jString2JSValue(env, state, jDataStr));
         } else if (jTypeInt == 3) {
             JSValue jsonObj;
-            String s = jString2String(env, (jstring)jDataObj);
-            jsonObj = jsNontrivialString(state, WTFMove(s));
+            jsonObj = jString2JSValue(env, state, (jstring)jDataObj);
             NakedPtr<Exception> returnedException;
             JSValue o = parseToObject(state, jsonObj, returnedException);
             obj.append(o);
             if (returnedException) {
+                String s = jsonObj.toWTFString(state);
                 ReportException(globalObject, returnedException.get(), jinstanceid, s.utf8().data());
                 env->DeleteLocalRef(jDataObj);
                 env->DeleteLocalRef(jArg);
@@ -1238,7 +1238,6 @@ jint JNI_OnLoad(JavaVM* vm, void* reserved)
 
     tempClass = env->FindClass("com/taobao/weex/utils/WXLogUtils");
     jWXLogUtils = (jclass)env->NewGlobalRef(tempClass);
-
 
     env->DeleteLocalRef(tempClass);
     if (registerNatives(env) != JNI_TRUE) {

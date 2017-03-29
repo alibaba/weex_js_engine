@@ -52,6 +52,7 @@
 #include "UnlinkedInstructionStream.h"
 #include "UnlinkedModuleProgramCodeBlock.h"
 #include "UnlinkedProgramCodeBlock.h"
+#include "Trace.h"
 #include <wtf/BitVector.h>
 #include <wtf/CommaPrinter.h>
 #include <wtf/SmallPtrSet.h>
@@ -85,6 +86,7 @@ void Variable::dump(PrintStream& out) const
 
 ParserError BytecodeGenerator::generate()
 {
+    base::debug::TraceScope traceScope("jsc", "BytecodeGenerator::generate");
     m_codeBlock->setThisRegister(m_thisRegister.virtualRegister());
 
     emitLogShadowChickenPrologueIfNecessary();

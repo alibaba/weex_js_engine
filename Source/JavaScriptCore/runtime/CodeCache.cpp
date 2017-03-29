@@ -27,6 +27,7 @@
 #include "CodeCache.h"
 
 #include "IndirectEvalExecutable.h"
+#include "Trace.h"
 
 namespace JSC {
 
@@ -117,13 +118,17 @@ UnlinkedFunctionExecutable* CodeCache::getUnlinkedGlobalFunctionExecutable(VM& v
     }
 
     JSTextPosition positionBeforeLastNewline;
-    std::unique_ptr<ProgramNode> program = parse<ProgramNode>(
-        &vm, source, Identifier(), JSParserBuiltinMode::NotBuiltin,
-        JSParserStrictMode::NotStrict, JSParserScriptMode::Classic, SourceParseMode::ProgramMode, SuperBinding::NotNeeded,
-        error, &positionBeforeLastNewline);
-    if (!program) {
-        RELEASE_ASSERT(error.isValid());
-        return nullptr;
+    std::unique_ptr<ProgramNode> program;
+    {
+        base::debug::TraceScope traceScope("jsc", "parse Program");
+        program = parse<ProgramNode>(
+            &vm, source, Identifier(), JSParserBuiltinMode::NotBuiltin,
+            JSParserStrictMode::NotStrict, JSParserScriptMode::Classic, SourceParseMode::ProgramMode, SuperBinding::NotNeeded,
+            error, &positionBeforeLastNewline);
+        if (!program) {
+            RELEASE_ASSERT(error.isValid());
+            return nullptr;
+        }
     }
 
     // This function assumes an input string that would result in a single function declaration.

@@ -29,6 +29,7 @@
 #if ENABLE(DFG_JIT)
 
 #include "ArithProfile.h"
+#include "Trace.h"
 #include "ArrayConstructor.h"
 #include "BasicBlockLocation.h"
 #include "CallLinkStatus.h"
@@ -5975,6 +5976,7 @@ bool ByteCodeParser::parse()
 
 bool parse(Graph& graph)
 {
+    base::debug::TraceScope traceScope("jsc", "DFG parse");
     return ByteCodeParser(graph).parse();
 }
 

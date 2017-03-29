@@ -79,6 +79,7 @@
 #include "ProfilerDatabase.h"
 #include "TrackedReferences.h"
 #include "VMInlines.h"
+#include "Trace.h"
 #include <wtf/CurrentTime.h>
 
 #if ENABLE(FTL_JIT)
@@ -237,6 +238,7 @@ void Plan::compileInThread(LongLivedState& longLivedState, ThreadData* threadDat
 
 Plan::CompilationPath Plan::compileInThreadImpl(LongLivedState& longLivedState)
 {
+    base::debug::TraceScope traceScope("jsc", "DFG Plan::compileInThreadImpl");
     cleanMustHandleValuesIfNecessary();
     
     if (verboseCompilationEnabled(mode) && osrEntryBytecodeIndex != UINT_MAX) {

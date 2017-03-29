@@ -63,6 +63,7 @@
 #include "UnlinkedCodeBlock.h"
 #include "VM.h"
 #include "WeakSetInlines.h"
+#include "Trace.h"
 #include <algorithm>
 #include <wtf/CurrentTime.h>
 #include <wtf/MainThread.h>
@@ -597,6 +598,7 @@ void Heap::gatherScratchBufferRoots(ConservativeRoots& roots)
 void Heap::beginMarking()
 {
     TimingScope timingScope(*this, "Heap::beginMarking");
+    TRACE_EVENT_BEGIN0("jsc", "Heap::marking")
     if (m_collectionScope == CollectionScope::Full)
         m_codeBlocks->clearMarksForFullCollection();
     m_jitStubRoutines->clearMarks();
@@ -697,6 +699,7 @@ void Heap::endMarking()
     
     m_objectSpace.endMarking();
     setMutatorShouldBeFenced(Options::forceFencedBarrier());
+    TRACE_EVENT_END0("jsc", "Heap::marking")
 }
 
 size_t Heap::objectCount()

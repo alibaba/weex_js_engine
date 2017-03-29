@@ -37,6 +37,7 @@
 #include "SourceProvider.h"
 #include "Structure.h"
 #include "UnlinkedFunctionCodeBlock.h"
+#include "Trace.h"
 
 namespace JSC {
 
@@ -53,12 +54,16 @@ static UnlinkedFunctionCodeBlock* generateUnlinkedFunctionCodeBlock(
     JSParserStrictMode strictMode = executable->isInStrictContext() ? JSParserStrictMode::Strict : JSParserStrictMode::NotStrict;
     JSParserScriptMode scriptMode = executable->scriptMode();
     ASSERT(isFunctionParseMode(executable->parseMode()));
-    std::unique_ptr<FunctionNode> function = parse<FunctionNode>(
-        &vm, source, executable->name(), builtinMode, strictMode, scriptMode, executable->parseMode(), executable->superBinding(), error, nullptr);
+    std::unique_ptr<FunctionNode> function;
+    {
+        base::debug::TraceScope traceScope("jsc", "parse Function");
+        function = parse<FunctionNode>(
+            &vm, source, executable->name(), builtinMode, strictMode, scriptMode, executable->parseMode(), executable->superBinding(), error, nullptr);
 
-    if (!function) {
-        ASSERT(error.isValid());
-        return nullptr;
+        if (!function) {
+            ASSERT(error.isValid());
+            return nullptr;
+        }
     }
 
     function->finishParsing(executable->name(), executable->functionMode());

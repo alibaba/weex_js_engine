@@ -48,6 +48,7 @@
 #include "SlowPathCall.h"
 #include "StackAlignment.h"
 #include "TypeProfilerLog.h"
+#include "Trace.h"
 #include <wtf/CryptographicallyRandomNumber.h>
 #include <wtf/GraphNodeWorklist.h>
 #include <wtf/SimpleStats.h>
@@ -862,6 +863,7 @@ CompilationResult JIT::link()
 
 CompilationResult JIT::privateCompile(JITCompilationEffort effort)
 {
+    base::debug::TraceScope traceScope("jsc", "JIT::privateCompile");
     doMainThreadPreparationBeforeCompile();
     compileWithoutLinking(effort);
     return link();

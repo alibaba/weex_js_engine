@@ -1034,6 +1034,7 @@ jint native_execJS(JNIEnv* env,
     NakedPtr<Exception> returnedException;
     JSValue ret = call(state, function, callType, callData, globalObject, obj, returnedException);
 
+    globalObject->vm().drainMicrotasks();
     makeIdleNotification(globalObject);
 
     if (returnedException) {
@@ -1058,6 +1059,7 @@ bool ExecuteJavaScript(JSGlobalObject* globalObject,
     }
     if (evaluationException)
         return false;
+    globalObject->vm().drainMicrotasks();
     return true;
 }
 

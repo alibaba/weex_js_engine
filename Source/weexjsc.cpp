@@ -355,6 +355,8 @@ static jstring getArgumentAsJString(JNIEnv* env, ExecState* state, int argument)
 static jbyteArray getArgumentAsJByteArrayJSON(JNIEnv* env, ExecState* state, int argument)
 {
     jbyteArray ba = nullptr;
+    if (argument >= state->argumentCount())
+        return nullptr;
     JSValue val = state->argument(argument);
     VM& vm = state->vm();
     if (val.isObject()) {
@@ -393,6 +395,8 @@ static JSValue parseToObject(ExecState* state, JSValue val, NakedPtr<Exception>&
 static jbyteArray getArgumentAsJByteArray(JNIEnv* env, ExecState* state, int argument)
 {
     jbyteArray ba = nullptr;
+    if (argument >= state->argumentCount())
+        return nullptr;
     JSValue val = state->argument(argument);
     if (val.isString()) {
         String str(val.toWTFString(state));

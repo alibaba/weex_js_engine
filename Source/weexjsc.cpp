@@ -1010,6 +1010,8 @@ jint native_execJS(JNIEnv* env,
                 env->DeleteLocalRef(jArg);
                 return false;
             }
+        } else {
+            obj.append(jsUndefined());
         }
         env->DeleteLocalRef(jDataObj);
         env->DeleteLocalRef(jArg);

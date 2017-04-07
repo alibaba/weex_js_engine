@@ -982,6 +982,9 @@ inline void JIT::emitValueProfilingSite(ValueProfile* valueProfile)
     // store.
 #if USE(JSVALUE64)
     store64(value, valueProfile->m_buckets);
+#elif defined(WTF_ARM_ARCH_VERSION) && WTF_ARM_ARCH_VERSION == 7
+    EncodedValueDescriptor* descriptor = bitwise_cast<EncodedValueDescriptor*>(valueProfile->m_buckets);
+    store64(value, valueTag, TrustedImmPtr(&descriptor->asBits.payload));
 #else
     EncodedValueDescriptor* descriptor = bitwise_cast<EncodedValueDescriptor*>(valueProfile->m_buckets);
     store32(value, &descriptor->asBits.payload);

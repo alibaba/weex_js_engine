@@ -140,10 +140,21 @@ namespace JSC {
 #define RETURN_PROFILED(opcode__, value__) \
     RETURN_WITH_PROFILING(value__, PROFILE_VALUE(opcode__, returnValue__))
 
+#if defined(WTF_ARM_ARCH_VERSION) && WTF_ARM_ARCH_VERSION == 7
+#define PROFILE_VALUE(opcode, value) do { \
+        asm volatile("vmov d0, %1, %2\n" \
+            "vstr.64 d0, %0\n" \
+            : "=m"(pc[OPCODE_LENGTH(opcode) - 1].u.profile->m_buckets[0]) \
+            : "r"(value.payload()) \
+            , "r"(value.tag()) \
+            : "d0"); \
+    } while (false)
+#else
 #define PROFILE_VALUE(opcode, value) do { \
         pc[OPCODE_LENGTH(opcode) - 1].u.profile->m_buckets[0] = \
         JSValue::encode(value);                  \
     } while (false)
+#endif // WTF_ARM_ARCH_VERSION == 7
 
 #define CALL_END_IMPL(exec, callTarget) RETURN_TWO((callTarget), (exec))
 

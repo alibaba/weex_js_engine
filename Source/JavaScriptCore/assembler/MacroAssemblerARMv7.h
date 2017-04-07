@@ -777,6 +777,12 @@ public:
         UNREACHABLE_FOR_PLATFORM();
     }
 
+    void store64(RegisterID s0, RegisterID s1, TrustedImmPtr address)
+    {
+        m_assembler.vmov(fpTempRegister, s0, s1);
+        storeDouble(fpTempRegister, address);
+    }
+
     DataLabel32 store32WithAddressOffsetPatch(RegisterID src, Address address)
     {
         DataLabel32 label = moveWithPatch(TrustedImm32(address.offset), dataTempRegister);

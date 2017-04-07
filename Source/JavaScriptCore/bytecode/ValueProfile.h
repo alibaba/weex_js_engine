@@ -73,7 +73,16 @@ struct ValueProfileBase {
     
     const ClassInfo* classInfo(unsigned bucket) const
     {
-        JSValue value = JSValue::decode(m_buckets[bucket]);
+#if defined(WTF_ARM_ARCH_VERSION) && WTF_ARM_ARCH_VERSION == 7
+            EncodedJSValue tmp;
+            asm volatile("vldr.64 d0, %1\n"
+                "vstr.64 d0, %0\n"
+                : "=m"(tmp)
+                : "m"(m_buckets[bucket]));
+            JSValue value = JSValue::decode(tmp);
+#else
+            JSValue value = JSValue::decode(m_buckets[bucket]);
+#endif // WTF_ARM_ARCH_VERSION == 7
         if (!!value) {
             if (!value.isCell())
                 return 0;
@@ -86,7 +95,17 @@ struct ValueProfileBase {
     {
         unsigned result = 0;
         for (unsigned i = 0; i < totalNumberOfBuckets; ++i) {
-            if (!!JSValue::decode(m_buckets[i]))
+#if defined(WTF_ARM_ARCH_VERSION) && WTF_ARM_ARCH_VERSION == 7
+            EncodedJSValue tmp;
+            asm volatile("vldr.64 d0, %1\n"
+                "vstr.64 d0, %0\n"
+                : "=m"(tmp)
+                : "m"(m_buckets[i]));
+            JSValue value = JSValue::decode(tmp);
+#else
+            JSValue value = JSValue::decode(m_buckets[i]);
+#endif // WTF_ARM_ARCH_VERSION == 7
+            if (!!value)
                 result++;
         }
         return result;
@@ -100,7 +119,17 @@ struct ValueProfileBase {
     bool isLive() const
     {
         for (unsigned i = 0; i < totalNumberOfBuckets; ++i) {
-            if (!!JSValue::decode(m_buckets[i]))
+#if defined(WTF_ARM_ARCH_VERSION) && WTF_ARM_ARCH_VERSION == 7
+            EncodedJSValue tmp;
+            asm volatile("vldr.64 d0, %1\n"
+                "vstr.64 d0, %0\n"
+                : "=m"(tmp)
+                : "m"(m_buckets[i]));
+            JSValue value = JSValue::decode(tmp);
+#else
+            JSValue value = JSValue::decode(m_buckets[i]);
+#endif // WTF_ARM_ARCH_VERSION == 7
+            if (!!value)
                 return true;
         }
         return false;
@@ -120,7 +149,16 @@ struct ValueProfileBase {
         out.print("samples = ", totalNumberOfSamples(), " prediction = ", SpeculationDump(m_prediction));
         bool first = true;
         for (unsigned i = 0; i < totalNumberOfBuckets; ++i) {
+#if defined(WTF_ARM_ARCH_VERSION) && WTF_ARM_ARCH_VERSION == 7
+            EncodedJSValue tmp;
+            asm volatile("vldr.64 d0, %1\n"
+                "vstr.64 d0, %0\n"
+                : "=m"(tmp)
+                : "m"(m_buckets[i]));
+            JSValue value = JSValue::decode(tmp);
+#else
             JSValue value = JSValue::decode(m_buckets[i]);
+#endif // WTF_ARM_ARCH_VERSION == 7
             if (!!value) {
                 if (first) {
                     out.printf(": ");
@@ -137,7 +175,16 @@ struct ValueProfileBase {
     SpeculatedType computeUpdatedPrediction(const ConcurrentJSLocker&)
     {
         for (unsigned i = 0; i < totalNumberOfBuckets; ++i) {
+#if defined(WTF_ARM_ARCH_VERSION) && WTF_ARM_ARCH_VERSION == 7
+            EncodedJSValue tmp;
+            asm volatile("vldr.64 d0, %1\n"
+                "vstr.64 d0, %0\n"
+                : "=m"(tmp)
+                : "m"(m_buckets[i]));
+            JSValue value = JSValue::decode(tmp);
+#else
             JSValue value = JSValue::decode(m_buckets[i]);
+#endif // WTF_ARM_ARCH_VERSION == 7
             if (!value)
                 continue;
             

@@ -152,10 +152,21 @@ namespace JSC { namespace LLInt {
         LLINT_END_IMPL();                                       \
     } while (false)
 
+#if defined(WTF_ARM_ARCH_VERSION) && WTF_ARM_ARCH_VERSION == 7
+#define LLINT_PROFILE_VALUE(opcode, value) do { \
+        asm volatile("vmov d0, %1, %2\n" \
+            "vstr.64 d0, %0\n" \
+            : "=m"(pc[OPCODE_LENGTH(opcode) - 1].u.profile->m_buckets[0]) \
+            : "r"(value.payload()) \
+            , "r"(value.tag()) \
+            : "d0"); \
+    } while (false)
+#else
 #define LLINT_PROFILE_VALUE(opcode, value) do { \
         pc[OPCODE_LENGTH(opcode) - 1].u.profile->m_buckets[0] = \
         JSValue::encode(value);                  \
     } while (false)
+#endif // WTF_ARM_ARCH_VERSION == 7
 
 #define LLINT_CALL_END_IMPL(exec, callTarget) LLINT_RETURN_TWO((callTarget), (exec))
 
@@ -700,7 +711,16 @@ LLINT_SLOW_PATH_DECL(slow_path_get_by_id)
         pc[7].u.operand = 0;
     }
 
+#if defined(WTF_ARM_ARCH_VERSION) && WTF_ARM_ARCH_VERSION == 7
+            asm volatile("vmov d0, %1, %2\n"
+                "vstr.64 d0, %0\n"
+                : "=m"(pc[OPCODE_LENGTH(op_get_by_id) - 1].u.profile->m_buckets[0])
+                : "r"(result.payload())
+                , "r"(result.tag())
+                : "d0");
+#else
     pc[OPCODE_LENGTH(op_get_by_id) - 1].u.profile->m_buckets[0] = JSValue::encode(result);
+#endif // WTF_ARM_ARCH_VERSION == 7
     LLINT_END();
 }
 

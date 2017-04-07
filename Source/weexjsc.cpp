@@ -345,10 +345,8 @@ static jstring getArgumentAsJString(JNIEnv* env, ExecState* state, int argument)
 {
     jstring ret = nullptr;
     JSValue val = state->argument(argument);
-    if (!val.isUndefined()) {
-        String s = val.toWTFString(state);
-        ret = env->NewStringUTF(s.utf8().data());
-    }
+    String s = val.toWTFString(state);
+    ret = env->NewStringUTF(s.utf8().data());
     return ret;
 }
 
@@ -360,9 +358,9 @@ static jbyteArray getArgumentAsJByteArrayJSON(JNIEnv* env, ExecState* state, int
     JSValue val = state->argument(argument);
     VM& vm = state->vm();
     if (val.isObject()) {
+        auto scope = DECLARE_CATCH_SCOPE(vm);
         String str = JSONStringify(state, val, 0);
         JSC::VM& vm = state->vm();
-        auto scope = DECLARE_CATCH_SCOPE(vm);
         if (UNLIKELY(scope.exception())) {
             scope.clearException();
             return nullptr;
@@ -376,19 +374,17 @@ static jbyteArray getArgumentAsJByteArrayJSON(JNIEnv* env, ExecState* state, int
     return ba;
 }
 
-static JSValue parseToObject(ExecState* state, JSValue val, NakedPtr<Exception>& returnedException)
+static JSValue parseToObject(ExecState* state, const String& data)
 {
-    JSGlobalObject* globalObject = state->lexicalGlobalObject();
     VM& vm = state->vm();
-    PropertyName json(Identifier::fromString(&vm, "JSON"));
-    PropertyName parse(Identifier::fromString(&vm, "parse"));
-    JSValue jsonObject = globalObject->get(state, json);
-    JSValue parseFunction = jsonObject.toObject(state)->get(state, parse);
-    MarkedArgumentBuffer args;
-    args.append(val);
-    CallData callData;
-    CallType callType = getCallData(parseFunction, callData);
-    JSValue ret = call(globalObject->globalExec(), parseFunction, callType, callData, globalObject, args, returnedException);
+    auto scope = DECLARE_CATCH_SCOPE(vm);
+    JSValue ret = JSONParse(state, data);
+    if (UNLIKELY(scope.exception())) {
+        scope.clearException();
+        return jsUndefined();
+    }
+    if (!ret)
+        return jsUndefined();
     return ret;
 }
 
@@ -494,12 +490,8 @@ EncodedJSValue JSC_HOST_CALL functionCallNativeModule(ExecState* state)
         jstring jDataStr = (jstring)jDataObj;
         ret = jString2JSValue(env, state, jDataStr);
     } else if (jTypeInt == 3) {
-        JSValue val = jString2JSValue(env, state, (jstring)jDataObj);
-        NakedPtr<Exception> returnedException;
-        ret = parseToObject(state, val, returnedException);
-        if (returnedException) {
-            // TODO: print exception
-        }
+        String val = jString2String(env, (jstring)jDataObj);
+        ret = parseToObject(state, val);
     }
     env->DeleteLocalRef(jDataObj);
     env->DeleteLocalRef(jInstanceId);
@@ -998,18 +990,10 @@ jint native_execJS(JNIEnv* env,
             jstring jDataStr = (jstring)jDataObj;
             obj.append(jString2JSValue(env, state, jDataStr));
         } else if (jTypeInt == 3) {
-            JSValue jsonObj;
-            jsonObj = jString2JSValue(env, state, (jstring)jDataObj);
-            NakedPtr<Exception> returnedException;
-            JSValue o = parseToObject(state, jsonObj, returnedException);
+            String jsonObj;
+            jsonObj = jString2String(env, (jstring)jDataObj);
+            JSValue o = parseToObject(state, jsonObj);
             obj.append(o);
-            if (returnedException) {
-                String s = jsonObj.toWTFString(state);
-                ReportException(globalObject, returnedException.get(), jinstanceid, s.utf8().data());
-                env->DeleteLocalRef(jDataObj);
-                env->DeleteLocalRef(jArg);
-                return false;
-            }
         } else {
             obj.append(jsUndefined());
         }

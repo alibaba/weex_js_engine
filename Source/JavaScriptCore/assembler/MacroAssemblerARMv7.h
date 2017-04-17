@@ -777,11 +777,7 @@ public:
         UNREACHABLE_FOR_PLATFORM();
     }
 
-    void store64(RegisterID s0, RegisterID s1, TrustedImmPtr address)
-    {
-        m_assembler.vmov(fpTempRegister, s0, s1);
-        storeDouble(fpTempRegister, address);
-    }
+    void store64Exclusive(RegisterID s0, RegisterID s1, TrustedImmPtr address, bool relaxed);
 
     DataLabel32 store32WithAddressOffsetPatch(RegisterID src, Address address)
     {
@@ -1279,10 +1275,20 @@ public:
     {
         m_assembler.pop(1 << dest1 | 1 << dest2);
     }
+
+    void popThree(RegisterID src1, RegisterID src2, RegisterID src3)
+    {
+        m_assembler.pop(1 << src1 | 1 << src2 | 1 << src3);
+    }
     
     void pushPair(RegisterID src1, RegisterID src2)
     {
         m_assembler.push(1 << src1 | 1 << src2);
+    }
+
+    void pushThree(RegisterID src1, RegisterID src2, RegisterID src3)
+    {
+        m_assembler.push(1 << src1 | 1 << src2 | 1 << src3);
     }
     
     // Register move operations:

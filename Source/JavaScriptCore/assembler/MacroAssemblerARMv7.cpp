@@ -342,6 +342,34 @@ void MacroAssemblerARMv7::probe(MacroAssemblerARMv7::ProbeFunction function, voi
 }
 #endif // ENABLE(MASM_PROBE)
 
+void MacroAssemblerARMv7::store64Exclusive(RegisterID s0, RegisterID s1, TrustedImmPtr address, bool relaxed)
+{
+    RegisterID reg[3];
+    int allocateIndex = 0;
+    for (int i = 0; i < 15; ++i) {
+        RegisterID current = static_cast<RegisterID>(i);
+        if (current == s0 || current == s1)
+            continue;
+        reg[allocateIndex++] = current;
+        if (allocateIndex == 3)
+            break;
+    }
+    pushThree(reg[0], reg[1], reg[2]);
+    Label start(this);
+    RegisterID addressReg = dataTempRegister;
+    RegisterID tmpT1 = reg[0];
+    RegisterID tmpT2 = reg[1];
+    RegisterID monitorRet = reg[2];
+    move(address, addressReg);
+    m_assembler.ldrexd(addressReg, tmpT1, tmpT2);
+    m_assembler.strexd(monitorRet, s0, s1, addressReg);
+    if (!relaxed) {
+        Jump j = branch32(NotEqual, monitorRet, TrustedImm32(0));
+        j.linkTo(start, this);
+    }
+    popThree(reg[0], reg[1], reg[2]);
+}
+
 } // namespace JSC
 
 #endif // ENABLE(ASSEMBLER)

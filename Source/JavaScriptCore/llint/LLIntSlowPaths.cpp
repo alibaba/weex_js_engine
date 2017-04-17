@@ -154,12 +154,8 @@ namespace JSC { namespace LLInt {
 
 #if defined(WTF_ARM_ARCH_VERSION) && WTF_ARM_ARCH_VERSION == 7
 #define LLINT_PROFILE_VALUE(opcode, value) do { \
-        asm volatile("vmov d0, %1, %2\n" \
-            "vstr.64 d0, %0\n" \
-            : "=m"(pc[OPCODE_LENGTH(opcode) - 1].u.profile->m_buckets[0]) \
-            : "r"(value.payload()) \
-            , "r"(value.tag()) \
-            : "d0"); \
+    __atomic_store_n(&pc[OPCODE_LENGTH(opcode) - 1].u.profile->m_buckets[0], \
+        JSValue::encode(value), __ATOMIC_RELAXED); \
     } while (false)
 #else
 #define LLINT_PROFILE_VALUE(opcode, value) do { \
@@ -712,12 +708,8 @@ LLINT_SLOW_PATH_DECL(slow_path_get_by_id)
     }
 
 #if defined(WTF_ARM_ARCH_VERSION) && WTF_ARM_ARCH_VERSION == 7
-            asm volatile("vmov d0, %1, %2\n"
-                "vstr.64 d0, %0\n"
-                : "=m"(pc[OPCODE_LENGTH(op_get_by_id) - 1].u.profile->m_buckets[0])
-                : "r"(result.payload())
-                , "r"(result.tag())
-                : "d0");
+    __atomic_store_n(&pc[OPCODE_LENGTH(op_get_by_id) - 1].u.profile->m_buckets[0],
+        JSValue::encode(result), __ATOMIC_RELAXED);
 #else
     pc[OPCODE_LENGTH(op_get_by_id) - 1].u.profile->m_buckets[0] = JSValue::encode(result);
 #endif // WTF_ARM_ARCH_VERSION == 7

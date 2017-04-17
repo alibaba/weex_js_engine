@@ -142,12 +142,8 @@ namespace JSC {
 
 #if defined(WTF_ARM_ARCH_VERSION) && WTF_ARM_ARCH_VERSION == 7
 #define PROFILE_VALUE(opcode, value) do { \
-        asm volatile("vmov d0, %1, %2\n" \
-            "vstr.64 d0, %0\n" \
-            : "=m"(pc[OPCODE_LENGTH(opcode) - 1].u.profile->m_buckets[0]) \
-            : "r"(value.payload()) \
-            , "r"(value.tag()) \
-            : "d0"); \
+    __atomic_store_n(&pc[OPCODE_LENGTH(opcode) - 1].u.profile->m_buckets[0], \
+        JSValue::encode(value), __ATOMIC_RELAXED); \
     } while (false)
 #else
 #define PROFILE_VALUE(opcode, value) do { \

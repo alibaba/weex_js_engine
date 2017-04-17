@@ -123,6 +123,15 @@ public:
         store32(regs.tagGPR(), bitwise_cast<void*>(bitwise_cast<uintptr_t>(address) + TagOffset));
 #endif
     }
+
+#if defined(WTF_ARM_ARCH_VERSION) && WTF_ARM_ARCH_VERSION == 7
+    void storeValueExclusive(JSValueRegs regs, void* address)
+    {
+        store64Exclusive(regs.payloadGPR(), regs.tagGPR()
+                , TrustedImmPtr(bitwise_cast<void*>(bitwise_cast<uintptr_t>(address) + PayloadOffset))
+                , true);
+    }
+#endif // WTF_ARM_ARCH_VERSION == 7
     
     void loadValue(Address address, JSValueRegs regs)
     {

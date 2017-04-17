@@ -74,11 +74,7 @@ struct ValueProfileBase {
     const ClassInfo* classInfo(unsigned bucket) const
     {
 #if defined(WTF_ARM_ARCH_VERSION) && WTF_ARM_ARCH_VERSION == 7
-            EncodedJSValue tmp;
-            asm volatile("vldr.64 d0, %1\n"
-                "vstr.64 d0, %0\n"
-                : "=m"(tmp)
-                : "m"(m_buckets[bucket]));
+            EncodedJSValue tmp = __atomic_load_n(&m_buckets[bucket], __ATOMIC_SEQ_CST);
             JSValue value = JSValue::decode(tmp);
 #else
             JSValue value = JSValue::decode(m_buckets[bucket]);
@@ -96,11 +92,7 @@ struct ValueProfileBase {
         unsigned result = 0;
         for (unsigned i = 0; i < totalNumberOfBuckets; ++i) {
 #if defined(WTF_ARM_ARCH_VERSION) && WTF_ARM_ARCH_VERSION == 7
-            EncodedJSValue tmp;
-            asm volatile("vldr.64 d0, %1\n"
-                "vstr.64 d0, %0\n"
-                : "=m"(tmp)
-                : "m"(m_buckets[i]));
+            EncodedJSValue tmp = __atomic_load_n(&m_buckets[i], __ATOMIC_SEQ_CST);
             JSValue value = JSValue::decode(tmp);
 #else
             JSValue value = JSValue::decode(m_buckets[i]);
@@ -120,11 +112,7 @@ struct ValueProfileBase {
     {
         for (unsigned i = 0; i < totalNumberOfBuckets; ++i) {
 #if defined(WTF_ARM_ARCH_VERSION) && WTF_ARM_ARCH_VERSION == 7
-            EncodedJSValue tmp;
-            asm volatile("vldr.64 d0, %1\n"
-                "vstr.64 d0, %0\n"
-                : "=m"(tmp)
-                : "m"(m_buckets[i]));
+            EncodedJSValue tmp = __atomic_load_n(&m_buckets[i], __ATOMIC_SEQ_CST);
             JSValue value = JSValue::decode(tmp);
 #else
             JSValue value = JSValue::decode(m_buckets[i]);
@@ -150,11 +138,7 @@ struct ValueProfileBase {
         bool first = true;
         for (unsigned i = 0; i < totalNumberOfBuckets; ++i) {
 #if defined(WTF_ARM_ARCH_VERSION) && WTF_ARM_ARCH_VERSION == 7
-            EncodedJSValue tmp;
-            asm volatile("vldr.64 d0, %1\n"
-                "vstr.64 d0, %0\n"
-                : "=m"(tmp)
-                : "m"(m_buckets[i]));
+            EncodedJSValue tmp = __atomic_load_n(&m_buckets[i], __ATOMIC_SEQ_CST);
             JSValue value = JSValue::decode(tmp);
 #else
             JSValue value = JSValue::decode(m_buckets[i]);
@@ -176,11 +160,7 @@ struct ValueProfileBase {
     {
         for (unsigned i = 0; i < totalNumberOfBuckets; ++i) {
 #if defined(WTF_ARM_ARCH_VERSION) && WTF_ARM_ARCH_VERSION == 7
-            EncodedJSValue tmp;
-            asm volatile("vldr.64 d0, %1\n"
-                "vstr.64 d0, %0\n"
-                : "=m"(tmp)
-                : "m"(m_buckets[i]));
+            EncodedJSValue tmp = __atomic_load_n(&m_buckets[i], __ATOMIC_SEQ_CST);
             JSValue value = JSValue::decode(tmp);
 #else
             JSValue value = JSValue::decode(m_buckets[i]);
@@ -190,8 +170,11 @@ struct ValueProfileBase {
             
             m_numberOfSamplesInPrediction++;
             mergeSpeculation(m_prediction, speculationFromValue(value));
-            
+#if defined(WTF_ARM_ARCH_VERSION) && WTF_ARM_ARCH_VERSION == 7
+            __atomic_store_n(&m_buckets[i], JSValue::encode(JSValue()), __ATOMIC_SEQ_CST);
+#else
             m_buckets[i] = JSValue::encode(JSValue());
+#endif // WTF_ARM_ARCH_VERSION == 7
         }
         
         return m_prediction;

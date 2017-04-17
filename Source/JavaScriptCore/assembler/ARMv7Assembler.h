@@ -702,6 +702,8 @@ private:
         OP_LDR_imm_T3   = 0xF8D0,
         OP_LDRSB_reg_T2 = 0xF910,
         OP_LDRSH_reg_T2 = 0xF930,
+        OP_LDREXD_T1    = 0xE8D0,
+        OP_STREXD_T1    = 0xE8C0,
         OP_LSL_reg_T2   = 0xFA00,
         OP_LSR_reg_T2   = 0xFA20,
         OP_ASR_reg_T2   = 0xFA40,
@@ -742,6 +744,8 @@ private:
         OP_DMB_ISHST_T1b = 0x8F5A,
         OP_B_T3b         = 0x8000,
         OP_B_T4b         = 0x9000,
+        OP_LDREXD_T1b    = 0x007F,
+        OP_STREXD_T1b    = 0x0070,
     } OpcodeID2;
 
     struct FourFours {
@@ -1286,6 +1290,16 @@ public:
             m_formatter.oneWordOp7Reg3Reg3Reg3(OP_LDRSH_reg_T1, rm, rn, rt);
         else
             m_formatter.twoWordOp12Reg4FourFours(OP_LDRSH_reg_T2, rn, FourFours(rt, 0, shift, rm));
+    }
+
+    void ldrexd(RegisterID rn, RegisterID t1, RegisterID t2)
+    {
+        m_formatter.twoWordOp12Reg4Reg4Reg4Op8(OP_LDREXD_T1, OP_LDREXD_T1b, rn, t1, t2);
+    }
+
+    void strexd(RegisterID rd, RegisterID t1, RegisterID t2, RegisterID rn)
+    {
+        m_formatter.twoWordOp12Reg4Reg4Reg4Op4Reg4(OP_STREXD_T1, OP_STREXD_T1b, rn, t1, t2, rd);
     }
 
     void lsl(RegisterID rd, RegisterID rm, int32_t shiftAmount)
@@ -2905,6 +2919,20 @@ private:
         {
             m_buffer.putShort(op1);
             m_buffer.putShort(imm);
+        }
+
+        ALWAYS_INLINE void twoWordOp12Reg4Reg4Reg4Op4Reg4(OpcodeID1 op1, OpcodeID2 op2, RegisterID reg1,
+                RegisterID reg2, RegisterID reg3, RegisterID reg4)
+        {
+            m_buffer.putShort(op1 | reg1);
+            m_buffer.putShort((reg2 << 12) | (reg3 << 8) | op2 | reg4);
+        }
+
+        ALWAYS_INLINE void twoWordOp12Reg4Reg4Reg4Op8(OpcodeID1 op1, OpcodeID2 op2, RegisterID reg1,
+                RegisterID reg2, RegisterID reg3)
+        {
+            m_buffer.putShort(op1 | reg1);
+            m_buffer.putShort((reg2 << 12) | (reg3 << 8) | op2);
         }
         
         ALWAYS_INLINE void twoWordOp5i6Imm4Reg4EncodedImm(OpcodeID1 op, int imm4, RegisterID rd, ARMThumbImmediate imm)

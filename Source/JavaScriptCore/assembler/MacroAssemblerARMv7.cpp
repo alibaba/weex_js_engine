@@ -342,7 +342,7 @@ void MacroAssemblerARMv7::probe(MacroAssemblerARMv7::ProbeFunction function, voi
 }
 #endif // ENABLE(MASM_PROBE)
 
-void MacroAssemblerARMv7::store64Exclusive(RegisterID s0, RegisterID s1, TrustedImmPtr address, bool relaxed)
+void MacroAssemblerARMv7::store64Exclusive(RegisterID s0, RegisterID s1, TrustedImmPtr address)
 {
     RegisterID reg[3];
     int allocateIndex = 0;
@@ -355,18 +355,16 @@ void MacroAssemblerARMv7::store64Exclusive(RegisterID s0, RegisterID s1, Trusted
             break;
     }
     pushThree(reg[0], reg[1], reg[2]);
-    Label start(this);
     RegisterID addressReg = dataTempRegister;
     RegisterID tmpT1 = reg[0];
     RegisterID tmpT2 = reg[1];
     RegisterID monitorRet = reg[2];
     move(address, addressReg);
+    Label start(this);
     m_assembler.ldrexd(addressReg, tmpT1, tmpT2);
     m_assembler.strexd(monitorRet, s0, s1, addressReg);
-    if (!relaxed) {
-        Jump j = branch32(NotEqual, monitorRet, TrustedImm32(0));
-        j.linkTo(start, this);
-    }
+    Jump j = branch32(NotEqual, monitorRet, TrustedImm32(0));
+    j.linkTo(start, this);
     popThree(reg[0], reg[1], reg[2]);
 }
 

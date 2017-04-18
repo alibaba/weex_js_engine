@@ -128,8 +128,7 @@ public:
     void storeValueExclusive(JSValueRegs regs, void* address)
     {
         store64Exclusive(regs.payloadGPR(), regs.tagGPR()
-                , TrustedImmPtr(bitwise_cast<void*>(bitwise_cast<uintptr_t>(address) + PayloadOffset))
-                , true);
+                , TrustedImmPtr(bitwise_cast<void*>(bitwise_cast<uintptr_t>(address) + PayloadOffset)));
     }
 #endif // WTF_ARM_ARCH_VERSION == 7
     

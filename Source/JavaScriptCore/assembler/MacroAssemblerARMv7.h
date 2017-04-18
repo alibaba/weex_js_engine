@@ -777,7 +777,7 @@ public:
         UNREACHABLE_FOR_PLATFORM();
     }
 
-    void store64Exclusive(RegisterID s0, RegisterID s1, TrustedImmPtr address, bool relaxed);
+    void store64Exclusive(RegisterID s0, RegisterID s1, TrustedImmPtr address);
 
     DataLabel32 store32WithAddressOffsetPatch(RegisterID src, Address address)
     {

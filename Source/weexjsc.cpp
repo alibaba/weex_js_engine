@@ -827,7 +827,7 @@ long getCPUTime()
     return ts.tv_sec * 1000000 + ts.tv_nsec / 1000;
 }
 
-static void ReportException(JSGlobalObject* globalObject, JSValue exception, jstring jinstanceid,
+static void ReportException(JSGlobalObject* globalObject, Exception* exception, jstring jinstanceid,
     const char* func);
 static bool ExecuteJavaScript(JSGlobalObject* globalObject,
     const String& source,
@@ -1066,10 +1066,10 @@ void reportException(jstring jInstanceId, const char* func, const char* exceptio
  *  This Function will be called when any javascript Exception
  *  that need to print log to notify  native happened.
  */
-static void ReportException(JSGlobalObject* globalObject, JSValue exception, jstring jinstanceid,
+static void ReportException(JSGlobalObject* globalObject, Exception* exception, jstring jinstanceid,
     const char* func)
 {
-    String exceptionInfo = exceptionToString(globalObject, exception);
+    String exceptionInfo = exceptionToString(globalObject, exception->value());
     LOGE(" ReportException : %s", exceptionInfo.utf8().data());
     reportException(jinstanceid, func, exceptionInfo.utf8().data());
 }

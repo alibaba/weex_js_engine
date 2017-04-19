@@ -33,7 +33,7 @@ SET(ANDROID_COMMON_FLAGS "-target armv7-linux-android -mthumb --sysroot=${CMAKE_
 SET(CMAKE_C_FLAGS "${ANDROID_COMMON_FLAGS}" CACHE STRING "toolchain_cflags" FORCE)
 SET(CMAKE_CXX_FLAGS "${ANDROID_COMMON_FLAGS} -std=gnu++1y" CACHE STRING "toolchain_cxxflags" FORCE)
 SET(CMAKE_EXE_LINKER_FLAGS "-pie" CACHE STRING "toolchain_exelinkflags" FORCE)
-SET(CMAKE_SHARED_LINKER_FLAGS "-Wl,--gc-sections" CACHE STRING "toolchain_exelinkflags" FORCE)
+SET(CMAKE_SHARED_LINKER_FLAGS "-Wl,--gc-sections -Wl,--build-id=sha1" CACHE STRING "toolchain_exelinkflags" FORCE)
 SET(CMAKE_SHARED_LIBRARY_CREATE_CXX_FLAGS "-shared")
 SET(CMAKE_SHARED_LIBRARY_PREFIX "lib")
 SET(CMAKE_SHARED_LIBRARY_SUFFIX ".so")

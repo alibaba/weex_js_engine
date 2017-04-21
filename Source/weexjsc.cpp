@@ -267,16 +267,30 @@ public:
 
 const ClassInfo SimpleObject::s_info = { "SimpleObject", &Base::s_info, nullptr, CREATE_METHOD_TABLE(SimpleObject) };
 
-class ScopedJString {
+class ScopedJStringUTF8 {
 public:
-    ScopedJString(JNIEnv* env, jstring);
-    ~ScopedJString();
+    ScopedJStringUTF8(JNIEnv* env, jstring);
+    ~ScopedJStringUTF8();
     const char* getChars();
 
 private:
     JNIEnv* m_env;
     jstring m_jstring;
     const char* m_chars;
+};
+
+class ScopedJString {
+public:
+    ScopedJString(JNIEnv* env, jstring);
+    ~ScopedJString();
+    const jchar* getChars();
+    size_t getCharsLength();
+
+private:
+    JNIEnv* m_env;
+    jstring m_jstring;
+    const uint16_t* m_chars;
+    size_t m_len;
 };
 
 const ClassInfo GlobalObject::s_info = { "global", &JSGlobalObject::s_info, nullptr, CREATE_METHOD_TABLE(GlobalObject) };
@@ -299,20 +313,20 @@ GlobalObject::GlobalObject(VM& vm, Structure* structure)
 {
 }
 
-ScopedJString::ScopedJString(JNIEnv* env, jstring _jstring)
+ScopedJStringUTF8::ScopedJStringUTF8(JNIEnv* env, jstring _jstring)
     : m_env(env)
     , m_jstring(_jstring)
     , m_chars(nullptr)
 {
 }
 
-ScopedJString::~ScopedJString()
+ScopedJStringUTF8::~ScopedJStringUTF8()
 {
     if (m_chars)
         m_env->ReleaseStringUTFChars(m_jstring, m_chars);
 }
 
-const char* ScopedJString::getChars()
+const char* ScopedJStringUTF8::getChars()
 {
     if (m_chars)
         return m_chars;
@@ -320,12 +334,49 @@ const char* ScopedJString::getChars()
     return m_chars;
 }
 
+ScopedJString::ScopedJString(JNIEnv* env, jstring _jstring)
+    : m_env(env)
+    , m_jstring(_jstring)
+    , m_chars(nullptr)
+    , m_len(0)
+{
+}
+
+ScopedJString::~ScopedJString()
+{
+    if (m_chars)
+        m_env->ReleaseStringChars(m_jstring, m_chars);
+}
+
+const jchar*
+ScopedJString::getChars()
+{
+    if (m_chars)
+        return m_chars;
+    m_chars = m_env->GetStringChars(m_jstring, nullptr);
+    m_len = m_env->GetStringLength(m_jstring);
+    return m_chars;
+}
+
+size_t
+ScopedJString::getCharsLength()
+{
+    if (m_chars)
+        return m_len;
+    m_len = m_env->GetStringLength(m_jstring);
+    return m_len;
+}
+
 String jString2String(JNIEnv* env, jstring str)
 {
     if (str != NULL) {
         ScopedJString scopedstr(env, str);
-        const char* c_str = scopedstr.getChars();
-        return String::fromUTF8(c_str);
+        size_t length = scopedstr.getCharsLength();
+        const jchar* str = scopedstr.getChars();
+        UChar* dst;
+        String s = String::createUninitialized(length, dst);
+        memcpy(dst, str, length * sizeof(UChar));
+        return s;
     }
     return String("");
 }
@@ -880,7 +931,7 @@ jint native_execJSService(JNIEnv* env,
 {
     JSGlobalObject* globalObject = _globalObject.get();
     if (script != NULL) {
-        ScopedJString scopedJString(env, script);
+        ScopedJStringUTF8 scopedJString(env, script);
         const char* scriptStr = scopedJString.getChars();
         String source = String::fromUTF8(scriptStr);
         VM& vm = *globalVM.get();
@@ -931,7 +982,7 @@ static jint native_initFramework(JNIEnv* env,
     globalObject->initFunction();
     resetIdleNotificationCount();
     if (script != NULL) {
-        ScopedJString scopedJString(env, script);
+        ScopedJStringUTF8 scopedJString(env, script);
         const char* scriptStr = scopedJString.getChars();
         String source = String::fromUTF8(scriptStr);
         if (scriptStr == NULL || !ExecuteJavaScript(globalObject, source, true)) {

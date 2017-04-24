@@ -855,7 +855,7 @@ JNIEnv* getJNIEnv()
 }
 }
 
-static RefPtr<VM> globalVM;
+static VM* globalVM;
 static Strong<JSGlobalObject> _globalObject;
 
 // for makeIdleNotification
@@ -934,7 +934,7 @@ jint native_execJSService(JNIEnv* env,
         ScopedJStringUTF8 scopedJString(env, script);
         const char* scriptStr = scopedJString.getChars();
         String source = String::fromUTF8(scriptStr);
-        VM& vm = *globalVM.get();
+        VM& vm = *globalVM;
         JSLockHolder locker(&vm);
         if (scriptStr == NULL || !ExecuteJavaScript(globalObject, source, true)) {
             LOGE("jsLog JNI_Error >>> scriptStr :%s", scriptStr);
@@ -965,8 +965,8 @@ static jint native_initFramework(JNIEnv* env,
     JSC::Wasm::enableFastMemory();
 #endif
 
-    globalVM = VM::create(LargeHeap);
-    VM& vm = *globalVM.get();
+    globalVM = &VM::create(LargeHeap).leakRef();
+    VM& vm = *globalVM;
     JSLockHolder locker(&vm);
 
     int result;
@@ -1016,7 +1016,7 @@ jint native_execJS(JNIEnv* env,
     }
     MarkedArgumentBuffer obj;
     JSGlobalObject* globalObject = _globalObject.get();
-    VM& vm = *globalVM.get();
+    VM& vm = *globalVM;
     JSLockHolder locker(&vm);
     ExecState* state = globalObject->globalExec();
 
@@ -1297,7 +1297,7 @@ void JNI_OnUnload(JavaVM* vm, void* reserved)
     JNIEnv* env;
     _globalObject.clear();
 
-    globalVM.release();
+    delete globalVM;
     /* Get environment */
     if ((vm)->GetEnv((void**)&env, JNI_VERSION_1_4) != JNI_OK) {
         return;

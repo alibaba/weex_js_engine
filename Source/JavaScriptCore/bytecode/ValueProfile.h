@@ -74,7 +74,7 @@ struct ValueProfileBase {
     const ClassInfo* classInfo(unsigned bucket) const
     {
 #if defined(WTF_ARM_ARCH_VERSION) && WTF_ARM_ARCH_VERSION == 7
-            EncodedJSValue tmp = __atomic_load_n(&m_buckets[bucket], __ATOMIC_SEQ_CST);
+            EncodedJSValue tmp = __atomic_load_n(&m_buckets[bucket], __ATOMIC_RELAXED);
             JSValue value = JSValue::decode(tmp);
 #else
             JSValue value = JSValue::decode(m_buckets[bucket]);
@@ -92,7 +92,7 @@ struct ValueProfileBase {
         unsigned result = 0;
         for (unsigned i = 0; i < totalNumberOfBuckets; ++i) {
 #if defined(WTF_ARM_ARCH_VERSION) && WTF_ARM_ARCH_VERSION == 7
-            EncodedJSValue tmp = __atomic_load_n(&m_buckets[i], __ATOMIC_SEQ_CST);
+            EncodedJSValue tmp = __atomic_load_n(&m_buckets[i], __ATOMIC_RELAXED);
             JSValue value = JSValue::decode(tmp);
 #else
             JSValue value = JSValue::decode(m_buckets[i]);
@@ -112,7 +112,7 @@ struct ValueProfileBase {
     {
         for (unsigned i = 0; i < totalNumberOfBuckets; ++i) {
 #if defined(WTF_ARM_ARCH_VERSION) && WTF_ARM_ARCH_VERSION == 7
-            EncodedJSValue tmp = __atomic_load_n(&m_buckets[i], __ATOMIC_SEQ_CST);
+            EncodedJSValue tmp = __atomic_load_n(&m_buckets[i], __ATOMIC_RELAXED);
             JSValue value = JSValue::decode(tmp);
 #else
             JSValue value = JSValue::decode(m_buckets[i]);
@@ -138,7 +138,7 @@ struct ValueProfileBase {
         bool first = true;
         for (unsigned i = 0; i < totalNumberOfBuckets; ++i) {
 #if defined(WTF_ARM_ARCH_VERSION) && WTF_ARM_ARCH_VERSION == 7
-            EncodedJSValue tmp = __atomic_load_n(&m_buckets[i], __ATOMIC_SEQ_CST);
+            EncodedJSValue tmp = __atomic_load_n(&m_buckets[i], __ATOMIC_RELAXED);
             JSValue value = JSValue::decode(tmp);
 #else
             JSValue value = JSValue::decode(m_buckets[i]);
@@ -160,7 +160,7 @@ struct ValueProfileBase {
     {
         for (unsigned i = 0; i < totalNumberOfBuckets; ++i) {
 #if defined(WTF_ARM_ARCH_VERSION) && WTF_ARM_ARCH_VERSION == 7
-            EncodedJSValue tmp = __atomic_load_n(&m_buckets[i], __ATOMIC_SEQ_CST);
+            EncodedJSValue tmp = __atomic_load_n(&m_buckets[i], __ATOMIC_RELAXED);
             JSValue value = JSValue::decode(tmp);
 #else
             JSValue value = JSValue::decode(m_buckets[i]);
@@ -171,11 +171,12 @@ struct ValueProfileBase {
             m_numberOfSamplesInPrediction++;
             mergeSpeculation(m_prediction, speculationFromValue(value));
 #if defined(WTF_ARM_ARCH_VERSION) && WTF_ARM_ARCH_VERSION == 7
-            __atomic_store_n(&m_buckets[i], JSValue::encode(JSValue()), __ATOMIC_SEQ_CST);
+            __atomic_store_n(&m_buckets[i], JSValue::encode(JSValue()), __ATOMIC_RELAXED);
 #else
             m_buckets[i] = JSValue::encode(JSValue());
 #endif // WTF_ARM_ARCH_VERSION == 7
         }
+        WTF::memoryBarrierBeforeUnlock();
         
         return m_prediction;
     }

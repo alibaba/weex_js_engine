@@ -36,6 +36,9 @@
 
 #include "Threading.h"
 
+#if defined(WTF_THREAD_KEY_COMBINE)
+#include "SharedTLSData.h"
+#endif
 #if OS(HURD)
 // PTHREAD_KEYS_MAX is not defined in bionic nor in Hurd, so explicitly define it here.
 #define PTHREAD_KEYS_MAX 1024
@@ -56,27 +59,45 @@ ThreadIdentifierData::~ThreadIdentifierData()
 
 void ThreadIdentifierData::initializeOnce()
 {
+#if !defined(WTF_THREAD_KEY_COMBINE)
     int error = pthread_key_create(&m_key, destruct);
     if (error)
         CRASH();
+#else
+    SharedTLSData::initSharedTLSData();
+#endif
 }
 
 ThreadIdentifier ThreadIdentifierData::identifier()
 {
+#if !defined(WTF_THREAD_KEY_COMBINE)
     ASSERT(m_key != PTHREAD_KEYS_MAX);
     ThreadIdentifierData* threadIdentifierData = static_cast<ThreadIdentifierData*>(pthread_getspecific(m_key));
 
     return threadIdentifierData ? threadIdentifierData->m_identifier : 0;
+#else
+    if (!s_sharedTLSData)
+        return 0;
+    if (!(**s_sharedTLSData).isSetIdentifierData())
+        return 0;
+    ThreadIdentifierData* threadIdentifierData = (**s_sharedTLSData).getIdentifierData<ThreadIdentifierData>();
+
+    return threadIdentifierData ? threadIdentifierData->m_identifier : 0;
+#endif
 }
 
 void ThreadIdentifierData::initialize(ThreadIdentifier id)
 {
     ASSERT(!identifier());
+#if !defined(WTF_THREAD_KEY_COMBINE)
     // Ideally we'd have this as a release assert everywhere, but that would hurt performane.
     // Having this release assert here means that we will catch "didn't call
     // WTF::initializeThreading() soon enough" bugs in release mode.
     RELEASE_ASSERT(m_key != PTHREAD_KEYS_MAX);
     pthread_setspecific(m_key, new ThreadIdentifierData(id));
+#else
+    (**s_sharedTLSData).setIdentifierData(new ThreadIdentifierData(id));
+#endif
 }
 
 void ThreadIdentifierData::destruct(void* data)
@@ -90,8 +111,10 @@ void ThreadIdentifierData::destruct(void* data)
     }
 
     threadIdentifierData->m_isDestroyedOnce = true;
+#if !defined(WTF_THREAD_KEY_COMBINE)
     // Re-setting the value for key causes another destruct() call after all other thread-specific destructors were called.
     pthread_setspecific(m_key, threadIdentifierData);
+#endif
 }
 
 } // namespace WTF

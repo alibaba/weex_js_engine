@@ -29,6 +29,9 @@
 #include "CurrentTime.h"
 #include "DataLog.h"
 #include "HashFunctions.h"
+#if defined(WTF_THREAD_KEY_COMBINE)
+#include "SharedTLSData.h"
+#endif
 #include "StringPrintStream.h"
 #include "ThreadSpecific.h"
 #include "ThreadingPrimitives.h"
@@ -447,6 +450,7 @@ ThreadData::~ThreadData()
 
 ThreadData* myThreadData()
 {
+#if !defined(WTF_THREAD_KEY_COMBINE)
     static ThreadSpecific<RefPtr<ThreadData>, CanBeGCThread::True>* threadData;
     static std::once_flag initializeOnce;
     std::call_once(
@@ -457,6 +461,11 @@ ThreadData* myThreadData()
     
     RefPtr<ThreadData>& result = **threadData;
     
+#else
+    SharedTLSData::initSharedTLSData();
+
+    RefPtr<ThreadData>& result = (**s_sharedTLSData).getThreadDataRefPtr<RefPtr<ThreadData>>();
+#endif
     if (!result)
         result = adoptRef(new ThreadData());
     

@@ -29,6 +29,9 @@
 #include "JSCInlines.h"
 #include "LLIntPCRanges.h"
 #include "MacroAssembler.h"
+#if defined(WTF_THREAD_KEY_COMBINE)
+#include "SharedTLSData.h"
+#endif
 #include "VM.h"
 #include <setjmp.h>
 #include <stdlib.h>
@@ -183,14 +186,23 @@ MachineThreads::MachineThreads()
     : m_registeredThreads(0)
     , m_threadSpecificForMachineThreads(0)
 {
+#if !defined(WTF_THREAD_KEY_COMBINE)
     threadSpecificKeyCreate(&m_threadSpecificForMachineThreads, removeThread);
+#else
+    SharedTLSData::initSharedTLSData();
+#endif
     activeMachineThreadsManager().add(this);
 }
 
 MachineThreads::~MachineThreads()
 {
     activeMachineThreadsManager().remove(this);
+#if !defined(WTF_THREAD_KEY_COMBINE)
     threadSpecificKeyDelete(m_threadSpecificForMachineThreads);
+#else
+    // todo:last to delete
+    (**s_sharedTLSData).destructMachineThreads(removeThread);
+#endif
 
     LockHolder registeredThreadsLock(m_registeredThreadsMutex);
     for (Thread* t = m_registeredThreads; t;) {
@@ -219,6 +231,7 @@ bool MachineThreads::Thread::operator==(const PlatformThread& other) const
 
 void MachineThreads::addCurrentThread()
 {
+#if !defined(WTF_THREAD_KEY_COMBINE)
     if (threadSpecificGet(m_threadSpecificForMachineThreads)) {
 #ifndef NDEBUG
         LockHolder lock(m_registeredThreadsMutex);
@@ -226,9 +239,27 @@ void MachineThreads::addCurrentThread()
 #endif
         return;
     }
+#else
+    if (!s_sharedTLSData)
+        return;
+    if (!(**s_sharedTLSData).isSetMachineThreads())
+        return;
+
+    if ((**s_sharedTLSData).getMachineThreads()) {
+#ifndef NDEBUG
+        LockHolder lock(m_registeredThreadsMutex);
+        ASSERT((**s_sharedTLSData).getMachineThreads() == this);
+#endif
+        return;
+    }
+#endif
 
     Thread* thread = Thread::createForCurrentThread();
+#if !defined(WTF_THREAD_KEY_COMBINE)
     threadSpecificSet(m_threadSpecificForMachineThreads, this);
+#else
+    (**s_sharedTLSData).setMachineThreads(this);
+#endif
 
     LockHolder lock(m_registeredThreadsMutex);
 

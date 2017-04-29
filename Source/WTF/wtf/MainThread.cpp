@@ -31,6 +31,9 @@
 
 #include "CurrentTime.h"
 #include "Deque.h"
+#if defined(WTF_THREAD_KEY_COMBINE)
+#include "SharedTLSData.h"
+#endif
 #include "StdLibExtras.h"
 #include "Threading.h"
 #include <mutex>
@@ -192,20 +195,27 @@ bool canAccessThreadLocalDataForThread(ThreadIdentifier threadId)
 }
 #endif
 
+#if !defined(WTF_THREAD_KEY_COMBINE)
 static ThreadSpecific<std::optional<GCThreadType>, CanBeGCThread::True>* isGCThread;
+#endif
 
 void initializeGCThreads()
 {
+#if !defined(WTF_THREAD_KEY_COMBINE)
     static std::once_flag flag;
     std::call_once(
         flag,
         [] {
             isGCThread = new ThreadSpecific<std::optional<GCThreadType>, CanBeGCThread::True>();
         });
+#else
+    SharedTLSData::initSharedTLSData();
+#endif
 }
 
 void registerGCThread(GCThreadType type)
 {
+#if !defined(WTF_THREAD_KEY_COMBINE)
     if (!isGCThread) {
         // This happens if we're running in a process that doesn't care about
         // MainThread.
@@ -213,6 +223,15 @@ void registerGCThread(GCThreadType type)
     }
 
     **isGCThread = type;
+#else
+    if (!s_sharedTLSData) {
+        // This happens if we're running in a process that doesn't care about
+        // MainThread.
+        return;
+    }
+
+    (**s_sharedTLSData).setGCThreadType(type);
+#endif
 }
 
 bool isMainThreadOrGCThread()
@@ -225,11 +244,19 @@ bool isMainThreadOrGCThread()
 
 std::optional<GCThreadType> mayBeGCThread()
 {
+#if !defined(WTF_THREAD_KEY_COMBINE)
     if (!isGCThread)
         return std::nullopt;
     if (!isGCThread->isSet())
         return std::nullopt;
     return **isGCThread;
+#else
+    if (!s_sharedTLSData)
+        return std::nullopt;
+    if (!(**s_sharedTLSData).isSetGCThreadType())
+        return std::nullopt;
+    return (**s_sharedTLSData).getGCThreadType();
+#endif
 }
 
 } // namespace WTF

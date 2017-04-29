@@ -229,6 +229,7 @@ set(WTF_SOURCES
     RefCountedLeakCounter.cpp
     RunLoop.cpp
     SHA1.cpp
+    SharedTLSData.cpp
     Seconds.cpp
     SixCharacterHash.cpp
     StackBounds.cpp

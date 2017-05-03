@@ -29,3 +29,10 @@ set_target_properties(weexjsc
 PROPERTIES
 LINK_FLAGS_RELEASE "-Wl,--version-script=${CMAKE_CURRENT_SOURCE_DIR}//version_script.txt -Wl,--no-undefined"
 )
+
+add_custom_command(
+    TARGET weexjsc
+    POST_BUILD
+    COMMAND ${CMAKE_STRIP} $<TARGET_FILE:weexjsc> -o ${CMAKE_SOURCE_DIR}/libweexjsc.so
+    VERBATIM
+)

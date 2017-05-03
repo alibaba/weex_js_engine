@@ -49,6 +49,10 @@ public:
     HeapTimer(VM*);
 #if USE(CF)
     static void timerDidFire(CFRunLoopTimerRef, void*);
+#elif defined(__ANDROID__)
+    void timerDidFire();
+    static void startTimerThread();
+    static void stopTimerThread();
 #endif
     
     JS_EXPORT_PRIVATE virtual ~HeapTimer();

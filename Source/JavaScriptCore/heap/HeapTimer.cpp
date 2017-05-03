@@ -38,6 +38,13 @@
 #include <glib.h>
 #endif
 
+#if defined(__ANDROID__)
+#include <vector>
+#include <wtf/Condition.h>
+#include <wtf/Lock.h>
+#include <wtf/Threading.h>
+#endif
+
 namespace JSC {
 
 #if USE(CF)
@@ -172,6 +179,167 @@ void HeapTimer::cancelTimer()
     g_source_set_ready_time(m_timer.get(), g_get_monotonic_time() + s_decade * G_USEC_PER_SEC);
     m_isScheduled = false;
 }
+#elif defined(__ANDROID__)
+class HeapTimerThread {
+public:
+    HeapTimerThread();
+    ~HeapTimerThread();
+    void start();
+    void stop();
+    void postTimer(HeapTimer* ht, double intervalInSeconds);
+    struct Entry {
+        double intervalInSeconds;
+        RefPtr<HeapTimer> ht;
+        bool operator<(const Entry& rhs) const;
+    };
+
+private:
+    Condition m_condition;
+    Lock m_lock;
+    ThreadIdentifier m_threadIdentifier;
+    std::vector<Entry> m_enties;
+    bool m_stopping{ false };
+};
+
+static std::unique_ptr<HeapTimerThread> g_htThread;
+
+HeapTimer::HeapTimer(VM* vm)
+    : m_vm(vm)
+    , m_apiLock(&vm->apiLock())
+{
+}
+
+HeapTimer::~HeapTimer()
+{
+}
+
+void HeapTimer::invalidate()
+{
+}
+
+void HeapTimer::scheduleTimer(double intervalInSeconds)
+{
+    ASSERT(g_htThread.get());
+    g_htThread->postTimer(this, intervalInSeconds);
+    m_isScheduled = true;
+}
+
+void HeapTimer::cancelTimer()
+{
+    m_isScheduled = false;
+}
+
+void HeapTimer::timerDidFire()
+{
+    if (!m_isScheduled)
+        return;
+    m_apiLock->lock();
+
+    if (!m_apiLock->vm()) {
+        // The VM has been destroyed, so we should just give up.
+        m_apiLock->unlock();
+        m_isScheduled = false;
+        return;
+    }
+
+    {
+        JSLockHolder locker(m_vm);
+        doWork();
+    }
+
+    m_apiLock->unlock();
+    m_isScheduled = false;
+}
+
+void HeapTimer::startTimerThread()
+{
+    if (g_htThread.get())
+        return;
+    g_htThread.reset(new HeapTimerThread());
+    g_htThread->start();
+}
+
+void HeapTimer::stopTimerThread()
+{
+    g_htThread.reset();
+}
+
+HeapTimerThread::HeapTimerThread()
+    : m_threadIdentifier(0)
+{
+}
+
+HeapTimerThread::~HeapTimerThread()
+{
+    stop();
+}
+
+void HeapTimerThread::start()
+{
+    m_threadIdentifier = createThread("HeapTimerThread", [this]() {
+        LockHolder locker(m_lock);
+        while (true) {
+            bool shouldWaitInfinity = true;
+            Entry entry;
+            MonotonicTime startTime;
+            if (!m_enties.empty()) {
+                startTime = MonotonicTime::now();
+                std::pop_heap(m_enties.begin(), m_enties.end());
+                entry = m_enties.back();
+                m_enties.pop_back();
+                shouldWaitInfinity = false;
+            }
+            if (shouldWaitInfinity) {
+                m_condition.wait(m_lock);
+            } else if (entry.intervalInSeconds > 0) {
+                m_condition.waitFor(m_lock, Seconds(entry.intervalInSeconds));
+            }
+            if (m_stopping)
+                break;
+            if (shouldWaitInfinity)
+                continue;
+            m_lock.unlock();
+            entry.ht->timerDidFire();
+            m_lock.lock();
+            MonotonicTime now = MonotonicTime::now();
+            double elapsed = (now - startTime).value();
+            for (auto& _entry : m_enties) {
+                _entry.intervalInSeconds -= elapsed;
+            }
+        }
+    });
+}
+
+void HeapTimerThread::stop()
+{
+    if (!m_threadIdentifier)
+        return;
+    {
+        LockHolder locker(m_lock);
+        m_stopping = true;
+        m_condition.notifyOne();
+    }
+    waitForThreadCompletion(m_threadIdentifier);
+    detachThread(m_threadIdentifier);
+    m_threadIdentifier = 0;
+}
+
+void HeapTimerThread::postTimer(HeapTimer* ht, double intervalInSeconds)
+{
+    LockHolder locker(m_lock);
+    {
+        Entry entry = { intervalInSeconds, ht };
+        m_enties.push_back(entry);
+        std::push_heap(m_enties.begin(), m_enties.end());
+    }
+    m_condition.notifyOne();
+}
+
+bool HeapTimerThread::Entry::operator<(const Entry& rhs) const
+{
+    return intervalInSeconds > rhs.intervalInSeconds;
+}
+
 #else
 HeapTimer::HeapTimer(VM* vm)
     : m_vm(vm)

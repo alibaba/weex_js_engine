@@ -38,6 +38,7 @@
 #include "GetterSetter.h"
 #include "HeapProfiler.h"
 #include "HeapSnapshotBuilder.h"
+#include "HeapTimer.h"
 #include "InitializeThreading.h"
 #include "Interpreter.h"
 #include "JIT.h"
@@ -461,7 +462,7 @@ static jbyteArray getArgumentAsJByteArray(JNIEnv* env, ExecState* state, int arg
 EncodedJSValue JSC_HOST_CALL functionGCAndSweep(ExecState* exec)
 {
     JSLockHolder lock(exec);
-    exec->heap()->collectAllGarbage();
+    // exec->heap()->collectAllGarbage();
     return JSValue::encode(jsNumber(exec->heap()->sizeAfterLastFullCollection()));
 }
 
@@ -853,38 +854,26 @@ JNIEnv* getJNIEnv()
     }
     return env;
 }
+
+static void initHeapTimer()
+{
+    HeapTimer::startTimerThread();
+}
+
+static void deinitHeapTimer()
+{
+    HeapTimer::stopTimerThread();
+}
 }
 
 static VM* globalVM;
 static Strong<JSGlobalObject> _globalObject;
-
-// for makeIdleNotification
-static const size_t SHORT_TERM_IDLE_TIME_IN_MS = 10;
-static const size_t LONG_TERM_IDLE_TIME_IN_MS = 1000;
-static const unsigned long MIN_EXECJS_COUNT = 100;
-static const unsigned long MAX_EXECJS_COUNT = LONG_MAX;
-static unsigned long execJSCount = 0;
-static unsigned long lastExecJSCount = 0;
-static const int samplingBegin = 5;
-static const int denomValue = 3;
-static unsigned long samplingExecJSCount = 0;
-static const int samplingExecJSCountMax = 10;
-static bool idle_notification_FLAG = true;
-
-long getCPUTime()
-{
-    struct timespec ts;
-    clock_gettime(CLOCK_THREAD_CPUTIME_ID, &ts);
-    return ts.tv_sec * 1000000 + ts.tv_nsec / 1000;
-}
 
 static void ReportException(JSGlobalObject* globalObject, Exception* exception, jstring jinstanceid,
     const char* func);
 static bool ExecuteJavaScript(JSGlobalObject* globalObject,
     const String& source,
     bool report_exceptions);
-static void makeIdleNotification(JSGlobalObject* globalObject);
-static void resetIdleNotificationCount();
 
 void jString2Log(JNIEnv* env, jstring instance, jstring str)
 {
@@ -899,7 +888,7 @@ void jString2Log(JNIEnv* env, jstring instance, jstring str)
     }
 }
 
-void setJSFVersion(JNIEnv* env, JSGlobalObject* globalObject)
+static void setJSFVersion(JNIEnv* env, JSGlobalObject* globalObject)
 {
     VM& vm = globalObject->vm();
     PropertyName getJSFMVersionProperty(Identifier::fromString(&vm, "getJSFMVersion"));
@@ -925,7 +914,7 @@ void setJSFVersion(JNIEnv* env, JSGlobalObject* globalObject)
     env->DeleteLocalRef(jversion);
 }
 
-jint native_execJSService(JNIEnv* env,
+static jint native_execJSService(JNIEnv* env,
     jobject object,
     jstring script)
 {
@@ -980,7 +969,7 @@ static jint native_initFramework(JNIEnv* env,
     base::debug::TraceScope traceScope("weex", "initFramework");
     globalObject->initWXEnvironment(env, params);
     globalObject->initFunction();
-    resetIdleNotificationCount();
+
     if (script != NULL) {
         ScopedJStringUTF8 scopedJString(env, script);
         const char* scriptStr = scopedJString.getChars();
@@ -991,6 +980,7 @@ static jint native_initFramework(JNIEnv* env,
 
         setJSFVersion(env, globalObject);
     }
+    initHeapTimer();
     return true;
 }
 
@@ -998,7 +988,7 @@ static jint native_initFramework(JNIEnv* env,
  * Called to execute JavaScript such as . createInstance(),destroyInstance ext.
  *
  */
-jint native_execJS(JNIEnv* env,
+static jint native_execJS(JNIEnv* env,
     jobject jthis,
     jstring jinstanceid,
     jstring jnamespace,
@@ -1072,7 +1062,6 @@ jint native_execJS(JNIEnv* env,
     JSValue ret = call(state, function, callType, callData, globalObject, obj, returnedException);
 
     globalObject->vm().drainMicrotasks();
-    makeIdleNotification(globalObject);
 
     if (returnedException) {
         ReportException(globalObject, returnedException.get(), jinstanceid, func.utf8().data());
@@ -1125,92 +1114,8 @@ static void ReportException(JSGlobalObject* globalObject, Exception* exception, 
     reportException(jinstanceid, func, exceptionInfo.utf8().data());
 }
 
-/**
- * Make a decision whether to tell v8 idle notifications
- *
- * It's not a good idea to notify a v8 idle notification
- * every time of calling execJS(), because too many times
- * of notifications have a little performance impact.
- *
- * If there are too many times of calling execJS, don't
- * tell v8 idle notifications. We add simple strategies
- * to check if there are too many times of calling execJS
- * within the period of rendering the current bundle:
- *   a) don't trigger notifications if execJSCount is less
- *      than 100, because jsfm initialization wound take
- *      almost 100 times of calling execJS().
- *   b) We begin to record the times of calling execJS,
- *      if the times are greater than upper limit of 10,
- *      we decide not to tell v8 idle notifications.
- */
-bool needIdleNotification()
-{
-    if (!idle_notification_FLAG) {
-        return false;
-    }
-
-    if (execJSCount == MAX_EXECJS_COUNT)
-        execJSCount = MIN_EXECJS_COUNT;
-
-    if (execJSCount++ < MIN_EXECJS_COUNT) {
-        return false;
-    }
-
-    if (execJSCount == MIN_EXECJS_COUNT) {
-        lastExecJSCount = execJSCount;
-    }
-
-    if (execJSCount == lastExecJSCount + samplingBegin) {
-        samplingExecJSCount = 0;
-    } else if (execJSCount > lastExecJSCount + samplingBegin) {
-        if (samplingExecJSCount == MAX_EXECJS_COUNT) {
-            samplingExecJSCount = 0;
-        }
-        if (++samplingExecJSCount >= samplingExecJSCountMax) {
-            idle_notification_FLAG = false;
-        }
-
-        // Also just notify every three times of calling execJS in sampling.
-        if (samplingExecJSCount % denomValue == 0) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    // Just notify idle notifications every three times
-    // of calling execJS.
-    if (execJSCount % denomValue == 0) {
-        return true;
-    } else {
-        return false;
-    }
-}
-
-void makeIdleNotification(JSGlobalObject* globalObject)
-{
-    if (!needIdleNotification()) {
-        return;
-    }
-    functionGCAndSweep(globalObject->globalExec());
-}
-
 static void markupStateInternally()
 {
-    if (execJSCount + samplingBegin == MAX_EXECJS_COUNT) {
-        execJSCount = MIN_EXECJS_COUNT;
-    }
-    lastExecJSCount = execJSCount;
-    idle_notification_FLAG = true;
-    samplingExecJSCount = 0;
-}
-
-// It's not necessary to make idle notifications every time
-// of invoking init_framework.
-void resetIdleNotificationCount()
-{
-    execJSCount = 0;
-    idle_notification_FLAG = true;
 }
 
 ////////////////////////////////////////////
@@ -1231,30 +1136,26 @@ static JNINativeMethod gMethods[] = {
         (void*)native_execJSService }
 };
 
-static int registerNativeMethods(JNIEnv* env,
-    const char* className,
-    JNINativeMethod* methods,
-    int numMethods)
+static int
+registerBridgeNativeMethods(JNIEnv* env, JNINativeMethod* methods, int numMethods)
 {
     if (jBridgeClazz == NULL) {
-        LOGE("registerNativeMethods failed to find class '%s'", className);
+        LOGE("registerBridgeNativeMethods failed to find bridge class.");
         return JNI_FALSE;
     }
     if ((env)->RegisterNatives(jBridgeClazz, methods, numMethods) < 0) {
-        LOGE("registerNativeMethods failed to register native methods for class '%s'",
-            className);
+        LOGE("registerBridgeNativeMethods failed to register native methods for bridge class.");
         return JNI_FALSE;
     }
 
     return JNI_TRUE;
 }
 
-static int registerNatives(JNIEnv* env)
+static bool registerNatives(JNIEnv* env)
 {
-    return registerNativeMethods(env,
-        gBridgeClassPathName,
-        gMethods,
-        sizeof(gMethods) / sizeof(gMethods[0]));
+    if (JNI_TRUE != registerBridgeNativeMethods(env, gMethods, sizeof(gMethods) / sizeof(gMethods[0])))
+        return false;
+    return true;
 }
 
 /**
@@ -1283,7 +1184,7 @@ jint JNI_OnLoad(JavaVM* vm, void* reserved)
     jWXLogUtils = (jclass)env->NewGlobalRef(tempClass);
 
     env->DeleteLocalRef(tempClass);
-    if (registerNatives(env) != JNI_TRUE) {
+    if (!registerNatives(env)) {
         return JNI_FALSE;
     }
 
@@ -1306,6 +1207,7 @@ void JNI_OnUnload(JavaVM* vm, void* reserved)
     env->DeleteGlobalRef(jWXJSObject);
     env->DeleteGlobalRef(jWXLogUtils);
     env->DeleteGlobalRef(jThis);
+    deinitHeapTimer();
 
     using base::debug::TraceEvent;
     TraceEvent::StopATrace(env);

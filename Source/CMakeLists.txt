@@ -6,21 +6,26 @@ add_subdirectory(JavaScriptCore)
 
 include(WebKitCommon)
 
-set(weexv8_SOURCES
+set(weexjsc_SOURCES
 weexjsc.cpp
 Compatible.cpp
 )
 
-set(weexv8_LIBRARY_TYPE SHARED)
+set(weexjsc_LIBRARY_TYPE SHARED)
 
-set(weexv8_LIBRARIES
+set(weexjsc_LIBRARIES
 JavaScriptCore
 log)
 
-WEBKIT_FRAMEWORK(weexv8)
+WEBKIT_FRAMEWORK(weexjsc)
 
 
-set_target_properties(weexv8
+set_target_properties(weexjsc
 PROPERTIES
-LINK_FLAGS "-Wl,--version-script=${CMAKE_CURRENT_SOURCE_DIR}//version_script.txt -Wl,--no-undefined"
+LINK_FLAGS_RELWITHDEBINFO "-Wl,--version-script=${CMAKE_CURRENT_SOURCE_DIR}//version_script.txt -Wl,--no-undefined"
+)
+
+set_target_properties(weexjsc
+PROPERTIES
+LINK_FLAGS_RELEASE "-Wl,--version-script=${CMAKE_CURRENT_SOURCE_DIR}//version_script.txt -Wl,--no-undefined"
 )

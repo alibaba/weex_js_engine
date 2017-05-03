@@ -360,6 +360,7 @@ void MacroAssemblerARMv7::store64Exclusive(RegisterID s0, RegisterID s1, Trusted
     RegisterID tmpT2 = reg[1];
     RegisterID monitorRet = reg[2];
     move(address, addressReg);
+    storeFence();
     Label start(this);
     m_assembler.ldrexd(addressReg, tmpT1, tmpT2);
     m_assembler.strexd(monitorRet, s0, s1, addressReg);

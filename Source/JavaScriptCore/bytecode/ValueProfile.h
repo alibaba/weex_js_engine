@@ -171,7 +171,7 @@ struct ValueProfileBase {
             m_numberOfSamplesInPrediction++;
             mergeSpeculation(m_prediction, speculationFromValue(value));
 #if defined(WTF_ARM_ARCH_VERSION) && WTF_ARM_ARCH_VERSION == 7
-            __atomic_store_n(&m_buckets[i], JSValue::encode(JSValue()), __ATOMIC_RELAXED);
+            __atomic_store_n(&m_buckets[i], JSValue::encode(JSValue()), __ATOMIC_SEQ_CST);
 #else
             m_buckets[i] = JSValue::encode(JSValue());
 #endif // WTF_ARM_ARCH_VERSION == 7

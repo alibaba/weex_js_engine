@@ -143,7 +143,7 @@ namespace JSC {
 #if defined(WTF_ARM_ARCH_VERSION) && WTF_ARM_ARCH_VERSION == 7
 #define PROFILE_VALUE(opcode, value) do { \
     __atomic_store_n(&pc[OPCODE_LENGTH(opcode) - 1].u.profile->m_buckets[0], \
-        JSValue::encode(value), __ATOMIC_RELAXED); \
+        JSValue::encode(value), __ATOMIC_SEQ_CST); \
     } while (false)
 #else
 #define PROFILE_VALUE(opcode, value) do { \

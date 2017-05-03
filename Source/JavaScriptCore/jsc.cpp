@@ -39,6 +39,7 @@
 #include "GetterSetter.h"
 #include "HeapProfiler.h"
 #include "HeapSnapshotBuilder.h"
+#include "HeapTimer.h"
 #include "InitializeThreading.h"
 #include "Interpreter.h"
 #include "JIT.h"
@@ -3735,6 +3736,7 @@ int runJSC(CommandLine options, const Func& func)
     Worker worker(Workers::singleton());
     
     VM& vm = VM::create(LargeHeap).leakRef();
+    HeapTimer::startTimerThread();
     JSLockHolder locker(&vm);
 
     int result;

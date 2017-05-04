@@ -366,11 +366,13 @@ MachineThreads::Thread::Thread(const PlatformThread& platThread, void* base, voi
         action.sa_flags = SA_RESTART | SA_SIGINFO;
         sigaction(SigThreadSuspendResume, &action, 0);
     });
-
-    sigset_t mask;
-    sigemptyset(&mask);
-    sigaddset(&mask, SigThreadSuspendResume);
-    pthread_sigmask(SIG_UNBLOCK, &mask, 0);
+    struct {
+        sigset_t mask;
+        sigset_t zero;
+    } mask;
+    memset(&mask, 0, sizeof(mask));
+    sigaddset(&mask.mask, SigThreadSuspendResume);
+    pthread_sigmask(SIG_UNBLOCK, &mask.mask, 0);
 
     sem_init(&semaphoreForSuspendResume, /* Only available in this process. */ 0, /* Initial value for the semaphore. */ 0);
 #endif

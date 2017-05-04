@@ -220,6 +220,8 @@ void HeapTimer::invalidate()
 void HeapTimer::scheduleTimer(double intervalInSeconds)
 {
     ASSERT(g_htThread.get());
+    if (m_isScheduled)
+        return;
     g_htThread->postTimer(this, intervalInSeconds);
     m_isScheduled = true;
 }

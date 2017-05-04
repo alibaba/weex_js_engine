@@ -30,7 +30,7 @@ SET(CMAKE_STRIP ${CMAKE_BINARY_PATH}/strip)
 
 SET(ANDROID "1" CACHE STRING "ANDROID" FORCE)
 
-SET(ANDROID_COMMON_FLAGS "-target armv7-linux-android -mthumb --sysroot=${CMAKE_ANDROID_SYSROOT} -isystem ${CMAKE_ANDROID_STL_INCLUDE} -isystem ${CMAKE_ANDROID_STL_BITS_INCLUDE} -B${CMAKE_BINARY_PATH} -ffunction-sections -fdata-sections")
+SET(ANDROID_COMMON_FLAGS "-target armv7-linux-android -mthumb --sysroot=${CMAKE_ANDROID_SYSROOT} -isystem ${CMAKE_ANDROID_STL_INCLUDE} -isystem ${CMAKE_ANDROID_STL_BITS_INCLUDE} -B${CMAKE_BINARY_PATH} -ffunction-sections -fdata-sections -fomit-frame-pointer")
 SET(CMAKE_C_FLAGS "${ANDROID_COMMON_FLAGS}" CACHE STRING "toolchain_cflags" FORCE)
 SET(CMAKE_CXX_FLAGS "${ANDROID_COMMON_FLAGS} -std=gnu++1y" CACHE STRING "toolchain_cxxflags" FORCE)
 SET(CMAKE_EXE_LINKER_FLAGS "-pie" CACHE STRING "toolchain_exelinkflags" FORCE)

@@ -949,6 +949,7 @@ static jint native_initFramework(JNIEnv* env,
 
     // Initialize JSC before getting VM.
     WTF::initializeMainThread();
+    initHeapTimer();
     JSC::initializeThreading();
 #if ENABLE(WEBASSEMBLY)
     JSC::Wasm::enableFastMemory();
@@ -980,7 +981,6 @@ static jint native_initFramework(JNIEnv* env,
 
         setJSFVersion(env, globalObject);
     }
-    initHeapTimer();
     return true;
 }
 

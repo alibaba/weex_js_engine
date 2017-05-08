@@ -277,6 +277,7 @@ set(WTF_SOURCES
     threads/BinarySemaphore.cpp
 
     unicode/WTFUTF8.cpp
+    ../icu/ICUCompatible.cpp
 )
 
 set(WTF_INCLUDE_DIRECTORIES
@@ -292,11 +293,11 @@ set(WTF_INCLUDE_DIRECTORIES
     "${THIRDPARTY_DIR}"
     "${CMAKE_BINARY_DIR}"
     "${DERIVED_SOURCES_DIR}"
+    ${ICU_INCLUDE_DIRS}
 )
 
 set(WTF_LIBRARIES
     ${CMAKE_DL_LIBS}
-    ICU
 )
 
 if (CMAKE_SYSTEM_NAME MATCHES "Darwin")
@@ -314,9 +315,6 @@ endif ()
 
 list(APPEND WTF_SOURCES
     unicode/icu/CollatorICU.cpp
-)
-set(WTF_SYSTEM_INCLUDE_DIRECTORIES
-    ${ICU_INCLUDE_DIRS}
 )
 list(APPEND WTF_LIBRARIES
     ${ICU_DATA_LIBRARIES}

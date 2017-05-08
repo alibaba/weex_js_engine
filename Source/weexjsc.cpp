@@ -76,6 +76,7 @@
 #include "WasmFaultSignalHandler.h"
 #include "WasmMemory.h"
 #include "WasmPlan.h"
+#include "ICUCompatible.h"
 #include <locale.h>
 #include <math.h>
 #include <stdio.h>
@@ -1169,6 +1170,9 @@ jint JNI_OnLoad(JavaVM* vm, void* reserved)
     JNIEnv* env;
     /* Get environment */
     if ((vm)->GetEnv((void**)&env, JNI_VERSION_1_4) != JNI_OK) {
+        return JNI_FALSE;
+    }
+    if (!initICU()) {
         return JNI_FALSE;
     }
 

@@ -76,13 +76,22 @@
 #include "WasmFaultSignalHandler.h"
 #include "WasmPlan.h"
 #include "WasmMemory.h"
+#include "ICUCompatible.h"
 #include <locale.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <dlfcn.h>
 #include <thread>
 #include <type_traits>
+
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <sys/mman.h>
+#include <fcntl.h>
+#include <unistd.h>
+
 #include <wtf/CommaPrinter.h>
 #include <wtf/CurrentTime.h>
 #include <wtf/MainThread.h>
@@ -3258,7 +3267,11 @@ static void startTimeoutThreadIfNeeded()
     }
 }
 
-int main(int argc, char** argv)
+extern "C" {
+int superJSCMain(int argc, char** argv);
+}
+
+int superJSCMain(int argc, char** argv)
 {
 #if PLATFORM(IOS) && CPU(ARM_THUMB2)
     // Enabled IEEE754 denormal support.
@@ -3800,8 +3813,112 @@ int runJSC(CommandLine options, const Func& func)
     return result;
 }
 
+class unique_fd {
+public:
+    explicit unique_fd(int fd);
+    ~unique_fd();
+    int get() const;
+
+private:
+    int m_fd;
+};
+
+unique_fd::unique_fd(int fd)
+    : m_fd(fd)
+{
+}
+
+unique_fd::~unique_fd()
+{
+    close(m_fd);
+}
+
+int unique_fd::get() const
+{
+    return m_fd;
+}
+
+#define FAIL_WITH_STRERROR(tag) \
+    fprintf(stderr, tag " fails: %s.\n", strerror(errno)); \
+    return false;
+
+#define MAYBE_FAIL_WITH_ICU_ERROR(s) \
+    if (status != U_ZERO_ERROR) {\
+        fprintf(stderr, "Couldn't initialize ICU (" "): %s (%s)" "\n", u_errorName(status), path.c_str()); \
+        return false; \
+    }
+
+extern "C" {
+void udata_setCommonData(const void *data, UErrorCode *pErrorCode);
+}
+
+static bool mapIcuData(const std::string& path)
+{
+    // Open the file and get its length.
+    unique_fd fd(open(path.c_str(), O_RDONLY));
+    if (fd.get() == -1) {
+        FAIL_WITH_STRERROR("open");
+    }
+    struct stat sb;
+    if (fstat(fd.get(), &sb) == -1) {
+        FAIL_WITH_STRERROR("stat");
+    }
+
+    // Map it.
+    void* data = mmap(NULL, sb.st_size, PROT_READ, MAP_SHARED, fd.get(), 0);
+    if (data == MAP_FAILED) {
+        FAIL_WITH_STRERROR("mmap");
+    }
+
+    // Tell the kernel that accesses are likely to be random rather than sequential.
+    if (madvise(data, sb.st_size, MADV_RANDOM) == -1) {
+        FAIL_WITH_STRERROR("madvise(MADV_RANDOM)");
+    }
+
+    UErrorCode status = U_ZERO_ERROR;
+
+    // Tell ICU to use our memory-mapped data.
+    udata_setCommonData(data, &status);
+    MAYBE_FAIL_WITH_ICU_ERROR("udata_setCommonData");
+
+    return true;
+}
+
+static bool initICUEnv()
+{
+    if (!dlopen("libicuuc.so", RTLD_NOW)) {
+        fprintf(stderr, "Could not open file: %s\n", "libicuuc");
+        return false;
+    }
+    if (!dlopen("libicui18n.so", RTLD_NOW)) {
+        fprintf(stderr, "Could not open file: %s\n", "libicui18n");
+        return false;
+    }
+    if (!initICU()) {
+        fprintf(stderr, "Could not initICU.\n");
+        return false;
+    }
+#undef U_ICUDATA_NAME
+    static const char* U_ICUDATA_NAME = "icudt55l";
+    const char* systemPathPrefix = getenv("ANDROID_ROOT");
+    if (systemPathPrefix == NULL) {
+        fprintf(stderr, "ANDROID_ROOT environment variable not set" "\n"); \
+        abort();
+    }
+    std::string systemPath;
+    systemPath = systemPathPrefix;
+    systemPath += "/usr/icu/";
+    systemPath += U_ICUDATA_NAME;
+    systemPath += ".dat";
+    if (!mapIcuData(systemPath))
+        return false;
+    return true;
+}
+
 int jscmain(int argc, char** argv)
 {
+    if (!initICUEnv())
+        return 1;
     // Need to override and enable restricted options before we start parsing options below.
     Options::enableRestrictedOptions(true);
 

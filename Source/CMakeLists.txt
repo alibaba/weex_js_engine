@@ -1,6 +1,5 @@
 cmake_minimum_required(VERSION 2.8.12)
 
-add_subdirectory(icu)
 add_subdirectory(WTF)
 add_subdirectory(JavaScriptCore)
 
@@ -22,12 +21,7 @@ WEBKIT_FRAMEWORK(weexjsc)
 
 set_target_properties(weexjsc
 PROPERTIES
-LINK_FLAGS_RELWITHDEBINFO "-Wl,--version-script=${CMAKE_CURRENT_SOURCE_DIR}//version_script.txt -Wl,--no-undefined"
-)
-
-set_target_properties(weexjsc
-PROPERTIES
-LINK_FLAGS_RELEASE "-Wl,--version-script=${CMAKE_CURRENT_SOURCE_DIR}//version_script.txt -Wl,--no-undefined"
+LINK_FLAGS "-Wl,--version-script=${CMAKE_CURRENT_SOURCE_DIR}//version_script.txt -Wl,--no-undefined"
 )
 
 add_custom_command(

@@ -55,6 +55,12 @@ endif ()
 #    set(ICU_LIBRARIES libicucore.dylib)
 #endif ()
 
+set(ICU_INCLUDE_DIRS
+    "${WEBCORE_DIR}/icu"
+    "${JAVASCRIPTCORE_DIR}/icu"
+    "${WTF_DIR}/icu"
+)
+
 # From OptionsGTK.cmake
 if (CMAKE_MAJOR_VERSION LESS 3)
     # Before CMake 3 it was necessary to use a build script instead of using cmake --build directly

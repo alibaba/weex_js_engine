@@ -791,91 +791,123 @@ void* SymbolResolver::findSym(const char* symName)
     }
     return nullptr;
 }
-#define i18n_void_macro(V)                                                                                                   \
-    V(ucol_close, void, (UCollator * p0), (p0))                                                                              \
-    V(ucol_setAttribute, void, (UCollator * p0, UColAttribute p1, UColAttributeValue p2, UErrorCode * p3), (p0, p1, p2, p3)) \
-    V(udat_close, void, (UDateFormat * p0), (p0))                                                                            \
-    V(udatpg_close, void, (UDateTimePatternGenerator * p0), (p0))                                                            \
-    V(unum_close, void, (UNumberFormat* p0), (p0))                                                                           \
-    V(unum_setAttribute, void, (UNumberFormat* p0, UNumberFormatAttribute  p1, int32_t p2),(p0, p1, p2))                     \
-    V(unum_setTextAttribute, void, (UNumberFormat* p0, UNumberFormatTextAttribute p1, const UChar* p2, int32_t p3, UErrorCode* p4), (p0, p1, p2, p3, p4))                     \
+#define i18n_macro(V) \
+    V(ucol_close) \
+    V(ucol_setAttribute) \
+    V(udat_close) \
+    V(udatpg_close) \
+    V(unum_close) \
+    V(unum_setAttribute) \
+    V(unum_setTextAttribute) \
+    V(ucol_open) \
+    V(ucol_strcollIter) \
+    V(udat_format) \
+    V(udat_open) \
+    V(ucal_getCanonicalTimeZoneID) \
+    V(ucal_getDefaultTimeZone) \
+    V(ucal_getKeywordValuesForLocale) \
+    V(ucal_openTimeZones) \
+    V(ucol_countAvailable) \
+    V(ucol_getAvailable) \
+    V(ucol_getKeywordValuesForLocale) \
+    V(udat_countAvailable) \
+    V(udat_getAvailable) \
+    V(udatpg_getBestPattern) \
+    V(udatpg_open) \
+    V(unum_countAvailable) \
+    V(unum_formatDouble) \
+    V(unum_getAvailable) \
+    V(unum_open) \
 
-#define i18n_ret_macro(V)                                                                                                                                                                              \
-    V(ucol_open, UCollator*, (const char* p0, UErrorCode* p1), (p0, p1))                                                                                                                               \
-    V(ucol_strcollIter, UCollationResult, (const UCollator* p0, UCharIterator* p1, UCharIterator* p2, UErrorCode* p3), (p0, p1, p2, p3))                                                               \
-    V(udat_format, int32_t, (const UDateFormat* p0, UDate p1, UChar* p2, int32_t p3, UFieldPosition* p4, UErrorCode* p5), (p0, p1, p2, p3, p4, p5))                                                    \
-    V(udat_open, UDateFormat*, (UDateFormatStyle p0, UDateFormatStyle p1, const char* p2, const UChar* p3, int32_t p4, const UChar* p5, int32_t p6, UErrorCode* p7), (p0, p1, p2, p3, p4, p5, p6, p7)) \
-    V(ucal_getCanonicalTimeZoneID, int32_t, (const UChar* p0, int32_t p1, UChar* p2, int32_t p3, UBool *p4, UErrorCode* p5), (p0, p1, p2, p3, p4, p5))                                                   \
-    V(ucal_getDefaultTimeZone, int32_t, (UChar* p0, int32_t p1, UErrorCode* p2),(p0, p1, p2)) \
-    V(ucal_getKeywordValuesForLocale, UEnumeration*, (const char* p0, const char* p1, UBool p2, UErrorCode* p3), (p0, p1, p2, p3)) \
-    V(ucal_openTimeZones, UEnumeration*, (UErrorCode* p0), (p0)) \
-    V(ucol_countAvailable, int32_t, (void), ()) \
-    V(ucol_getAvailable, const char*, (int32_t p0), (p0)) \
-    V(ucol_getKeywordValuesForLocale, UEnumeration*, (const char* p0, const char* p1, UBool p2, UErrorCode* p3), (p0, p1, p2, p3)) \
-    V(udat_countAvailable, int32_t, (void), ()) \
-    V(udat_getAvailable, const char*, (int32_t p0), (p0)) \
-    V(udatpg_getBestPattern, int32_t, (UDateTimePatternGenerator *p0, const UChar *p1, int32_t p2, UChar *p3, int32_t p4, UErrorCode *p5), (p0, p1, p2, p3, p4, p5)) \
-    V(udatpg_open, UDateTimePatternGenerator*, (const char* p0, UErrorCode* p1), (p0, p1))  \
-    V(unum_countAvailable, int32_t, (void), ()) \
-    V(unum_formatDouble, int32_t, (const UNumberFormat* p0, double p1, UChar* p2, int32_t p3, UFieldPosition  *p4, UErrorCode* p5), (p0, p1, p2, p3, p4, p5)) \
-    V(unum_getAvailable, const char*, (int32_t p0), (p0)) \
-    V(unum_open, UNumberFormat*, (UNumberFormatStyle p0, const UChar* p1, int32_t p2, const char* p3, UParseError* p4, UErrorCode* p5), (p0, p1, p2, p3, p4, p5)) \
-
-#define uc_void_macro(V) \
-    V(uiter_setString, void, (UCharIterator * p0, const UChar* p1, int32_t p2), (p0, p1, p2)) \
-    V(udata_setCommonData, void, (const void *p0, UErrorCode *p1), (p0, p1)) \
-    V(uenum_close, void, (UEnumeration* p0), (p0)) \
-
-#define uc_ret_macro(V)                                    \
-    V(u_charDirection, UCharDirection, (UChar32 p0), (p0)) \
-    V(u_foldCase, UChar32, (UChar32 p0, uint32_t p1), (p0, p1)) \
-    V(u_charType, int8_t, (UChar32 p0), (p0))              \
-    V(u_toupper, UChar32, (UChar32 p0), (p0))              \
-    V(u_tolower, UChar32, (UChar32 p0), (p0))              \
-    V(unorm_normalize, int32_t, (const UChar* p0, int32_t p1, UNormalizationMode p2, int32_t p3, UChar* p4, int32_t p5, UErrorCode* p6), (p0, p1, p2, p3, p4, p5, p6))                         \
-    V(u_strToLower, int32_t, (UChar * p0, int32_t p1, const UChar* p2, int32_t p3, const char* p4, UErrorCode* p5), (p0, p1, p2, p3, p4, p5))                                                  \
-    V(u_strToUpper, int32_t, (UChar * p0, int32_t p1, const UChar* p2, int32_t p3, const char* p4, UErrorCode* p5), (p0, p1, p2, p3, p4, p5))                                                  \
-    V(u_errorName, const char*, (UErrorCode p0), (p0))     \
-    V(uenum_next, const char*, (UEnumeration* p0, int32_t* p1, UErrorCode* p2), (p0, p1, p2)) \
-    V(uenum_unext, const UChar*, (UEnumeration* p0, int32_t* p1, UErrorCode* p2), (p0, p1, p2)) \
-    V(u_memcasecmp, int32_t, (const UChar *p0, const UChar *p1, int32_t p2, uint32_t p3), (p0, p1, p2, p3)) \
-    V(uenum_openCharStringsEnumeration, UEnumeration*, (const char* const p0[], int32_t p1, UErrorCode* p2), (p0, p1, p2)) \
-    V(uloc_getDefault, const char*, (void), ()) \
+#define uc_macro(V) \
+    V(uiter_setString) \
+    V(udata_setCommonData) \
+    V(uenum_close) \
+    V(u_charDirection) \
+    V(u_foldCase) \
+    V(u_charType) \
+    V(u_toupper) \
+    V(u_tolower) \
+    V(unorm_normalize) \
+    V(u_strToLower) \
+    V(u_strToUpper) \
+    V(u_errorName) \
+    V(uenum_next) \
+    V(uenum_unext) \
+    V(u_memcasecmp) \
+    V(uenum_openCharStringsEnumeration) \
+    V(uloc_getDefault) \
 
 #define macro(V)             \
-i18n_ret_macro(V)            \
-i18n_void_macro(V)           \
-uc_void_macro(V)             \
-uc_ret_macro(V)
+i18n_macro(V)           \
+uc_macro(V)
 
-#define DEF_VAR(name, ret, arg, call) \
-    typedef ret(*pfn_##name##_t) arg; \
-    static pfn_##name##_t var_##name;
-
+}
+#define DEF_VAR(name) \
+    void* var_##name;
+extern "C" {
 macro(DEF_VAR)
 }
-#define VOID_FUNC(name, ret, arg, call) \
-    ret name arg                        \
-    {                                   \
-        var_##name call;                \
-    }
-
-i18n_void_macro(VOID_FUNC)
-uc_void_macro(VOID_FUNC)
-
-#define RET_FUNC(name, ret, arg, call) \
-    ret name arg                       \
-    {                                  \
-        return var_##name call;        \
-    }
-
-i18n_ret_macro(RET_FUNC)
-uc_ret_macro(RET_FUNC)
+#if defined(__arm__)
+#define DEF_FUNC(name) \
+asm("\n" \
+"	.section	.text." #name ",\"ax\",%progbits" "\n" \
+"	.globl	" #name "\n" \
+"	.align	2" "\n" \
+"	.type	" #name ",%function" "\n" \
+"	.code	16                      @" #name "\n" \
+"	.thumb_func" "\n" \
+#name ":" "\n" \
+".Lfunc_begin" #name ":" "\n" \
+"	.fnstart" "\n" \
+"	.cfi_startproc" "\n" \
+"	ldr	r12, .LCPI1_0" #name "\n" \
+".LPC1_0" #name ":" "\n" \
+"	add r12, pc, r12" "\n" \
+"	ldr	r12, [r12]" "\n" \
+"	ldr	r12, [r12]" "\n" \
+"	bx	r12" "\n" \
+".Ltmp2" #name ":" "\n" \
+"	.align	2" "\n" \
+"@ BB#1:" "\n" \
+".LCPI1_0" #name ":" "\n" \
+"	.long	var_" #name "(GOT_PREL)-((.LPC1_0" #name "+4)-.LCPI1_0" #name ")" "\n" \
+".Lfunc_end1" #name ":" "\n" \
+"	.size	" #name ", .Lfunc_end1" #name "-" #name "\n" \
+"	.cfi_endproc" "\n" \
+"	.fnend" "\n" \
+);
+#elif defined(__x86_64__)
+#error 64bit x86 platform has not been supported.
+#elif defined(__i386__)
+#define DEF_FUNC(name) \
+asm("\n" \
+"	.section	.text." #name ",\"ax\",@progbits" "\n" \
+"	.globl	" #name "\n" \
+"	.p2align	4, 0x90" "\n" \
+"	.type	" #name ",@function" "\n" \
+#name ":" "\n" \
+"	.cfi_startproc" "\n" \
+"	calll	.L0$pb" #name "\n" \
+".L0$pb" #name ":" "\n" \
+"	popl	%eax" "\n" \
+".Ltmp0" #name ":" "\n" \
+"	addl	$_GLOBAL_OFFSET_TABLE_+(.Ltmp0" #name "-.L0$pb" #name "), %eax" "\n" \
+"	movl	var_" #name "@GOT(%eax), %eax" "\n" \
+"	jmpl	*(%eax)" "\n" \
+".Lfunc_end0" #name ":" "\n" \
+"	.size	" #name ", .Lfunc_end0-" #name "\n" \
+"	.cfi_endproc" "\n" \
+);
+#else
+#error this platform has not been supported.
+#endif
+macro(DEF_FUNC)
 
 bool initICU(void)
 {
-#define INIT_OR_CRASH(name, ret, arg, call)                                 \
-    var_##name = reinterpret_cast<pfn_##name##_t>(resolver.findSym(#name "_")); \
+#define INIT_OR_CRASH(name)                                                 \
+    var_##name = resolver.findSym(#name "_");                               \
     if (var_##name == NULL) {                                               \
         LOGE("fails to get " #name " symbol.\n");                           \
         return false;                                                       \
@@ -886,8 +918,7 @@ bool initICU(void)
             LOGE("fails to init i18n resolver.\n");
             return false;
         }
-        i18n_ret_macro(INIT_OR_CRASH);
-        i18n_void_macro(INIT_OR_CRASH);
+        i18n_macro(INIT_OR_CRASH);
     }
     {
         SymbolResolver resolver("libicuuc.so");
@@ -895,8 +926,7 @@ bool initICU(void)
             LOGE("fails to init uc resolver.\n");
             return false;
         }
-        uc_ret_macro(INIT_OR_CRASH);
-        uc_void_macro(INIT_OR_CRASH);
+        uc_macro(INIT_OR_CRASH);
     }
     return true;
 }

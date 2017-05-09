@@ -303,6 +303,8 @@ void HeapTimerThread::start()
             m_lock.unlock();
             entry.ht->timerDidFire();
             m_lock.lock();
+            if (m_stopping)
+                break;
             MonotonicTime now = MonotonicTime::now();
             double elapsed = (now - startTime).value();
             for (auto& _entry : m_enties) {

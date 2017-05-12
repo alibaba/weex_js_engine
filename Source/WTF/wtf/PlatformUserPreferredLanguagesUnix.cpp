@@ -46,7 +46,7 @@ static String platformLanguage()
 
 Vector<String> platformUserPreferredLanguages()
 {
-    return { platformLanguage() };
+    return { String("zh-CN") };
 }
 
 } // namespace WTF

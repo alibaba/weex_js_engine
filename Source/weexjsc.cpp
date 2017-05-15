@@ -921,13 +921,11 @@ static jint native_execJSService(JNIEnv* env,
 {
     JSGlobalObject* globalObject = _globalObject.get();
     if (script != NULL) {
-        ScopedJStringUTF8 scopedJString(env, script);
-        const char* scriptStr = scopedJString.getChars();
-        String source = String::fromUTF8(scriptStr);
+        String source = jString2String(env, script);
         VM& vm = *globalVM;
         JSLockHolder locker(&vm);
-        if (scriptStr == NULL || !ExecuteJavaScript(globalObject, source, true)) {
-            LOGE("jsLog JNI_Error >>> scriptStr :%s", scriptStr);
+        if (script == NULL || !ExecuteJavaScript(globalObject, source, true)) {
+            LOGE("jsLog JNI_Error >>> scriptStr :%s", source.utf8().data());
             return false;
         }
         return true;
@@ -973,10 +971,8 @@ static jint native_initFramework(JNIEnv* env,
     globalObject->initFunction();
 
     if (script != NULL) {
-        ScopedJStringUTF8 scopedJString(env, script);
-        const char* scriptStr = scopedJString.getChars();
-        String source = String::fromUTF8(scriptStr);
-        if (scriptStr == NULL || !ExecuteJavaScript(globalObject, source, true)) {
+        String source = jString2String(env, script);
+        if (!ExecuteJavaScript(globalObject, source, true)) {
             return false;
         }
 

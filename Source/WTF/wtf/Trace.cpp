@@ -49,6 +49,8 @@ namespace debug {
 
 static jclass jTraceClass;
 static bool isTraceEnabled(JNIEnv* env) {
+  if (!env)
+    return true;
   jboolean enabled = false;
   jTraceClass = (env)->FindClass("com/taobao/weex/utils/Trace");
   jmethodID mid = (env)->GetStaticMethodID(jTraceClass, "getTraceEnabled", "()Z");
@@ -119,6 +121,12 @@ void TraceEvent::SendToATrace() {
       break;
   }
 }
+
+bool TraceEvent::isEnable()
+{
+    return g_atrace_fd != -1;
+}
+
 TraceEvent::TraceEvent(const char* category_group,
                        const char* name,
                        Phase phase)

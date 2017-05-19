@@ -152,7 +152,7 @@ namespace JSC { namespace LLInt {
         LLINT_END_IMPL();                                       \
     } while (false)
 
-#if defined(WTF_ARM_ARCH_VERSION) && WTF_ARM_ARCH_VERSION == 7
+#if 1
 #define LLINT_PROFILE_VALUE(opcode, value) do { \
     __atomic_store_n(&pc[OPCODE_LENGTH(opcode) - 1].u.profile->m_buckets[0], \
         JSValue::encode(value), __ATOMIC_SEQ_CST); \
@@ -707,7 +707,7 @@ LLINT_SLOW_PATH_DECL(slow_path_get_by_id)
         pc[7].u.operand = 0;
     }
 
-#if defined(WTF_ARM_ARCH_VERSION) && WTF_ARM_ARCH_VERSION == 7
+#if 1
     __atomic_store_n(&pc[OPCODE_LENGTH(op_get_by_id) - 1].u.profile->m_buckets[0],
         JSValue::encode(result), __ATOMIC_SEQ_CST);
 #else

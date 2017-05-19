@@ -53,7 +53,7 @@ void MethodOfGettingAValueProfile::emitReportValue(CCallHelpers& jit, JSValueReg
         return;
         
     case Ready:
-#if defined(WTF_ARM_ARCH_VERSION) && WTF_ARM_ARCH_VERSION == 7
+#if 1
         jit.storeValueExclusive(regs, u.profile->specFailBucket(0));
 #else
         jit.storeValue(regs, u.profile->specFailBucket(0));
@@ -66,7 +66,7 @@ void MethodOfGettingAValueProfile::emitReportValue(CCallHelpers& jit, JSValueReg
         ConcurrentJSLocker locker(u.lazyOperand.codeBlock->m_lock);
         LazyOperandValueProfile* profile =
             u.lazyOperand.codeBlock->lazyOperandValueProfiles().add(locker, key);
-#if defined(WTF_ARM_ARCH_VERSION) && WTF_ARM_ARCH_VERSION == 7
+#if 1
         jit.storeValueExclusive(regs, profile->specFailBucket(0));
 #else
         jit.storeValue(regs, profile->specFailBucket(0));

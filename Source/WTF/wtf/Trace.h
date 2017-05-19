@@ -41,6 +41,7 @@ class TraceEvent {
   TraceEvent(const char* category_group, const char* name, Phase phase);
   static void StartATrace(JNIEnv*);
   static void StopATrace(JNIEnv*);
+  static bool isEnable();
 
   void SendToATrace();
   inline void SetArgs(const char* key, const char* value) {
@@ -60,8 +61,8 @@ class TraceScope {
  public:
   inline TraceScope(const char* category_group,
                     const char* name,
-                    const char* key = NULL,
-                    const char* value = NULL);
+                    const char* key = nullptr,
+                    const char* value = nullptr);
   inline ~TraceScope();
 
  private:

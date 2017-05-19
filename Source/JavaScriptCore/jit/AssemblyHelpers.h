@@ -130,6 +130,17 @@ public:
         store64Exclusive(regs.payloadGPR(), regs.tagGPR()
                 , TrustedImmPtr(bitwise_cast<void*>(bitwise_cast<uintptr_t>(address) + PayloadOffset)));
     }
+#elif USE(JSVALUE64)
+    void storeValueExclusive(JSValueRegs regs, void* address)
+    {
+        storeFence();
+        store64(regs.gpr(), address);
+    }
+    void storeValueExclusive(const RegisterID& regs, void* address)
+    {
+        storeFence();
+        store64(regs, address);
+    }
 #endif // WTF_ARM_ARCH_VERSION == 7
     
     void loadValue(Address address, JSValueRegs regs)

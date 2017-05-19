@@ -132,6 +132,7 @@ set(WTF_HEADERS
     ThreadingPrimitives.h
     TimeWithDynamicClockType.h
     TinyPtrSet.h
+    Trace.h
     UniqueRef.h
     VMTags.h
     ValueCheck.h
@@ -237,6 +238,7 @@ set(WTF_SOURCES
     StringPrintStream.cpp
     Threading.cpp
     TimeWithDynamicClockType.cpp
+    Trace.cpp
     WTFThreadData.cpp
     WallTime.cpp
     WordLock.cpp

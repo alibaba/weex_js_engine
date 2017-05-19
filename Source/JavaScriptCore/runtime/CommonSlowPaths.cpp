@@ -140,7 +140,7 @@ namespace JSC {
 #define RETURN_PROFILED(opcode__, value__) \
     RETURN_WITH_PROFILING(value__, PROFILE_VALUE(opcode__, returnValue__))
 
-#if defined(WTF_ARM_ARCH_VERSION) && WTF_ARM_ARCH_VERSION == 7
+#if 1
 #define PROFILE_VALUE(opcode, value) do { \
     __atomic_store_n(&pc[OPCODE_LENGTH(opcode) - 1].u.profile->m_buckets[0], \
         JSValue::encode(value), __ATOMIC_SEQ_CST); \

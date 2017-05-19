@@ -897,7 +897,6 @@ set(JavaScriptCore_SOURCES
     runtime/TemplateRegistryKeyTable.cpp
     runtime/TestRunnerUtils.cpp
     runtime/ThrowScope.cpp
-    runtime/Trace.cpp
     runtime/TypeLocationCache.cpp
     runtime/TypeProfiler.cpp
     runtime/TypeProfilerLog.cpp

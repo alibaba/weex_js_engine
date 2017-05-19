@@ -149,7 +149,7 @@ static ThreadIdentifier identifierByPthreadHandle(const pthread_t& pthreadHandle
 
 static ThreadIdentifier establishIdentifierForPthreadHandle(const pthread_t& pthreadHandle)
 {
-    ASSERT(!identifierByPthreadHandle(pthreadHandle));
+    // ASSERT(!identifierByPthreadHandle(pthreadHandle));
     MutexLocker locker(threadMapMutex());
     static ThreadIdentifier identifierCount = 1;
     threadMap().add(identifierCount, std::make_unique<PthreadState>(pthreadHandle));

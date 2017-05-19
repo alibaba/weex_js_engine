@@ -22,6 +22,7 @@
 #include <vector>
 
 #include <android/log.h>
+#if 1
 #define TAG "ICUCompatible"
 #define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, TAG, __VA_ARGS__)
 #define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG, TAG, __VA_ARGS__)
@@ -32,12 +33,14 @@ extern "C" {
 void udata_setCommonData(const void *data, UErrorCode *pErrorCode);
 }
 
+#if !defined(__LP64__)
 typedef uint64_t __u64;
 typedef uint32_t __u32;
 typedef uint16_t __u16;
 typedef int64_t __s64;
 typedef int32_t __s32;
 typedef int16_t __s16;
+#endif
 /* WARNING: DO NOT EDIT, AUTO-GENERATED CODE - SEE TOP FOR INSTRUCTIONS */
 typedef __u32 Elf32_Addr;
 typedef __u16 Elf32_Half;
@@ -700,7 +703,7 @@ bool SymbolResolver::deal_with_elf()
     }
     elf_phdr* phdr = reinterpret_cast<elf_phdr*>(static_cast<char*>(start_) + hdr->e_phoff);
     elf_phdr* dyn_phdr = nullptr;
-    elf_addr min_vaddr = UINTPTR_MAX;
+    elf_addr min_vaddr = static_cast<elf_addr>(UINTPTR_MAX);
 
     for (i = 0; i < hdr->e_phnum; ++i, phdr = reinterpret_cast<elf_phdr*>(reinterpret_cast<char*>(phdr) + hdr->e_phentsize)) {
         if (phdr->p_type == PT_DYNAMIC)
@@ -896,7 +899,24 @@ asm("\n" \
 "	movl	var_" #name "@GOT(%eax), %eax" "\n" \
 "	jmpl	*(%eax)" "\n" \
 ".Lfunc_end0" #name ":" "\n" \
-"	.size	" #name ", .Lfunc_end0-" #name "\n" \
+"	.size	" #name ", .Lfunc_end0" #name "-" #name "\n" \
+"	.cfi_endproc" "\n" \
+);
+#elif defined(__aarch64__)
+#define DEF_FUNC(name) \
+asm("\n" \
+"	.section	.text." #name ",\"ax\",@progbits" "\n" \
+"	.globl	" #name "\n" \
+"	.align	2" "\n" \
+"	.type	" #name ",@function" "\n" \
+#name ":" "\n" \
+"	.cfi_startproc" "\n" \
+"	adrp	x8, :got:var_" #name "\n" \
+"	ldr	x8, [x8, :got_lo12:var_" #name "]" "\n" \
+"	ldr		x8, [x8]" "\n" \
+"	br	x8" "\n" \
+".Lfunc_end0" #name":" "\n" \
+"	.size	" #name ", .Lfunc_end0" #name "-" #name "\n" \
 "	.cfi_endproc" "\n" \
 );
 #else
@@ -951,3 +971,13 @@ UEnumeration* unumsys_openAvailableNames(UErrorCode *status)
     static const char* str[] = { "default" };
     return uenum_openCharStringsEnumeration(str, 1, status);
 }
+#else
+extern "C" {
+    typedef void* (*pfn_shit)(void* a, void *b, void* c, void* d, void* e, void* f, void* g, void* h, void* i);
+    pfn_shit var_shit;
+    void* shit(void* a, void *b, void* c, void* d, void* e, void* f, void* g, void* h, void* i) {
+        return var_shit(a, b, c, d, e, f, g, h, i);
+    }
+}
+
+#endif

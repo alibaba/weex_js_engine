@@ -374,6 +374,7 @@ Plan::CompilationPath Plan::compileInThreadImpl(LongLivedState& longLivedState)
 
     switch (mode) {
     case DFGMode: {
+        base::debug::TraceScope traceScope("jsc", "DFG Plan::compileInThreadImpl DFG");
         dfg.m_fixpointState = FixpointConverged;
     
         RUN_PHASE(performTierUpCheckInjection);
@@ -401,6 +402,7 @@ Plan::CompilationPath Plan::compileInThreadImpl(LongLivedState& longLivedState)
     case FTLMode:
     case FTLForOSREntryMode: {
 #if ENABLE(FTL_JIT)
+        base::debug::TraceScope traceScope("jsc", "DFG Plan::compileInThreadImpl FTL");
         if (FTL::canCompile(dfg) == FTL::CannotCompile) {
             finalizer = std::make_unique<FailedFinalizer>(*this);
             return FailPath;

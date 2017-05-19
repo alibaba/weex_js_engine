@@ -981,7 +981,7 @@ inline void JIT::emitValueProfilingSite(ValueProfile* valueProfile)
     // We're in a simple configuration: only one bucket, so we can just do a direct
     // store.
 #if USE(JSVALUE64)
-    store64(value, valueProfile->m_buckets);
+    storeValueExclusive(value, valueProfile->m_buckets);
 #elif defined(WTF_ARM_ARCH_VERSION) && WTF_ARM_ARCH_VERSION == 7
     EncodedValueDescriptor* descriptor = bitwise_cast<EncodedValueDescriptor*>(valueProfile->m_buckets);
     store64Exclusive(value, valueTag, TrustedImmPtr(&descriptor->asBits.payload));

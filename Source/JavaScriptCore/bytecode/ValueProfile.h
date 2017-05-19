@@ -73,7 +73,7 @@ struct ValueProfileBase {
     
     const ClassInfo* classInfo(unsigned bucket) const
     {
-#if defined(WTF_ARM_ARCH_VERSION) && WTF_ARM_ARCH_VERSION == 7
+#if 1
             EncodedJSValue tmp = __atomic_load_n(&m_buckets[bucket], __ATOMIC_RELAXED);
             JSValue value = JSValue::decode(tmp);
 #else
@@ -91,7 +91,7 @@ struct ValueProfileBase {
     {
         unsigned result = 0;
         for (unsigned i = 0; i < totalNumberOfBuckets; ++i) {
-#if defined(WTF_ARM_ARCH_VERSION) && WTF_ARM_ARCH_VERSION == 7
+#if 1
             EncodedJSValue tmp = __atomic_load_n(&m_buckets[i], __ATOMIC_RELAXED);
             JSValue value = JSValue::decode(tmp);
 #else
@@ -111,7 +111,7 @@ struct ValueProfileBase {
     bool isLive() const
     {
         for (unsigned i = 0; i < totalNumberOfBuckets; ++i) {
-#if defined(WTF_ARM_ARCH_VERSION) && WTF_ARM_ARCH_VERSION == 7
+#if 1
             EncodedJSValue tmp = __atomic_load_n(&m_buckets[i], __ATOMIC_RELAXED);
             JSValue value = JSValue::decode(tmp);
 #else
@@ -137,7 +137,7 @@ struct ValueProfileBase {
         out.print("samples = ", totalNumberOfSamples(), " prediction = ", SpeculationDump(m_prediction));
         bool first = true;
         for (unsigned i = 0; i < totalNumberOfBuckets; ++i) {
-#if defined(WTF_ARM_ARCH_VERSION) && WTF_ARM_ARCH_VERSION == 7
+#if 1
             EncodedJSValue tmp = __atomic_load_n(&m_buckets[i], __ATOMIC_RELAXED);
             JSValue value = JSValue::decode(tmp);
 #else
@@ -159,7 +159,7 @@ struct ValueProfileBase {
     SpeculatedType computeUpdatedPrediction(const ConcurrentJSLocker&)
     {
         for (unsigned i = 0; i < totalNumberOfBuckets; ++i) {
-#if defined(WTF_ARM_ARCH_VERSION) && WTF_ARM_ARCH_VERSION == 7
+#if 1
             EncodedJSValue tmp = __atomic_load_n(&m_buckets[i], __ATOMIC_RELAXED);
             JSValue value = JSValue::decode(tmp);
 #else
@@ -170,7 +170,7 @@ struct ValueProfileBase {
             
             m_numberOfSamplesInPrediction++;
             mergeSpeculation(m_prediction, speculationFromValue(value));
-#if defined(WTF_ARM_ARCH_VERSION) && WTF_ARM_ARCH_VERSION == 7
+#if 1
             __atomic_store_n(&m_buckets[i], JSValue::encode(JSValue()), __ATOMIC_SEQ_CST);
 #else
             m_buckets[i] = JSValue::encode(JSValue());

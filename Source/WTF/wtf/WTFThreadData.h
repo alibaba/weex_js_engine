@@ -37,9 +37,6 @@
 #include <wtf/Threading.h>
 #include <wtf/text/StringHash.h>
 
-#if defined(WTF_THREAD_KEY_COMBINE)
-#include "SharedTLSData.h"
-#endif
 namespace WTF {
 
 class AtomicStringTable;
@@ -118,9 +115,7 @@ private:
 #if HAVE(FAST_TLS)
     WTF_EXPORT_PRIVATE static WTFThreadData& createAndRegisterForGetspecificDirect();
 #else
-#if !defined(WTF_THREAD_KEY_COMBINE)
     static WTF_EXPORTDATA ThreadSpecific<WTFThreadData>* staticData;
-#endif
 #endif
 
     friend WTFThreadData& wtfThreadData();
@@ -136,14 +131,9 @@ inline WTFThreadData& wtfThreadData()
     //    wtfThreadData() is initially called from initializeThreading(), ensuring
     //    this is initially called in a pthread_once locked context.
 #if !HAVE(FAST_TLS)
-#if !defined(WTF_THREAD_KEY_COMBINE)
     if (!WTFThreadData::staticData)
         WTFThreadData::staticData = new ThreadSpecific<WTFThreadData>;
     return **WTFThreadData::staticData;
-#else
-    SharedTLSData::initSharedTLSData();
-    return (**s_sharedTLSData).getWTFThreadData<WTFThreadData>();
-#endif
 #else
     if (WTFThreadData* data = static_cast<WTFThreadData*>(_pthread_getspecific_direct(WTF_THREAD_DATA_KEY)))
         return *data;

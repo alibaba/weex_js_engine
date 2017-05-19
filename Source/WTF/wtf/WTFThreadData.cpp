@@ -27,9 +27,6 @@
 #include "config.h"
 #include "WTFThreadData.h"
 
-#if defined(WTF_THREAD_KEY_COMBINE)
-#include "SharedTLSData.h"
-#endif
 #include <wtf/text/AtomicStringTable.h>
 
 #if USE(WEB_THREAD)
@@ -39,9 +36,7 @@
 namespace WTF {
 
 #if !HAVE(FAST_TLS)
-#if !defined(WTF_THREAD_KEY_COMBINE)
 ThreadSpecific<WTFThreadData>* WTFThreadData::staticData;
-#endif
 #endif
 
 WTFThreadData::WTFThreadData()

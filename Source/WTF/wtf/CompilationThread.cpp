@@ -26,9 +26,6 @@
 #include "config.h"
 #include "CompilationThread.h"
 
-#if defined(WTF_THREAD_KEY_COMBINE)
-#include "SharedTLSData.h"
-#endif
 #include "StdLibExtras.h"
 #include "ThreadSpecific.h"
 #include "Threading.h"
@@ -36,48 +33,30 @@
 
 namespace WTF {
 
-#if !defined(WTF_THREAD_KEY_COMBINE)
 static ThreadSpecific<bool, CanBeGCThread::True>* s_isCompilationThread;
-#endif
 
 static void initializeCompilationThreads()
 {
-#if !defined(WTF_THREAD_KEY_COMBINE)
     static std::once_flag initializeCompilationThreadsOnceFlag;
     std::call_once(initializeCompilationThreadsOnceFlag, []{
         s_isCompilationThread = new ThreadSpecific<bool, CanBeGCThread::True>();
     });
-#else
-    SharedTLSData::initSharedTLSData();
-#endif
 }
 
 bool isCompilationThread()
 {
-#if !defined(WTF_THREAD_KEY_COMBINE)
     if (!s_isCompilationThread)
         return false;
     if (!s_isCompilationThread->isSet())
         return false;
     return **s_isCompilationThread;
-#else
-    if (!s_sharedTLSData)
-        return false;
-    if (!(**s_sharedTLSData).isSetIsCompilationThread())
-        return false;
-    return (**s_sharedTLSData).getIsCompilationThread();
-#endif
 }
 
 bool exchangeIsCompilationThread(bool newValue)
 {
     initializeCompilationThreads();
     bool oldValue = isCompilationThread();
-#if !defined(WTF_THREAD_KEY_COMBINE)
     **s_isCompilationThread = newValue;
-#else
-    (**s_sharedTLSData).setIsCompilationThread(newValue);
-#endif
     return oldValue;
 }
 

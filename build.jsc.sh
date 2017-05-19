@@ -20,6 +20,7 @@ if [ $TARGET = "arm" ]; then
     export GCC_PATH=`dirname $(find $NDK_ROOT/toolchains $NDK_ROOT/build  -name 'arm*' -name '*-g++' | sort  -r| head -n 1)`/../
     export BINARY_PATH=$GCC_PATH/arm-linux-androideabi/bin
     export DEFAULT_LIBRARY="-lc++_static -lc++abi -lunwind -landroid_support"
+    export WTF_CPU=ARM
     echo "building arm $BINARY_PATH"
 elif [ $TARGET = "arm64" ]; then
     export TARGET
@@ -29,7 +30,18 @@ elif [ $TARGET = "arm64" ]; then
     export GCC_PATH=`dirname $(find $NDK_ROOT/toolchains $NDK_ROOT/build  -name 'aarch64*' -name '*-g++' | sort  -r| head -n 1)`/../
     export BINARY_PATH=$GCC_PATH/aarch64-linux-android/bin
     export DEFAULT_LIBRARY="-lc++_static -lc++abi -landroid_support"
+    export WTF_CPU=ARM64
     echo 'building arm64'
+elif [ $TARGET = "x86" ]; then
+    export TARGET
+    export TARGET_ABI=x86
+    export CLANG_CFLAGS='-target i686-linux-android -fPIC'
+    export TARGET_WORD_BITS=32
+    export GCC_PATH=`dirname $(find $NDK_ROOT/toolchains $NDK_ROOT/build  -name 'i686*' -name '*-g++' | sort  -r| head -n 1)`/../
+    export BINARY_PATH=$GCC_PATH/i686-linux-android/bin
+    export DEFAULT_LIBRARY="-lc++_static -lc++abi -landroid_support"
+    export WTF_CPU=X86
+    echo 'building x86'
 else
     echo "unknown target" 1>&2
     exit 1

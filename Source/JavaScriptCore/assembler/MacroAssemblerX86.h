@@ -145,6 +145,19 @@ public:
         m_assembler.cvtsi2sd_mr(src.m_ptr, dest);
     }
 
+    // this function should only be used in base line JIT.
+    // Used in DFGJIT will cause xmm0 register clobbered.
+    void store64Exclusive(RegisterID s0, RegisterID s1, TrustedImmPtr address)
+    {
+        push(s0);
+        push(s1);
+        move(address, s1);
+        m_assembler.movq_mr(X86Registers::esp, X86Registers::xmm0);
+        m_assembler.movq_rm(X86Registers::xmm0, s1);
+        pop(s1);
+        m_assembler.addl_ir(4, X86Registers::esp);
+    }
+
     void store32(TrustedImm32 imm, void* address)
     {
         m_assembler.movl_i32m(imm.m_value, address);

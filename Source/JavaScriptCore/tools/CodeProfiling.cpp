@@ -67,7 +67,7 @@ static void setProfileTimer(unsigned usec)
 #pragma clang diagnostic pop
 #endif
 
-#if (OS(DARWIN) && !PLATFORM(GTK) && CPU(X86_64)) || (OS(LINUX) && CPU(X86))
+#if (OS(DARWIN) && !PLATFORM(GTK) && CPU(X86_64)) || (OS(LINUX) && CPU(X86) && !defined(__ANDROID__))
 static void profilingTimer(int, siginfo_t*, void* uap)
 {
     mcontext_t context = static_cast<ucontext_t*>(uap)->uc_mcontext;
@@ -136,7 +136,7 @@ void CodeProfiling::begin(const SourceCode& source)
     if (alreadyProfiling)
         return;
 
-#if (OS(DARWIN) && !PLATFORM(GTK) && CPU(X86_64)) || (OS(LINUX) && CPU(X86))
+#if (OS(DARWIN) && !PLATFORM(GTK) && CPU(X86_64)) || (OS(LINUX) && CPU(X86) && !defined(__ANDROID__))
     // Regsiter a signal handler & itimer.
     struct sigaction action;
     action.sa_sigaction = reinterpret_cast<void (*)(int, siginfo_t *, void *)>(profilingTimer);

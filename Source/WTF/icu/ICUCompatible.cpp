@@ -840,6 +840,19 @@ void* SymbolResolver::findSym(const char* symName)
     V(u_memcasecmp) \
     V(uenum_openCharStringsEnumeration) \
     V(uloc_getDefault) \
+    V(ubrk_close) \
+    V(ubrk_current) \
+    V(ubrk_following) \
+    V(ubrk_getRuleStatus) \
+    V(ubrk_next) \
+    V(ubrk_open) \
+    V(ubrk_setText) \
+    V(ubrk_setUText) \
+    V(uiter_setUTF8) \
+    V(uloc_setKeywordValue) \
+    V(u_strFoldCase) \
+    V(utext_close) \
+    V(utext_setup) \
 
 #define macro(V)             \
 i18n_macro(V)           \

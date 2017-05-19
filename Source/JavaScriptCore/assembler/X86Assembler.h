@@ -221,6 +221,7 @@ private:
         PRE_GS                          = 0x65,
         PRE_OPERAND_SIZE                = 0x66,
         PRE_SSE_66                      = 0x66,
+        PRE_SSE_f3                      = 0xF3,
         OP_PUSH_Iz                      = 0x68,
         OP_IMUL_GvEvIz                  = 0x69,
         OP_GROUP1_EbIb                  = 0x80,
@@ -293,6 +294,7 @@ private:
         OP2_XORPD_VpdWpd    = 0x57,
         OP2_MOVD_VdEd       = 0x6E,
         OP2_MOVD_EdVd       = 0x7E,
+        OP2_MOVD_Md         = 0xD6,
         OP2_JCC_rel32       = 0x80,
         OP_SETCC            = 0x90,
         OP2_3BYTE_ESCAPE_AE = 0xAE,
@@ -3005,6 +3007,18 @@ public:
     {
         m_formatter.prefix(PRE_SSE_66);
         m_formatter.twoByteOp64(OP2_MOVD_VdEd, (RegisterID)dst, src);
+    }
+#else
+    void movq_mr(RegisterID base, XMMRegisterID dst)
+    {
+        m_formatter.prefix(PRE_SSE_f3);
+        m_formatter.twoByteOp(OP2_MOVD_EdVd, (RegisterID)dst, (RegisterID)base, 0);
+    }
+
+    void movq_rm(XMMRegisterID src, RegisterID base)
+    {
+        m_formatter.prefix(PRE_SSE_66);
+        m_formatter.twoByteOp(OP2_MOVD_Md, (RegisterID)src, (RegisterID)base, 0);
     }
 #endif
 

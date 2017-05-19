@@ -2,6 +2,7 @@
 #include "LogUtils.h"
 #include "WeexJSServer.h"
 #include <errno.h>
+#include <pthread.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -21,6 +22,24 @@ static unsigned long parseUL(const char* s)
     return val;
 }
 
+struct ThreadData {
+    int fd;
+    bool enableTrace;
+};
+
+static void* threadEntry(void* _td)
+{
+    ThreadData* td = static_cast<ThreadData*>(_td);
+    WeexJSServer server(static_cast<int>(td->fd), static_cast<bool>(td->enableTrace));
+    try {
+        server.loop();
+    } catch (IPCException& e) {
+        LOGE("%s", e.msg());
+        exit(1);
+    }
+    return static_cast<void**>(nullptr);
+}
+
 int serverMain(int argc, char** argv)
 {
     unsigned long fd;
@@ -31,12 +50,13 @@ int serverMain(int argc, char** argv)
     }
     fd = parseUL(argv[1]);
     enableTrace = parseUL(argv[2]);
-    try {
-        WeexJSServer server(static_cast<int>(fd), static_cast<bool>(enableTrace));
-        server.loop();
-    } catch (IPCException& e) {
-        LOGE("%s", e.msg());
-        exit(1);
-    }
+    pthread_attr_t threadAttr;
+    pthread_attr_init(&threadAttr);
+    pthread_attr_setstacksize(&threadAttr, 10 * 1024 * 1024);
+    pthread_t thread;
+    ThreadData td = { static_cast<int>(fd), static_cast<bool>(enableTrace) };
+    pthread_create(&thread, &threadAttr, threadEntry, &td);
+    void* rdata;
+    pthread_join(thread, &rdata);
     return 0;
 }

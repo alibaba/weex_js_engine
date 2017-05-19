@@ -54,6 +54,7 @@ IPCSender* WeexJSConnection::start(IPCHandler* handler)
         // implements close all but handles[1]
         // do exec
         doExec(handles[1], base::debug::TraceEvent::isEnable());
+        LOGE("exec Failed completely.");
         // failed to exec
         _exit(1);
     } else {

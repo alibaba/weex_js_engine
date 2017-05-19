@@ -117,3 +117,13 @@ int sigismember(const sigset_t* set, int signum)
     }
     return static_cast<int>((local_set[bit / LONG_BIT] >> (bit % LONG_BIT)) & 1);
 }
+
+int abs(int j)
+{
+	return(j < 0 ? -j : j);
+}
+
+long labs(long j)
+{
+	return(j < 0 ? -j : j);
+}

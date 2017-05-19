@@ -124,13 +124,13 @@ public:
 #endif
     }
 
-#if defined(WTF_ARM_ARCH_VERSION) && WTF_ARM_ARCH_VERSION == 7
+#if !USE(JSVALUE64)
     void storeValueExclusive(JSValueRegs regs, void* address)
     {
         store64Exclusive(regs.payloadGPR(), regs.tagGPR()
                 , TrustedImmPtr(bitwise_cast<void*>(bitwise_cast<uintptr_t>(address) + PayloadOffset)));
     }
-#elif USE(JSVALUE64)
+#else
     void storeValueExclusive(JSValueRegs regs, void* address)
     {
         storeFence();
@@ -141,7 +141,7 @@ public:
         storeFence();
         store64(regs, address);
     }
-#endif // WTF_ARM_ARCH_VERSION == 7
+#endif
     
     void loadValue(Address address, JSValueRegs regs)
     {

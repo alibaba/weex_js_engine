@@ -1512,6 +1512,12 @@ else ()
     message(FATAL_ERROR "Unknown CPU")
 endif ()
 
+if (WTF_CPU_X86)
+    enable_language(ASM)
+    list(APPEND JavaScriptCore_SOURCES
+        runtime/X86Atomics.S
+        )
+endif ()
 
 WEBKIT_INCLUDE_CONFIG_FILES_IF_EXISTS()
 

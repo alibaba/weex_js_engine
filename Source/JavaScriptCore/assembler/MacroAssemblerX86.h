@@ -149,12 +149,12 @@ public:
     // Used in DFGJIT will cause xmm0 register clobbered.
     void store64Exclusive(RegisterID s0, RegisterID s1, TrustedImmPtr address)
     {
-        push(s0);
         push(s1);
-        move(address, s1);
+        push(s0);
+        move(address, s0);
         m_assembler.movq_mr(X86Registers::esp, X86Registers::xmm0);
-        m_assembler.movq_rm(X86Registers::xmm0, s1);
-        pop(s1);
+        m_assembler.movq_rm(X86Registers::xmm0, s0);
+        pop(s0);
         m_assembler.addl_ir(4, X86Registers::esp);
     }
 

@@ -982,13 +982,9 @@ inline void JIT::emitValueProfilingSite(ValueProfile* valueProfile)
     // store.
 #if USE(JSVALUE64)
     storeValueExclusive(value, valueProfile->m_buckets);
-#elif defined(WTF_ARM_ARCH_VERSION) && WTF_ARM_ARCH_VERSION == 7
-    EncodedValueDescriptor* descriptor = bitwise_cast<EncodedValueDescriptor*>(valueProfile->m_buckets);
-    store64Exclusive(value, valueTag, TrustedImmPtr(&descriptor->asBits.payload));
 #else
     EncodedValueDescriptor* descriptor = bitwise_cast<EncodedValueDescriptor*>(valueProfile->m_buckets);
-    store32(value, &descriptor->asBits.payload);
-    store32(valueTag, &descriptor->asBits.tag);
+    store64Exclusive(value, valueTag, TrustedImmPtr(&descriptor->asBits.payload));
 #endif
 }
 

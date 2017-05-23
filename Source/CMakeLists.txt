@@ -26,7 +26,7 @@ if (${CMAKE_TARGET_WORD_BITS} EQUAL 32)
 
     set_target_properties(weexjsc
     PROPERTIES
-    LINK_FLAGS "-Wl,--version-script=${CMAKE_CURRENT_SOURCE_DIR}//weexjsc_version_script.txt -Wl,--no-undefined"
+    LINK_FLAGS "-Wl,--version-script=${CMAKE_CURRENT_SOURCE_DIR}//weexjsc_version_script.txt -Wl,--no-undefined -Wl,-soname,libweexjsc.so"
     )
 
     add_custom_command(
@@ -58,7 +58,7 @@ WEBKIT_FRAMEWORK(${WEEXJSSERVER_NAME})
 
 set_target_properties(${WEEXJSSERVER_NAME}
 PROPERTIES
-LINK_FLAGS "-Wl,--version-script=${CMAKE_CURRENT_SOURCE_DIR}//weexjsserver_version_script.txt -Wl,--no-undefined"
+LINK_FLAGS "-Wl,--version-script=${CMAKE_CURRENT_SOURCE_DIR}//weexjsserver_version_script.txt -Wl,--no-undefined -Wl,-soname,libweexjsserver${SERVERSUFFIX}.so"
 )
 
 add_custom_command(

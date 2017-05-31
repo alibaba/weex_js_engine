@@ -5,9 +5,12 @@
 #include "IPCByteArray.h"
 #include "IPCCheck.h"
 #include "IPCException.h"
+#include "IPCFutexPageQueue.h"
+#include "IPCLog.h"
 #include "IPCResult.h"
 #include "IPCString.h"
 #include "Serializing/IPCSerializer.h"
+#include "futex.h"
 #include <errno.h>
 #include <string.h>
 #include <unistd.h>
@@ -186,15 +189,13 @@ size_t BufferAssembler::getCount()
 }
 }
 
-IPCCommunicator::IPCCommunicator(int fd)
-    : m_fd(fd)
+IPCCommunicator::IPCCommunicator(IPCFutexPageQueue* futexPageQueue)
+    : m_futexPageQueue(futexPageQueue)
 {
 }
 
 IPCCommunicator::~IPCCommunicator()
 {
-    if (m_fd != -1)
-        close(m_fd);
 }
 
 std::unique_ptr<IPCResult> IPCCommunicator::assembleResult()
@@ -253,7 +254,6 @@ void IPCCommunicator::doSendBufferOnly(IPCBuffer* buffer)
 {
     const char* data = static_cast<const char*>(buffer->get());
     uint32_t length = buffer->length();
-    doSendBufferOnly(&length, sizeof(length));
     doSendBufferOnly(data, length);
 }
 
@@ -261,45 +261,100 @@ uint32_t IPCCommunicator::doReadPackage()
 {
     uint32_t msg;
     uint32_t length;
-    doRecvBufferOnly(&length, sizeof(length));
-    m_package.reset(new char[length]);
+    m_futexPageQueue->lockReadPage();
+    void* sharedMemory = m_futexPageQueue->getCurrentReadPage();
+    length = static_cast<uint32_t*>(sharedMemory)[0];
+    uint32_t availableSize = m_futexPageQueue->getPageSize() - sizeof(uint32_t);
     if (length < 2 * sizeof(uint32_t)) {
-        clearBlob();
+        releaseBlob();
         throw IPCException("Not a vaild msg");
     }
-    doRecvBufferOnly(m_package.get(), length);
-    return *reinterpret_cast<uint32_t*>(m_package.get());
-}
-
-void IPCCommunicator::releaseFd()
-{
-    m_fd = -1;
+    if (length > availableSize) {
+        m_package.reset(new char[length]);
+        doRecvBufferOnly(m_package.get(), length);
+        return *reinterpret_cast<uint32_t*>(m_package.get());
+    }
+    return static_cast<uint32_t*>(sharedMemory)[1];
 }
 
 void IPCCommunicator::doSendBufferOnly(const void* _data, size_t length)
 {
     const char* data = static_cast<const char*>(_data);
-    while (length > 0) {
-        ssize_t byteTransfered;
-        byteTransfered = write(m_fd, data, length);
-        if (byteTransfered <= 0 && errno != EAGAIN) {
-            throw IPCException("send msg failed: %s", strerror(errno));
-        }
+    size_t pageSize = m_futexPageQueue->getPageSize();
+    ssize_t byteTransfered;
+    uint32_t* dstLength = static_cast<uint32_t*>(m_futexPageQueue->getCurrentWritePage());
+    // special handle the first part, which need a size
+    // as header.
+    dstLength[0] = length;
+
+    IPC_LOGD("send bytes: length: %zu", length);
+    byteTransfered = std::min(length, pageSize - sizeof(uint32_t));
+    memcpy(dstLength + 1, data, byteTransfered);
+    m_futexPageQueue->stepWrite();
+    // multiple page package
+    if (length > byteTransfered) {
         data += byteTransfered;
         length -= byteTransfered;
+        IPC_LOGD("sent bytes: remaining length: %zu, transfered: %zu", length, byteTransfered);
+
+        while (length > 0) {
+            byteTransfered = doSendBufferPage(data, length, pageSize);
+            data += byteTransfered;
+            length -= byteTransfered;
+            IPC_LOGD("sent bytes: remaining length: %zu, transfered: %zu", length, byteTransfered);
+        }
     }
 }
 
 void IPCCommunicator::doRecvBufferOnly(void* _data, size_t length)
 {
     char* data = static_cast<char*>(_data);
-    while (length > 0) {
+    size_t pageSize = m_futexPageQueue->getPageSize();
+    bool firstRun = true;
+    IPC_LOGD("recv bytes: length: %zu", length);
+    while (true) {
         ssize_t byteTransfered;
-        byteTransfered = read(m_fd, data, length);
-        if (byteTransfered <= 0 && errno != EAGAIN) {
-            throw IPCException("recv msg failed: %s", strerror(errno));
+        byteTransfered = std::min(length, pageSize);
+        const void* src = m_futexPageQueue->getCurrentReadPage();
+        // skip the package size.
+        // package starts with msg.
+        if (firstRun) {
+            src = static_cast<const char*>(src) + sizeof(uint32_t);
+            byteTransfered -= sizeof(uint32_t);
         }
+        memcpy(data, src, byteTransfered);
         data += byteTransfered;
         length -= byteTransfered;
+        IPC_LOGD("recv bytes: remaining length: %zu, transfered: %zu", length, byteTransfered);
+        if (length > 0) {
+            firstRun = false;
+            m_futexPageQueue->unlockReadPageAndStep();
+            m_futexPageQueue->lockReadPage();
+        } else {
+            break;
+        }
     }
+}
+
+const char* IPCCommunicator::getBlob()
+{
+    if (m_package.get())
+        return m_package.get() + sizeof(uint32_t);
+    return static_cast<const char*>(m_futexPageQueue->getCurrentReadPage()) + sizeof(uint32_t) * 2;
+}
+
+void IPCCommunicator::releaseBlob()
+{
+    m_package.reset();
+    m_futexPageQueue->unlockReadPageAndStep();
+}
+
+size_t IPCCommunicator::doSendBufferPage(const void* data, size_t length, size_t pageSize)
+{
+    ssize_t byteTransfered;
+    byteTransfered = std::min(length, pageSize);
+    void* dst = m_futexPageQueue->getCurrentWritePage();
+    memcpy(dst, data, byteTransfered);
+    m_futexPageQueue->stepWrite();
+    return byteTransfered;
 }

@@ -17,27 +17,23 @@
 namespace {
 class IPCSenderImpl : public IPCCommunicator, public IPCSender {
 public:
-    IPCSenderImpl(int fd, IPCHandler* handler, bool ownFd);
+    IPCSenderImpl(IPCFutexPageQueue*, IPCHandler* handler);
     ~IPCSenderImpl();
     std::unique_ptr<IPCResult> send(IPCBuffer*) override;
 
 private:
     bool checkBufferAsync(IPCBuffer* buffer);
     IPCHandler* m_handler;
-    bool m_ownFd;
 };
 
-IPCSenderImpl::IPCSenderImpl(int fd, IPCHandler* handler, bool ownFd)
-    : IPCCommunicator(fd)
+IPCSenderImpl::IPCSenderImpl(IPCFutexPageQueue* futexPageQueue, IPCHandler* handler)
+    : IPCCommunicator(futexPageQueue)
     , m_handler(handler)
-    , m_ownFd(ownFd)
 {
 }
 
 IPCSenderImpl::~IPCSenderImpl()
 {
-    if (!m_ownFd)
-        releaseFd();
 }
 
 std::unique_ptr<IPCResult> IPCSenderImpl::send(IPCBuffer* buffer)
@@ -51,11 +47,14 @@ std::unique_ptr<IPCResult> IPCSenderImpl::send(IPCBuffer* buffer)
         msg &= MSG_MASK;
         if (msg == MSG_END) {
             std::unique_ptr<IPCResult> result = assembleResult();
-            clearBlob();
+            releaseBlob();
             return result;
+        } else if (msg == MSG_TERMINATE) {
+            releaseBlob();
+            throw IPCException("peer terminates");
         }
         std::unique_ptr<IPCArguments> arguments = assembleArguments();
-        clearBlob();
+        releaseBlob();
         std::unique_ptr<IPCResult> sendBack = m_handler->handle(msg, arguments.get());
         if (!isAsync) {
             std::unique_ptr<IPCBuffer> resultBuffer = generateResultBuffer(sendBack.get());
@@ -71,7 +70,7 @@ bool IPCSenderImpl::checkBufferAsync(IPCBuffer* buffer)
 }
 }
 
-std::unique_ptr<IPCSender> createIPCSender(int fd, IPCHandler* handler, bool ownFd)
+std::unique_ptr<IPCSender> createIPCSender(IPCFutexPageQueue* futexPageQueue, IPCHandler* handler)
 {
-    return std::unique_ptr<IPCSender>(new IPCSenderImpl(fd, handler, ownFd));
+    return std::unique_ptr<IPCSender>(new IPCSenderImpl(futexPageQueue, handler));
 }

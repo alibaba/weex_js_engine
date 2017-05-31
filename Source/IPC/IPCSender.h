@@ -4,11 +4,12 @@
 class IPCBuffer;
 class IPCResult;
 class IPCHandler;
+class IPCFutexPageQueue;
 
 class IPCSender {
 public:
     virtual ~IPCSender() = default;
     virtual std::unique_ptr<IPCResult> send(IPCBuffer* buffer) = 0;
 };
-std::unique_ptr<IPCSender> createIPCSender(int fd, IPCHandler* handler, bool ownFd);
+std::unique_ptr<IPCSender> createIPCSender(IPCFutexPageQueue*, IPCHandler* handler);
 #endif /* IPCSENDER_H */

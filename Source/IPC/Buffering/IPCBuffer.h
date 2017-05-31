@@ -2,6 +2,7 @@
 #define IPCBUFFER_H
 #include <stddef.h>
 
+// A buffer starts with msg.
 class IPCBuffer {
 public:
     virtual ~IPCBuffer() = default;

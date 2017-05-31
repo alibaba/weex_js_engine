@@ -12,7 +12,7 @@ namespace {
 class IPCListenerImpl : public IPCCommunicator,
                         public IPCListener {
 public:
-    IPCListenerImpl(int fd, IPCHandler* handler);
+    IPCListenerImpl(IPCFutexPageQueue* futexPageQueue, IPCHandler* handler);
     ~IPCListenerImpl() override;
     void listen() override;
 
@@ -21,15 +21,14 @@ private:
     IPCHandler* m_handler;
 };
 
-IPCListenerImpl::IPCListenerImpl(int fd, IPCHandler* handler)
-    : IPCCommunicator(fd)
+IPCListenerImpl::IPCListenerImpl(IPCFutexPageQueue* futexPageQueue, IPCHandler* handler)
+    : IPCCommunicator(futexPageQueue)
     , m_handler(handler)
 {
 }
 
 IPCListenerImpl::~IPCListenerImpl()
 {
-    close(m_fd);
 }
 
 void IPCListenerImpl::listen()
@@ -40,8 +39,12 @@ void IPCListenerImpl::listen()
         msg &= MSG_MASK;
         if (msg == MSG_END)
             throw IPCException("unexpected MSG_END");
+        else if (msg == MSG_TERMINATE) {
+            releaseBlob();
+            throw IPCException("peer terminates");
+        }
         std::unique_ptr<IPCArguments> arguments = assembleArguments();
-        clearBlob();
+        releaseBlob();
         std::unique_ptr<IPCResult> sendBack = m_handler->handle(msg, arguments.get());
         if (!isAsync) {
             std::unique_ptr<IPCBuffer> resultBuffer = generateResultBuffer(sendBack.get());
@@ -51,7 +54,7 @@ void IPCListenerImpl::listen()
 }
 }
 
-std::unique_ptr<IPCListener> createIPCListener(int fd, IPCHandler* handler)
+std::unique_ptr<IPCListener> createIPCListener(IPCFutexPageQueue* futexPageQueue, IPCHandler* handler)
 {
-    return std::unique_ptr<IPCListener>(new IPCListenerImpl(fd, handler));
+    return std::unique_ptr<IPCListener>(new IPCListenerImpl(futexPageQueue, handler));
 }

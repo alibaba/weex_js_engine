@@ -4,6 +4,8 @@
 #include "IPCSender.h"
 #include "LogUtils.h"
 #include "Trace.h"
+#include "ashmem.h"
+#include "IPCFutexPageQueue.h"
 #include <dirent.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -11,17 +13,18 @@
 #include <stdlib.h>
 #include <string.h>
 #include <string>
-#include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
+#include <sys/mman.h>
 
 static void doExec(int fd, bool traceEnable);
 static void closeAllButThis(int fd);
 
 struct WeexJSConnection::WeexJSConnectionImpl {
     std::unique_ptr<IPCSender> serverSender;
+    std::unique_ptr<IPCFutexPageQueue> futexPageQueue;
     pid_t child{ 0 };
 };
 
@@ -37,29 +40,39 @@ WeexJSConnection::~WeexJSConnection()
 
 IPCSender* WeexJSConnection::start(IPCHandler* handler)
 {
-    int handles[2];
-    if (-1 == socketpair(AF_UNIX, SOCK_STREAM, 0, handles)) {
-        throw IPCException("failed to init socketpair: %s", strerror(errno));
+    int fd = ashmem_create_region("WEEX_IPC", IPCFutexPageQueue::ipc_size);
+    if (-1 == fd) {
+        throw IPCException("failed to create ashmem region: %s", strerror(errno));
     }
-    std::unique_ptr<IPCSender> sender(createIPCSender(handles[0], handler, true));
+    void* base = mmap(nullptr, IPCFutexPageQueue::ipc_size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+    if (base == MAP_FAILED) {
+        int _errno = errno;
+        close(fd);
+        throw IPCException("failed to map ashmem region: %s", strerror(_errno));
+    }
+    std::unique_ptr<IPCFutexPageQueue> futexPageQueue(new IPCFutexPageQueue(base, IPCFutexPageQueue::ipc_size, 0));
+    std::unique_ptr<IPCSender> sender(createIPCSender(futexPageQueue.get(), handler));
     m_impl->serverSender = std::move(sender);
+    m_impl->futexPageQueue = std::move(futexPageQueue);
     pid_t child = fork();
     if (child == -1) {
         int myerrno = errno;
-        close(handles[1]);
+        munmap(base, IPCFutexPageQueue::ipc_size);
+        close(fd);
         throw IPCException("failed to fork: %s", strerror(myerrno));
     } else if (child == 0) {
         // the child
-        closeAllButThis(handles[1]);
+        closeAllButThis(fd);
         // implements close all but handles[1]
         // do exec
-        doExec(handles[1], base::debug::TraceEvent::isEnable());
+        doExec(fd, base::debug::TraceEvent::isEnable());
         LOGE("exec Failed completely.");
         // failed to exec
         _exit(1);
     } else {
-        close(handles[1]);
+        close(fd);
         m_impl->child = child;
+        m_impl->futexPageQueue->spinWaitPeer();
     }
     return m_impl->serverSender.get();
 }
@@ -67,9 +80,11 @@ IPCSender* WeexJSConnection::start(IPCHandler* handler)
 void WeexJSConnection::end()
 {
     m_impl->serverSender.reset();
+    m_impl->futexPageQueue.reset();
     if (m_impl->child) {
         int wstatus;
         pid_t child;
+        kill(m_impl->child, 9);
         while (true) {
             child = waitpid(m_impl->child, &wstatus, 0);
             if (child != -1)

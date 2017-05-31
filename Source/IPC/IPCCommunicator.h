@@ -5,9 +5,10 @@
 class IPCResult;
 class IPCArguments;
 class IPCBuffer;
+class IPCFutexPageQueue;
 class IPCCommunicator {
 protected:
-    explicit IPCCommunicator(int fd);
+    explicit IPCCommunicator(IPCFutexPageQueue* futexPageQueue);
     virtual ~IPCCommunicator();
 
     std::unique_ptr<IPCResult> assembleResult();
@@ -15,22 +16,15 @@ protected:
     std::unique_ptr<IPCBuffer> generateResultBuffer(IPCResult*);
     void doSendBufferOnly(IPCBuffer* buffer);
     uint32_t doReadPackage();
-    void releaseFd();
-
-    inline const char* getBlob()
-    {
-        return m_package.get() + sizeof(uint32_t);
-    }
-
-    inline void clearBlob()
-    {
-        m_package.reset();
-    }
+    const char* getBlob();
+    void releaseBlob();
 
 private:
     void doSendBufferOnly(const void* data, size_t s);
+    size_t doSendBufferPage(const void* data, size_t s, size_t pageSize);
     void doRecvBufferOnly(void* data, size_t s);
-    int m_fd;
     std::unique_ptr<char[]> m_package;
+    // weakref to a IPCFutexPageQueue object.
+    IPCFutexPageQueue* m_futexPageQueue;
 };
 #endif /* IPCCOMMUNICATOR_H */

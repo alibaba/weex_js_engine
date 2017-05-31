@@ -121,6 +121,8 @@ using namespace WTF;
 #include "IPCSender.h"
 #include "IPCString.h"
 #include "IPCType.h"
+#include "IPCFutexPageQueue.h"
+#include "IPCException.h"
 #include "LogUtils.h"
 #include "Serializing/IPCSerializer.h"
 #include "Trace.h"
@@ -844,6 +846,7 @@ struct WeexJSServer::WeexJSServerImpl {
     bool enableTrace;
     RefPtr<VM> globalVM;
     Strong<JSGlobalObject> globalObject;
+    std::unique_ptr<IPCFutexPageQueue> futexPageQueue;
     std::unique_ptr<IPCSender> sender;
     std::unique_ptr<IPCHandler> handler;
     std::unique_ptr<IPCListener> listener;
@@ -853,9 +856,17 @@ struct WeexJSServer::WeexJSServerImpl {
 WeexJSServer::WeexJSServerImpl::WeexJSServerImpl(int _fd, bool _enableTrace)
     : enableTrace(_enableTrace)
 {
+    void* base = mmap(nullptr, IPCFutexPageQueue::ipc_size, PROT_READ | PROT_WRITE, MAP_SHARED, _fd, 0);
+    if (base == MAP_FAILED) {
+        int _errno = errno;
+        close(_fd);
+        throw IPCException("failed to map ashmem region: %s", strerror(_errno));
+    }
+    close(_fd);
+    futexPageQueue.reset(new IPCFutexPageQueue(base, IPCFutexPageQueue::ipc_size, 1));
     handler = std::move(createIPCHandler());
-    sender = std::move(createIPCSender(_fd, handler.get(), false));
-    listener = std::move(createIPCListener(_fd, handler.get()));
+    sender = std::move(createIPCSender(futexPageQueue.get(), handler.get()));
+    listener = std::move(createIPCListener(futexPageQueue.get(), handler.get()));
     serializer = std::move(createIPCSerializer());
 }
 

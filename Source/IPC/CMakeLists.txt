@@ -9,6 +9,9 @@ STATIC
 ./IPCCommunicator.cpp
 ./IPCHandler.cpp
 ./IPCListener.cpp
+./IPCFutexPageQueue.cpp
+./IPCFutexPageQueue.cpp
+./ashmem.c
 ./IPCCheck.cpp)
 
 #target_link_libraries(IPC

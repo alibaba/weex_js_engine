@@ -77,6 +77,13 @@ target_link_libraries(${WEEXJSSERVERSTUB_NAME}
 ${WEEXJSSERVER_NAME}
 )
 
+if (APPLE)
+set_target_properties(${WEEXJSSERVERSTUB_NAME}
+PROPERTIES LINK_FLAGS
+"-Wl,--entry=_start"
+)
+endif()
+
 add_custom_command(
     TARGET ${WEEXJSSERVERSTUB_NAME}
     POST_BUILD

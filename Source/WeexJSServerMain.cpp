@@ -4,6 +4,7 @@
 #include <errno.h>
 #include <pthread.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <string.h>
 
 extern "C" {
@@ -31,6 +32,7 @@ static void* threadEntry(void* _td)
 {
     ThreadData* td = static_cast<ThreadData*>(_td);
     WeexJSServer server(static_cast<int>(td->fd), static_cast<bool>(td->enableTrace));
+    nice(6);
     try {
         server.loop();
     } catch (IPCException& e) {

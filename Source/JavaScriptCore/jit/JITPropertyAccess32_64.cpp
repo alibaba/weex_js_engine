@@ -533,7 +533,7 @@ void JIT::emitSlow_op_put_by_val(Instruction* currentInstruction, Vector<SlowCas
     linkSlowCase(iter); // property int32 check
     linkSlowCase(iter); // base not array check
     
-    JITArrayMode mode = chooseArrayMode(profile);
+    JITArrayMode mode = m_byValCompilationInfo[m_byValInstructionIndex].arrayMode;
     switch (mode) {
     case JITInt32:
     case JITDouble:

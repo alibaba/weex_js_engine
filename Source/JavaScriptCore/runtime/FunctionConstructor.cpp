@@ -143,7 +143,12 @@ JSObject* constructFunctionSkippingEvalEnabledCheck(
         program = builder.toString();
     }
 
-    SourceCode source = makeSource(program, sourceOrigin, sourceURL, position);
+    SourceCode source;
+    if (!sourceURL.isEmpty()) {
+        source = makeSource(program, sourceOrigin, sourceURL, position);
+    } else {
+        source = makeSource(program, sourceOrigin, "(global function)", position);
+    }
     JSObject* exception = nullptr;
     FunctionExecutable* function = FunctionExecutable::fromGlobalCode(functionName, *exec, source, exception, overrideLineNumber);
     if (!function) {

@@ -874,6 +874,7 @@ static void ReportException(JSGlobalObject* globalObject, Exception* exception, 
     const char* func);
 static bool ExecuteJavaScript(JSGlobalObject* globalObject,
     const String& source,
+    const String& url,
     bool report_exceptions);
 
 void jString2Log(JNIEnv* env, jstring instance, jstring str)
@@ -924,7 +925,7 @@ static jint native_execJSService(JNIEnv* env,
         String source = jString2String(env, script);
         VM& vm = *globalVM;
         JSLockHolder locker(&vm);
-        if (script == NULL || !ExecuteJavaScript(globalObject, source, true)) {
+        if (script == NULL || !ExecuteJavaScript(globalObject, source, "(weex jsservice)", true)) {
             LOGE("jsLog JNI_Error >>> scriptStr :%s", source.utf8().data());
             return false;
         }
@@ -972,7 +973,7 @@ static jint native_initFramework(JNIEnv* env,
 
     if (script != NULL) {
         String source = jString2String(env, script);
-        if (!ExecuteJavaScript(globalObject, source, true)) {
+        if (!ExecuteJavaScript(globalObject, source, "(weex framework"), true)) {
             return false;
         }
 
@@ -1072,11 +1073,12 @@ static jint native_execJS(JNIEnv* env,
  */
 bool ExecuteJavaScript(JSGlobalObject* globalObject,
     const String& source,
+    const String& url,
     bool report_exceptions)
 {
     SourceOrigin sourceOrigin(String::fromUTF8("(weex)"));
     NakedPtr<Exception> evaluationException;
-    JSValue returnValue = evaluate(globalObject->globalExec(), makeSource(source, sourceOrigin), JSValue(), evaluationException);
+    JSValue returnValue = evaluate(globalObject->globalExec(), makeSource(source, sourceOrigin, url), JSValue(), evaluationException);
     if (report_exceptions && evaluationException) {
         ReportException(globalObject, evaluationException.get(), nullptr, "");
     }

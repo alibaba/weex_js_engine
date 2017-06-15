@@ -147,6 +147,7 @@ static EncodedJSValue JSC_HOST_CALL functionNotifyTrimMemory(ExecState*);
 static EncodedJSValue JSC_HOST_CALL functionMarkupState(ExecState*);
 static bool ExecuteJavaScript(JSGlobalObject* globalObject,
     const String& source,
+    const String& url,
     bool report_exceptions);
 
 static void ReportException(JSGlobalObject* globalObject,
@@ -632,11 +633,12 @@ EncodedJSValue JSC_HOST_CALL functionMarkupState(ExecState* state)
  */
 bool ExecuteJavaScript(JSGlobalObject* globalObject,
     const String& source,
+    const String& url,
     bool report_exceptions)
 {
     SourceOrigin sourceOrigin(String::fromUTF8("(weex)"));
     NakedPtr<Exception> evaluationException;
-    JSValue returnValue = evaluate(globalObject->globalExec(), makeSource(source, sourceOrigin), JSValue(), evaluationException);
+    JSValue returnValue = evaluate(globalObject->globalExec(), makeSource(source, sourceOrigin, url), JSValue(), evaluationException);
     if (report_exceptions && evaluationException) {
         ReportException(globalObject, evaluationException.get(), "", "");
     }
@@ -906,7 +908,7 @@ WeexJSServer::WeexJSServer(int fd, bool enableTrace)
         globalObject->initFunction();
         const IPCString* ipcSource = arguments->getString(0);
         String source = jString2String(ipcSource->content, ipcSource->length);
-        if (!ExecuteJavaScript(globalObject, source, true)) {
+        if (!ExecuteJavaScript(globalObject, source, "(weex framework)", true)) {
             return createInt32Result(static_cast<int32_t>(false));
         }
 
@@ -921,7 +923,7 @@ WeexJSServer::WeexJSServer(int fd, bool enableTrace)
         String source = jString2String(ipcSource->content, ipcSource->length);
         VM& vm = globalObject->vm();
         JSLockHolder locker(&vm);
-        if (!ExecuteJavaScript(globalObject, source, true)) {
+        if (!ExecuteJavaScript(globalObject, source, ("weex service"), true)) {
             LOGE("jsLog JNI_Error >>> scriptStr :%s", source.utf8().data());
             return createInt32Result(static_cast<int32_t>(false));
         }

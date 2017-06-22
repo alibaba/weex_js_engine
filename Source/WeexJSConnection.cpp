@@ -159,6 +159,7 @@ void doExec(int fd, bool traceEnable)
     const char* envp[] = { ld_library_path.c_str(), icu_data_path.c_str(), nullptr };
     {
         std::string executableName = executablePath + '/' + "libweexjsserverstub64.so";
+        chmod(executableName.c_str(), 0755);
         const char* argv[] = { executableName.c_str(), fdStr, traceEnable ? "1" : "0", nullptr };
         if (-1 == execve(argv[0], const_cast<char* const*>(&argv[0]), const_cast<char* const*>(envp))) {
             LOGE("execve failed: %s", strerror(errno));
@@ -166,6 +167,7 @@ void doExec(int fd, bool traceEnable)
     }
     {
         std::string executableName = executablePath + '/' + "libweexjsserverstub.so";
+        chmod(executableName.c_str(), 0755);
         const char* argv[] = { executableName.c_str(), fdStr, traceEnable ? "1" : "0", nullptr };
         if (-1 == execve(argv[0], const_cast<char* const*>(&argv[0]), const_cast<char* const*>(envp))) {
             LOGE("execve failed: %s", strerror(errno));

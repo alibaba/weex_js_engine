@@ -30,6 +30,7 @@ struct ThreadData {
 
 static void* threadEntry(void* _td)
 {
+    LOGE("WeexJsServerMain threadEntry");
     ThreadData* td = static_cast<ThreadData*>(_td);
     WeexJSServer server(static_cast<int>(td->fd), static_cast<bool>(td->enableTrace));
     nice(6);
@@ -44,6 +45,7 @@ static void* threadEntry(void* _td)
 
 int serverMain(int argc, char** argv)
 {
+    LOGE("WeexJsServerMain serverMain");
     unsigned long fd;
     unsigned long enableTrace;
     if (argc != 3) {

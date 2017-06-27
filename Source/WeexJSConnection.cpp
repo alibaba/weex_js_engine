@@ -156,7 +156,7 @@ void doExec(int fd, bool traceEnable)
     icu_data_path.append(icuDataPath);
     char fdStr[16];
     snprintf(fdStr, 16, "%d", fd);
-     const char* envp[] = { ld_library_path.c_str(), icu_data_path.c_str(), "LD_DEBUG=1000", nullptr };
+    const char* envp[] = { ld_library_path.c_str(), icu_data_path.c_str(), nullptr };
     {
         std::string executableName = executablePath + '/' + "libweexjsserverstub64.so";
         chmod(executableName.c_str(), 0755);

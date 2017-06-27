@@ -39,7 +39,7 @@ else()
     set(SERVERSUFFIX 64)
 endif()
 
-set(WEEXJSSERVER_NAME weexjsserver${SERVERSUFFIX})
+set(WEEXJSSERVER_NAME weexjss${SERVERSUFFIX})
 set(${WEEXJSSERVER_NAME}_SOURCES
 Compatible.cpp
 WeexJSServer.cpp
@@ -58,17 +58,17 @@ WEBKIT_FRAMEWORK(${WEEXJSSERVER_NAME})
 
 set_target_properties(${WEEXJSSERVER_NAME}
 PROPERTIES
-LINK_FLAGS "-Wl,--version-script=${CMAKE_CURRENT_SOURCE_DIR}//weexjsserver_version_script.txt -Wl,--no-undefined -Wl,-soname,libweexjsserver${SERVERSUFFIX}.so"
+LINK_FLAGS "-Wl,--version-script=${CMAKE_CURRENT_SOURCE_DIR}//weexjsserver_version_script.txt -Wl,--no-undefined -Wl,-soname,libweexjss${SERVERSUFFIX}.so"
 )
 
 add_custom_command(
     TARGET ${WEEXJSSERVER_NAME}
     POST_BUILD
-    COMMAND ${CMAKE_STRIP} $<TARGET_FILE:${WEEXJSSERVER_NAME}> -o ${CMAKE_SOURCE_DIR}/libweexjsserver${SERVERSUFFIX}.so
+    COMMAND ${CMAKE_STRIP} $<TARGET_FILE:${WEEXJSSERVER_NAME}> -o ${CMAKE_SOURCE_DIR}/libweexjss${SERVERSUFFIX}.so
     VERBATIM
 )
 
-set(WEEXJSSERVERSTUB_NAME weexjsserverstub${SERVERSUFFIX})
+set(WEEXJSSERVERSTUB_NAME weexjsstub${SERVERSUFFIX})
 add_executable(${WEEXJSSERVERSTUB_NAME}
 WeexJSServerMainStub.cpp
 )
@@ -87,6 +87,6 @@ endif()
 add_custom_command(
     TARGET ${WEEXJSSERVERSTUB_NAME}
     POST_BUILD
-    COMMAND ${CMAKE_STRIP} $<TARGET_FILE:${WEEXJSSERVERSTUB_NAME}> -o ${CMAKE_SOURCE_DIR}/libweexjsserverstub${SERVERSUFFIX}.so
+    COMMAND ${CMAKE_STRIP} $<TARGET_FILE:${WEEXJSSERVERSTUB_NAME}> -o ${CMAKE_SOURCE_DIR}/libweexjsstub${SERVERSUFFIX}.so
     VERBATIM
 )

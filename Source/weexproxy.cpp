@@ -440,18 +440,12 @@ static jint native_execJSService(JNIEnv* env,
         serializer->setMsg(static_cast<uint32_t>(IPCJSMsg::EXECJSSERVICE));
         addString(env, serializer.get(), script);
         std::unique_ptr<IPCBuffer> buffer = serializer->finish();
-        if (NULL != sSender  && buffer.get()) {
-            std::unique_ptr<IPCResult> result = sSender->send(buffer.get());
-            if (result->getType() != IPCType::INT32) {
-                LOGE("execJSService Unexpected result type");
-                return false;
-            }
-            return result->get<jint>();
-        } else {
-            LOGE("execJSService Unexpected error");
+        std::unique_ptr<IPCResult> result = sSender->send(buffer.get());
+        if (result->getType() != IPCType::INT32) {
+            LOGE("execJSService Unexpected result type");
             return false;
         }
-        
+        return result->get<jint>();
     } catch (IPCException& e) {
         LOGE("%s", e.msg());
         return false;
@@ -572,17 +566,12 @@ static jint doInitFramework(JNIEnv* env,
         serializer->setMsg(static_cast<uint32_t>(IPCJSMsg::INITFRAMEWORK));
         initFromParam(env, script, params, serializer.get());
         std::unique_ptr<IPCBuffer> buffer = serializer->finish();
-        if (NULL != sSender  && buffer.get()) {
-            std::unique_ptr<IPCResult> result = sSender->send(buffer.get());
-            if (result->getType() != IPCType::INT32) {
-                LOGE("initFramework Unexpected result type");
-                return false;
-            }
-            return result->get<jint>();
-        } else {
-            LOGE("initFramework Unexpected error");
+        std::unique_ptr<IPCResult> result = sSender->send(buffer.get());
+        if (result->getType() != IPCType::INT32) {
+            LOGE("initFramework Unexpected result type");
             return false;
         }
+        return result->get<jint>();
     } catch (IPCException& e) {
         LOGE("%s", e.msg());
         return false;
@@ -663,20 +652,13 @@ static jint native_execJS(JNIEnv* env,
             env->DeleteLocalRef(jDataObj);
             env->DeleteLocalRef(jArg);
         }
-        
         std::unique_ptr<IPCBuffer> buffer = serializer->finish();
-        if (NULL != sSender  && buffer.get()) {
-            std::unique_ptr<IPCResult> result = sSender->send(buffer.get());
-            if (result->getType() != IPCType::INT32) {
-                LOGE("execJS Unexpected result type");
-                return false;
-            }
-            return result->get<jint>();
-        } else {
-            LOGE("execJS Failed, Unexpected error");
+        std::unique_ptr<IPCResult> result = sSender->send(buffer.get());
+        if (result->getType() != IPCType::INT32) {
+            LOGE("execJS Unexpected result type");
             return false;
         }
-
+        return result->get<jint>();
     } catch (IPCException& e) {
         LOGE("%s", e.msg());
         doInitFramework(env, jThis, static_cast<jstring>(jScript), jParams);

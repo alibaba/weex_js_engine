@@ -432,6 +432,10 @@ static jint native_execJSService(JNIEnv* env,
     jobject object,
     jstring script)
 {
+    if (!sSender) {
+        LOGE("have not connected to a js server");
+        return false;
+    }
     if (script == nullptr)
         return false;
     try {
@@ -601,6 +605,10 @@ static jint native_execJS(JNIEnv* env,
     jstring jfunction,
     jobjectArray jargs)
 {
+    if (!sSender) {
+        LOGE("have not connected to a js server");
+        return false;
+    }
     if (jfunction == NULL || jinstanceid == NULL) {
         LOGE("native_execJS function is NULL");
         return false;

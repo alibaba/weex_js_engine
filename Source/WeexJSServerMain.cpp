@@ -37,7 +37,7 @@ static void* threadEntry(void* _td)
         server.loop();
     } catch (IPCException& e) {
         LOGE("%s", e.msg());
-        exit(1);
+        _exit(1);
     }
     return static_cast<void**>(nullptr);
 }

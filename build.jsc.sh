@@ -15,7 +15,7 @@ export TOOLCHAIN_PATH=$NDK_ROOT/toolchains/llvm/prebuilt/$HOST/bin
 if [ $TARGET = "arm" ]; then
     export TARGET
     export TARGET_ABI=armeabi-v7a
-    export CLANG_CFLAGS='-target armv7-linux-android -mthumb'
+    export CLANG_CFLAGS='-target armv7-linux-android -mthumb -funwind-tables'
     export TARGET_WORD_BITS=32
     export GCC_PATH=`dirname $(find $NDK_ROOT/toolchains $NDK_ROOT/build  -name 'arm*' -name '*-g++' | sort  -r| head -n 1)`/../
     export BINARY_PATH=$GCC_PATH/arm-linux-androideabi/bin

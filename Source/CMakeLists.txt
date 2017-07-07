@@ -3,6 +3,19 @@ cmake_minimum_required(VERSION 2.8.12)
 add_subdirectory(WTF)
 add_subdirectory(JavaScriptCore)
 add_subdirectory(IPC)
+add_subdirectory(CrashHandler)
+
+#add_executable(TestWeexServerPolicy
+#TestWeexServerPolicy.cpp
+#Compatible.cpp
+#)
+
+#add_executable(TestCrashHandler
+#TestCrashHandler.cpp
+#)
+#
+#target_link_libraries(TestCrashHandler
+#CrashHandler)
 
 include(WebKitCommon)
 
@@ -51,6 +64,7 @@ set(${WEEXJSSERVER_NAME}_LIBRARY_TYPE SHARED)
 set(${WEEXJSSERVER_NAME}_LIBRARIES
 JavaScriptCore
 IPC
+CrashHandler
 log)
 
 WEBKIT_FRAMEWORK(${WEEXJSSERVER_NAME})

@@ -21,6 +21,7 @@
 
 static void doExec(int fd, bool traceEnable);
 static void closeAllButThis(int fd);
+extern const char* s_cacheDir;
 
 struct WeexJSConnection::WeexJSConnectionImpl {
     std::unique_ptr<IPCSender> serverSender;
@@ -150,13 +151,19 @@ void doExec(int fd, bool traceEnable)
         LOGE("icuDataPath is empty");
         return;
     }
-    std::string ld_library_path("LD_LIBRARY_PATH=");
-    std::string icu_data_path("ICU_DATA_PATH=");
-    ld_library_path.append(executablePath);
-    icu_data_path.append(icuDataPath);
+    std::string ldLibraryPathEnv("LD_LIBRARY_PATH=");
+    std::string icuDataPathEnv("ICU_DATA_PATH=");
+    std::string crashFilePathEnv("CRASH_FILE_PATH=");
+    ldLibraryPathEnv.append(executablePath);
+    icuDataPathEnv.append(icuDataPath);
+    crashFilePathEnv.append(s_cacheDir);
+    crashFilePathEnv.append("/jsserver_crash");
     char fdStr[16];
     snprintf(fdStr, 16, "%d", fd);
-    const char* envp[] = { ld_library_path.c_str(), icu_data_path.c_str(), nullptr };
+    const char* envp[] = { ldLibraryPathEnv.c_str(),
+        icuDataPathEnv.c_str(),
+        crashFilePathEnv.c_str(),
+        nullptr };
     {
         std::string executableName = executablePath + '/' + "libweexjsstub64.so";
         chmod(executableName.c_str(), 0755);

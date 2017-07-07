@@ -12,6 +12,7 @@
 #include "Trace.h"
 #include "WeexJSConnection.h"
 #include <jni.h>
+#include <string>
 #include <unistd.h>
 
 namespace {
@@ -98,6 +99,8 @@ ScopedJString::getCharsLength()
 }
 
 static JNIEnv* getJNIEnv();
+static const char* getCacheDir(JNIEnv* env);
+static void reportServerCrash();
 
 static jclass jBridgeClazz;
 static jclass jWXJSObject;
@@ -110,12 +113,12 @@ static jmethodID jCallNativeModuleMethodId;
 static jmethodID jCallNativeComponentMethodId;
 static jmethodID jLogMethodId;
 static jobject jThis;
-static jobject jScript;
-static jobject jParams;
 static JavaVM* sVm = NULL;
 static IPCSender* sSender;
 static std::unique_ptr<IPCHandler> sHandler;
 static std::unique_ptr<WeexJSConnection> sConnection;
+
+const char* s_cacheDir;
 
 JNIEnv* getJNIEnv()
 {
@@ -589,9 +592,7 @@ static jint native_initFramework(JNIEnv* env,
     jobject params)
 {
     jThis = env->NewGlobalRef(object);
-    jScript = env->NewGlobalRef(script);
-    jParams = env->NewGlobalRef(params);
-    return doInitFramework(env, jThis, static_cast<jstring>(jScript), jParams);
+    return doInitFramework(env, jThis, script, params);
 }
 
 /**
@@ -669,7 +670,8 @@ static jint native_execJS(JNIEnv* env,
         return result->get<jint>();
     } catch (IPCException& e) {
         LOGE("%s", e.msg());
-        doInitFramework(env, jThis, static_cast<jstring>(jScript), jParams);
+        // report crash here
+        reportServerCrash();
         return false;
     }
     return true;
@@ -744,6 +746,7 @@ jint JNI_OnLoad(JavaVM* vm, void* reserved)
     }
 
     LOGD("end JNI_OnLoad");
+    s_cacheDir = getCacheDir(env);
     return JNI_VERSION_1_4;
 }
 
@@ -761,10 +764,6 @@ void JNI_OnUnload(JavaVM* vm, void* reserved)
     env->DeleteGlobalRef(jWXLogUtils);
     if (jThis)
         env->DeleteGlobalRef(jThis);
-    if (jScript)
-        env->DeleteGlobalRef(jScript);
-    if (jParams)
-        env->DeleteGlobalRef(jParams);
     // FIXME: move to other place
     // deinitHeapTimer();
 
@@ -773,4 +772,88 @@ void JNI_OnUnload(JavaVM* vm, void* reserved)
     using base::debug::TraceEvent;
     TraceEvent::StopATrace(env);
     LOGD(" end JNI_OnUnload");
+}
+
+const char* getCacheDir(JNIEnv* env)
+{
+    jclass activityThreadCls, applicationCls, fileCls;
+    jobject applicationObj, fileObj, pathStringObj;
+    jmethodID currentApplicationMethodId, getCacheDirMethodId, getAbsolutePathMethodId;
+    static std::string storage;
+    const char* tmp;
+    const char* ret = nullptr;
+    if (!storage.empty()) {
+        ret = storage.c_str();
+        goto no_empty;
+    }
+    activityThreadCls = env->FindClass("android/app/ActivityThread");
+    if (!activityThreadCls || env->ExceptionOccurred()) {
+        goto no_class;
+    }
+    currentApplicationMethodId = env->GetStaticMethodID(activityThreadCls, "currentApplication", "()Landroid/app/Application;");
+    if (!currentApplicationMethodId || env->ExceptionOccurred()) {
+        goto no_currentapplication_method;
+    }
+    applicationObj = env->CallStaticObjectMethod(activityThreadCls, currentApplicationMethodId, nullptr);
+    if (!applicationObj || env->ExceptionOccurred()) {
+        goto no_application;
+    }
+    applicationCls = env->GetObjectClass(applicationObj);
+    getCacheDirMethodId = env->GetMethodID(applicationCls, "getCacheDir", "()Ljava/io/File;");
+    if (!getCacheDirMethodId || env->ExceptionOccurred()) {
+        goto no_getcachedir_method;
+    }
+    fileObj = env->CallObjectMethod(applicationObj, getCacheDirMethodId, nullptr);
+    if (!fileObj || env->ExceptionOccurred()) {
+        goto no_file_obj;
+    }
+    fileCls = env->GetObjectClass(fileObj);
+    getAbsolutePathMethodId = env->GetMethodID(fileCls, "getAbsolutePath", "()Ljava/lang/String;");
+    if (!getAbsolutePathMethodId || env->ExceptionOccurred()) {
+        goto no_getabsolutepath_method;
+    }
+    pathStringObj = env->CallObjectMethod(fileObj, getAbsolutePathMethodId, nullptr);
+    if (!pathStringObj || env->ExceptionOccurred()) {
+        goto no_path_string;
+    }
+    tmp = env->GetStringUTFChars(reinterpret_cast<jstring>(pathStringObj), nullptr);
+    storage.assign(tmp);
+    env->ReleaseStringUTFChars(reinterpret_cast<jstring>(pathStringObj), tmp);
+    ret = storage.c_str();
+no_path_string:
+no_getabsolutepath_method:
+    env->DeleteLocalRef(fileCls);
+    env->DeleteLocalRef(fileObj);
+no_file_obj:
+no_getcachedir_method:
+    env->DeleteLocalRef(applicationCls);
+    env->DeleteLocalRef(applicationObj);
+no_application:
+no_currentapplication_method:
+    env->DeleteLocalRef(activityThreadCls);
+no_class:
+    env->ExceptionDescribe();
+    env->ExceptionClear();
+no_empty:
+    return ret;
+}
+
+void reportServerCrash()
+{
+    JNIEnv* env = getJNIEnv();
+    jmethodID reportMethodId;
+    jstring crashFile;
+    std::string crashFileStr;
+    reportMethodId = env->GetMethodID(jBridgeClazz,
+        "reportServerCrash",
+        "(Ljava/lang/String;)V");
+    if (!reportMethodId)
+        goto no_method;
+    crashFileStr.assign(s_cacheDir);
+    crashFileStr.append("/jsserver_crash/jsserver_crash_info.log");
+    crashFile = env->NewStringUTF(crashFileStr.c_str());
+    env->CallVoidMethod(jThis, reportMethodId, crashFile);
+    env->DeleteLocalRef(crashFile);
+no_method:
+    env->ExceptionClear();
 }

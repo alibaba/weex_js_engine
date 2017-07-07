@@ -112,6 +112,7 @@
 using namespace JSC;
 using namespace WTF;
 #include "Buffering/IPCBuffer.h"
+#include "CrashHandler.h"
 #include "IPCArguments.h"
 #include "IPCByteArray.h"
 #include "IPCHandler.h"
@@ -841,6 +842,14 @@ static bool initICUEnv()
     }
     return mapIcuData(std::string(path));
 }
+
+static void initCrashHandler()
+{
+    const char* path = getenv("CRASH_FILE_PATH");
+    if (path) {
+        crash_handler::initializeCrashHandler(path);
+    }
+}
 }
 
 struct WeexJSServer::WeexJSServerImpl {
@@ -885,6 +894,7 @@ WeexJSServer::WeexJSServer(int fd, bool enableTrace)
             LOGE("failed to init ICUEnv");
             return createInt32Result(static_cast<int32_t>(false));
         }
+        initCrashHandler();
         Options::enableRestrictedOptions(true);
 
         // Initialize JSC before getting VM.

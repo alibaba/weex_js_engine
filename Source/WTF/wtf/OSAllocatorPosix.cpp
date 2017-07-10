@@ -70,7 +70,7 @@ void* OSAllocator::reserveAndCommit(size_t bytes, Usage usage, bool writable, bo
     if (executable)
         protection |= PROT_EXEC;
 
-    int flags = MAP_PRIVATE | MAP_ANON;
+    int flags = MAP_PRIVATE | MAP_ANON | MAP_POPULATE;
 #if PLATFORM(IOS)
     if (executable)
         flags |= MAP_JIT;

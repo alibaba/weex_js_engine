@@ -1,5 +1,8 @@
 cmake_minimum_required(VERSION 2.8.12)
 
+if (NOT USE_SYSTEM_MALLOC)
+    add_subdirectory(bmalloc)
+endif ()
 add_subdirectory(WTF)
 add_subdirectory(JavaScriptCore)
 add_subdirectory(IPC)

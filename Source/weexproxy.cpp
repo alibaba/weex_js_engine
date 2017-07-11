@@ -100,7 +100,7 @@ ScopedJString::getCharsLength()
 
 static JNIEnv* getJNIEnv();
 static const char* getCacheDir(JNIEnv* env);
-static void reportServerCrash();
+static void reportServerCrash(jstring jinstanceid);
 
 static jclass jBridgeClazz;
 static jclass jWXJSObject;
@@ -671,7 +671,7 @@ static jint native_execJS(JNIEnv* env,
     } catch (IPCException& e) {
         LOGE("%s", e.msg());
         // report crash here
-        reportServerCrash();
+        reportServerCrash(jinstanceid);
         return false;
     }
     return true;
@@ -838,7 +838,7 @@ no_empty:
     return ret;
 }
 
-void reportServerCrash()
+void reportServerCrash(jstring jinstanceid)
 {
     JNIEnv* env = getJNIEnv();
     jmethodID reportMethodId;
@@ -846,13 +846,13 @@ void reportServerCrash()
     std::string crashFileStr;
     reportMethodId = env->GetMethodID(jBridgeClazz,
         "reportServerCrash",
-        "(Ljava/lang/String;)V");
+        "(Ljava/lang/String;Ljava/lang/String;)V");
     if (!reportMethodId)
         goto no_method;
     crashFileStr.assign(s_cacheDir);
     crashFileStr.append("/jsserver_crash/jsserver_crash_info.log");
     crashFile = env->NewStringUTF(crashFileStr.c_str());
-    env->CallVoidMethod(jThis, reportMethodId, crashFile);
+    env->CallVoidMethod(jThis, reportMethodId, jinstanceid, crashFile);
     env->DeleteLocalRef(crashFile);
 no_method:
     env->ExceptionClear();

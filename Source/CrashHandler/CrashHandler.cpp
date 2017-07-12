@@ -81,7 +81,7 @@ bool CrashHandlerInfo::initializeCrashHandler(const char* base)
     m_crashFilePath = base;
 
     m_crashFilePath += "/jsserver_crash_info.log";
-    m_logfile = ::open(m_crashFilePath.c_str(), O_TRUNC | O_CREAT | O_WRONLY);
+    m_logfile = ::open(m_crashFilePath.c_str(), O_TRUNC | O_CREAT | O_WRONLY, 0666);
     if (-1 == m_logfile)
         return false;
     m_mapsfile = ::open("/proc/self/maps", O_RDONLY);

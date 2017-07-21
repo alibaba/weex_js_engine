@@ -13,7 +13,11 @@
 #include <sys/types.h>
 #include <sys/ucontext.h>
 #include <unistd.h>
+#if defined(__arm__)
+#include "Backtrace.h"
+#else
 #include <unwind.h>
+#endif
 
 namespace crash_handler {
 class CrashHandlerInfo {
@@ -21,7 +25,7 @@ public:
     ~CrashHandlerInfo();
     bool initializeCrashHandler(const char* base);
     void handleSignal(int signum, siginfo_t* siginfo, void* ucontext);
-    bool printIP(_Unwind_Context* context, void* addr);
+    bool printIP(void* addr);
 
 private:
     void printContext();
@@ -34,9 +38,9 @@ private:
     int m_logfile = -1;
     int m_mapsfile = -1;
     struct sigaction m_sigaction[16];
-    static const size_t BUF_SIZE = 256;
-    static const int maxUnwindCount = 16;
-    int m_unwinded = -1;
+    static const size_t BUF_SIZE = 1024;
+    static const int maxUnwindCount = 32;
+    int m_unwinded = 0;
     char m_buf[BUF_SIZE];
     std::string m_crashFilePath;
     std::string m_fileContent;
@@ -262,26 +266,38 @@ void CrashHandlerInfo::printRegContent(void* addr, const char* name)
     printf("\n");
 }
 
+#if defined(__arm__)
+static int traceFunction(uintptr_t ip, void* arg)
+{
+    if (cinfo->printIP(reinterpret_cast<void*>(ip)))
+        return BACKTRACE_CONTINUE;
+    return BACKTRACE_ABORT;
+}
+#else
 static _Unwind_Reason_Code traceFunction(_Unwind_Context* context, void* arg)
 {
     void* ip = (void*)_Unwind_GetIP(context);
-    if (cinfo->printIP(context, ip))
+    if (cinfo->printIP(ip))
         return _URC_NO_REASON;
     return _URC_NORMAL_STOP;
 }
+#endif
 
 void CrashHandlerInfo::printUnwind()
 {
     printf("\nbacktrace:\n");
+#if defined(__arm__)
+    printIP(reinterpret_cast<void*>(m_mcontext.arm_pc));
+    mybacktrace(traceFunction, nullptr, &m_mcontext);
+#else
     _Unwind_Backtrace(traceFunction, nullptr);
+#endif
     printf("\n");
 }
 
-bool CrashHandlerInfo::printIP(_Unwind_Context* context, void* ip)
+bool CrashHandlerInfo::printIP(void* ip)
 {
     Dl_info info;
-    if (m_unwinded++ < 0)
-        return true;
     if (dladdr(ip, &info)) {
         printf("%s + %08lx\n", info.dli_fname,
             reinterpret_cast<unsigned long>(ip) - reinterpret_cast<unsigned long>(info.dli_fbase));

@@ -1,8 +1,17 @@
 cmake_minimum_required(VERSION 2.8.12)
 
+set(CrashHandlerSource
+CrashHandler.cpp
+)
+
+if (WTF_CPU_ARM)
+    LIST(APPEND CrashHandlerSource Backtrace_ARM.c)
+endif ()
+
 add_library(CrashHandler
 STATIC
-CrashHandler.cpp)
+${CrashHandlerSource})
+
 
 #target_link_libraries(IPC
 #JavaScriptCore)

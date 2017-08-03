@@ -118,7 +118,7 @@ static IPCSender* sSender;
 static std::unique_ptr<IPCHandler> sHandler;
 static std::unique_ptr<WeexJSConnection> sConnection;
 
-const char* s_cacheDir;
+const char* s_cacheDir = NULL;
 
 JNIEnv* getJNIEnv()
 {
@@ -849,8 +849,10 @@ void reportServerCrash(jstring jinstanceid)
         "(Ljava/lang/String;Ljava/lang/String;)V");
     if (!reportMethodId)
         goto no_method;
-    crashFileStr.assign(s_cacheDir);
-    crashFileStr.append("/jsserver_crash/jsserver_crash_info.log");
+    if (s_cacheDir) {
+        crashFileStr.assign(s_cacheDir);
+        crashFileStr.append("/jsserver_crash/jsserver_crash_info.log");
+    }
     crashFile = env->NewStringUTF(crashFileStr.c_str());
     env->CallVoidMethod(jThis, reportMethodId, jinstanceid, crashFile);
     env->DeleteLocalRef(crashFile);

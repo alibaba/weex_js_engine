@@ -151,6 +151,10 @@ void doExec(int fd, bool traceEnable)
         LOGE("icuDataPath is empty");
         return;
     }
+    if (!s_cacheDir) {
+        LOGE("crash log file path s_cacheDir is empty");
+        return;
+    }
     std::string ldLibraryPathEnv("LD_LIBRARY_PATH=");
     std::string icuDataPathEnv("ICU_DATA_PATH=");
     std::string crashFilePathEnv("CRASH_FILE_PATH=");

@@ -724,11 +724,10 @@ jint JNI_OnLoad(JavaVM* vm, void* reserved)
     if ((vm)->GetEnv((void**)&env, JNI_VERSION_1_4) != JNI_OK) {
         return JNI_FALSE;
     }
-    // FIXME: Move to other place
-    // if (!initICU()) {
-    //     return JNI_FALSE;
-    // }
-
+    try {
+        throw 1;
+    } catch (int) {
+    }
     sVm = vm;
     jclass tempClass = env->FindClass(
         "com/taobao/weex/bridge/WXBridge");

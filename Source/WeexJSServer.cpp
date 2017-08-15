@@ -129,6 +129,8 @@ using namespace WTF;
 #include "Trace.h"
 #include "WeexJSServer.h"
 
+#include "./base/base64/base64.h"
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -146,6 +148,9 @@ static EncodedJSValue JSC_HOST_CALL functionSetTimeoutNative(ExecState*);
 static EncodedJSValue JSC_HOST_CALL functionNativeLog(ExecState*);
 static EncodedJSValue JSC_HOST_CALL functionNotifyTrimMemory(ExecState*);
 static EncodedJSValue JSC_HOST_CALL functionMarkupState(ExecState*);
+static EncodedJSValue JSC_HOST_CALL functionAtob(ExecState *);
+static EncodedJSValue JSC_HOST_CALL functionBtoa(ExecState *);
+
 static bool ExecuteJavaScript(JSGlobalObject* globalObject,
     const String& source,
     const String& url,
@@ -332,6 +337,8 @@ void GlobalObject::initFunction()
         { "nativeLog", JSC::Function, NoIntrinsic, { (intptr_t) static_cast<NativeFunction>(functionNativeLog), (intptr_t)(5) } },
         { "notifyTrimMemory", JSC::Function, NoIntrinsic, { (intptr_t) static_cast<NativeFunction>(functionNotifyTrimMemory), (intptr_t)(0) } },
         { "markupState", JSC::Function, NoIntrinsic, { (intptr_t) static_cast<NativeFunction>(functionMarkupState), (intptr_t)(0) } },
+        { "atob", JSC::Function, NoIntrinsic, { (intptr_t) static_cast<NativeFunction>(functionAtob), (intptr_t)(1) } },
+        { "btoa", JSC::Function, NoIntrinsic, { (intptr_t) static_cast<NativeFunction>(functionBtoa), (intptr_t)(1) } },
     };
     reifyStaticProperties(vm, JSEventTargetPrototypeTableValues, *this);
 }
@@ -627,6 +634,72 @@ EncodedJSValue JSC_HOST_CALL functionMarkupState(ExecState* state)
 {
     markupStateInternally();
     return JSValue::encode(jsUndefined());
+}
+
+EncodedJSValue JSC_HOST_CALL functionAtob(ExecState *state)
+{
+    LOGD("[ExtendJSApi] functionAtob");
+    base::debug::TraceScope traceScope("weex", "atob");
+
+    JSValue ret = jsUndefined();
+    JSValue val = state->argument(0);
+
+    if (!val.isUndefined())
+    {
+        String original = val.toWTFString(state);
+
+        std::string input_str(original.utf8().data());
+
+        //LOGD("btoa input: %s", input_str.c_str());
+
+        std::string output_str;
+
+        Base64Decode(input_str, &output_str);
+        //LOGD("btoa output: %s", output_str.c_str());
+
+        WTF::String s(output_str.c_str());
+        ret = jsNontrivialString(&state->vm(), WTFMove(s));
+    }
+    else
+    {
+        //ret = "";
+    }
+    LOGD("[ExtendJSApi] functionAtob complete");
+
+    return JSValue::encode(ret);
+}
+
+EncodedJSValue JSC_HOST_CALL functionBtoa(ExecState *state)
+{
+    LOGD("[ExtendJSApi] functionBtoa");
+    base::debug::TraceScope traceScope("weex", "btoa");
+
+    JSValue ret = jsUndefined();
+    JSValue val = state->argument(0);
+
+    //if (!val.isUndefined()) {
+    String original = val.toWTFString(state);
+
+    std::string input_str(original.utf8().data());
+
+    LOGD("btoa input: %s", input_str.c_str());
+
+    std::string output_str;
+
+    Base64Encode(input_str, &output_str);
+    LOGD("btoa output: %s", output_str.c_str());
+
+    //JSString* asString(JSValue value)
+
+    WTF::String s(output_str.c_str());
+    ret = jsNontrivialString(&state->vm(), WTFMove(s));
+    //}else{
+    //ret = "";
+    //}
+
+    LOGD("[ExtendJSApi] functionBtoa complete");
+
+    return JSValue::encode(ret);
 }
 
 /**

@@ -282,6 +282,8 @@ static std::unique_ptr<IPCResult> handleCallNativeModule(IPCArguments* arguments
         jstring jDataStr = (jstring)jDataObj;
         ret = std::move(createJSONStringResult(env, jDataStr));
     }
+
+    env->DeleteLocalRef(result);
     env->DeleteLocalRef(jDataObj);
     env->DeleteLocalRef(jInstanceId);
     env->DeleteLocalRef(jmodule);

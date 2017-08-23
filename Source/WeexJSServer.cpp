@@ -617,8 +617,10 @@ EncodedJSValue JSC_HOST_CALL functionNativeLog(ExecState* state)
         IPCSerializer* serializer = server->getSerializer();
 
         serializer->setMsg(static_cast<uint32_t>(IPCProxyMsg::NATIVELOG) | MSG_FLAG_ASYNC);
-        String s = sb.toString();
-        addString(serializer, s);
+        // String s = sb.toString();
+        // addString(serializer, s);
+        CString data = sb.toString().utf8();
+        serializer->add(data.data(), data.length());
         std::unique_ptr<IPCBuffer> buffer = serializer->finish();
         sender->send(buffer.get());
     }

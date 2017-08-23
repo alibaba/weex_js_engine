@@ -387,15 +387,14 @@ static std::unique_ptr<IPCResult> handleCallNativeLog(IPCArguments* arguments)
 {
     JNIEnv* env = getJNIEnv();
     bool result = false;
-    jstring str_msg = getArgumentAsJString(env, arguments, 0);
+    jbyteArray str_msg = getArgumentAsJByteArray(env, arguments, 0);
     env = getJNIEnv();
     if (jWXLogUtils != NULL) {
         if (jLogMethodId == NULL) {
-            jLogMethodId = env->GetStaticMethodID(jWXLogUtils, "d", "(Ljava/lang/String;Ljava/lang/String;)V");
+            jLogMethodId = env->GetStaticMethodID(jWXLogUtils, "d", "(Ljava/lang/String;[B)V");
         }
         if (jLogMethodId != NULL) {
             jstring str_tag = env->NewStringUTF("jsLog");
-            // str_msg = env->NewStringUTF(s);
             env->CallStaticVoidMethod(jWXLogUtils, jLogMethodId, str_tag, str_msg);
             result = true;
             env->DeleteLocalRef(str_msg);

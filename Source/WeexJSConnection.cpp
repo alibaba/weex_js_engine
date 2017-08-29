@@ -151,16 +151,19 @@ void doExec(int fd, bool traceEnable)
         LOGE("icuDataPath is empty");
         return;
     }
-    if (!s_cacheDir) {
-        LOGE("crash log file path s_cacheDir is empty");
-        return;
-    }
+    
     std::string ldLibraryPathEnv("LD_LIBRARY_PATH=");
     std::string icuDataPathEnv("ICU_DATA_PATH=");
     std::string crashFilePathEnv("CRASH_FILE_PATH=");
     ldLibraryPathEnv.append(executablePath);
     icuDataPathEnv.append(icuDataPath);
-    crashFilePathEnv.append(s_cacheDir);
+    if (!s_cacheDir) {
+        LOGE("crash log file path s_cacheDir is empty");
+        crashFilePathEnv.append("");
+    } else {
+        crashFilePathEnv.append(s_cacheDir);
+    }
+    
     crashFilePathEnv.append("/jsserver_crash");
     char fdStr[16];
     snprintf(fdStr, 16, "%d", fd);

@@ -100,7 +100,7 @@ ScopedJString::getCharsLength()
 
 static JNIEnv* getJNIEnv();
 static const char* getCacheDir(JNIEnv* env);
-static void getCacheDirFromParam(JNIEnv* env, jobject params);
+static const char* getCacheDirFromParam(JNIEnv* env, jobject params);
 static void reportServerCrash(jstring jinstanceid);
 
 static jclass jBridgeClazz;
@@ -565,9 +565,12 @@ static jint doInitFramework(JNIEnv* env,
 {
     try {
         base::debug::TraceScope traceScope("weex", "initFramework");
-        getCacheDirFromParam(env, params);
+        if (!s_cacheDir || strlen(s_cacheDir) == 0) {
+            s_cacheDir = getCacheDirFromParam(env, params);
+        }
         sHandler = std::move(createIPCHandler());
         sConnection.reset(new WeexJSConnection());
+        LOGD("doInitFramework s_cacheDir:%s", s_cacheDir);
         sSender = sConnection->start(sHandler.get());
         initHandler(sHandler.get());
         using base::debug::TraceEvent;
@@ -747,8 +750,8 @@ jint JNI_OnLoad(JavaVM* vm, void* reserved)
         return JNI_FALSE;
     }
 
-    LOGD("end JNI_OnLoad");
     s_cacheDir = getCacheDir(env);
+    LOGD("end JNI_OnLoad getCacheDir :%s", s_cacheDir);
     return JNI_VERSION_1_4;
 }
 
@@ -776,19 +779,22 @@ void JNI_OnUnload(JavaVM* vm, void* reserved)
     LOGD(" end JNI_OnUnload");
 }
 
-void getCacheDirFromParam(JNIEnv* env, jobject params) {
-    if (!s_cacheDir) {
-        jclass c_params = env->GetObjectClass(params);
-        jmethodID m_cacheMethod = env->GetMethodID(c_params, "getCacheDir", "()Ljava/lang/String;");
-        jobject cache = env->CallObjectMethod(params, m_cacheMethod);
-        ScopedJStringUTF8 scopedString(env, (jstring)cache);
-        // s_cacheDir
-        s_cacheDir = scopedString.getChars();
-        LOGE("s_cacheDir is NULL use getCacheDirFromParam");
-        env->DeleteLocalRef(c_params);
-        env->DeleteLocalRef(cache);
+const char* getCacheDirFromParam(JNIEnv* env, jobject params) {
+    // LOGE("s_cacheDir is NULL use getCacheDirFromParam");
+    static std::string storage;
+    jclass c_params = env->GetObjectClass(params);
+    jmethodID m_cacheMethod = env->GetMethodID(c_params, "getCacheDir", "()Ljava/lang/String;");
+    jobject cache = env->CallObjectMethod(params, m_cacheMethod);
+    ScopedJStringUTF8 scopedString(env, (jstring)cache);
+    // s_cacheDir
+    const char * cacheDir = scopedString.getChars();
+    if (cacheDir) {
+        storage.assign(cacheDir);
     }
-    
+    LOGD("s_cacheDir is NULL use getCacheDirFromParam %s", cacheDir);
+    env->DeleteLocalRef(c_params);
+    env->DeleteLocalRef(cache);
+    return storage.c_str();
 }
 
 const char* getCacheDir(JNIEnv* env)

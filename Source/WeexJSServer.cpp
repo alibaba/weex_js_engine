@@ -166,6 +166,15 @@ static void setJSFVersion(GlobalObject* globalObject);
 static String exceptionToString(JSGlobalObject* globalObject, JSValue exception);
 static void markupStateInternally();
 
+static void initCrashHandler(const char* path)
+{
+    // const char* path = getenv("CRASH_FILE_PATH");
+    LOGD("CRASH_FILE_PATH %s:", path);
+    if (path) {
+        crash_handler::initializeCrashHandler(path);
+    }
+}
+
 static void initHeapTimer()
 {
     HeapTimer::startTimerThread();
@@ -311,6 +320,7 @@ void GlobalObject::initWXEnvironment(IPCArguments* arguments)
     VM& vm = this->vm();
     JSNonFinalObject* WXEnvironment = SimpleObject::create(vm, this);
 
+    bool hasInitCrashHandler = false;
     for (size_t i = 1; i < count; i += 2) {
         if (arguments->getType(i) != IPCType::BYTEARRAY) {
             continue;
@@ -320,7 +330,23 @@ void GlobalObject::initWXEnvironment(IPCArguments* arguments)
         }
         const IPCByteArray* ba = arguments->getByteArray(1 + i);
         String&& value = String::fromUTF8(ba->content);
+        // LOGE("initWXEnvironment value:%s", value.utf8().data());
+
+        const IPCByteArray* ba_type = arguments->getByteArray(i);
+        String&& type = String::fromUTF8(ba_type->content);
+        if (String("cacheDir") == type) {
+            // LOGE("initWXEnvironment type:%s", type.utf8().data());
+            String path = value;
+            path.append("/jsserver_crash");
+            LOGD("initWXEnvironment value:%s", path.utf8().data());
+            initCrashHandler(path.utf8().data());
+            hasInitCrashHandler = true;
+        }
         addString(vm, WXEnvironment, arguments->getByteArray(i)->content, WTFMove(value));
+    }
+    if (!hasInitCrashHandler) {
+        const char* path = getenv("CRASH_FILE_PATH");
+        initCrashHandler(path);
     }
     addValue(vm, "WXEnvironment", WXEnvironment);
 }
@@ -917,15 +943,6 @@ static bool initICUEnv()
     }
     return mapIcuData(std::string(path));
 }
-
-static void initCrashHandler()
-{
-    const char* path = getenv("CRASH_FILE_PATH");
-    LOGD("CRASH_FILE_PATH %s:", path);
-    if (path) {
-        crash_handler::initializeCrashHandler(path);
-    }
-}
 }
 
 struct WeexJSServer::WeexJSServerImpl {
@@ -970,7 +987,7 @@ WeexJSServer::WeexJSServer(int fd, bool enableTrace)
             LOGE("failed to init ICUEnv");
             return createInt32Result(static_cast<int32_t>(false));
         }
-        initCrashHandler();
+        // initCrashHandler();
         Options::enableRestrictedOptions(true);
 
         // Initialize JSC before getting VM.

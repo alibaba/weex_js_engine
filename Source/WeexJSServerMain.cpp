@@ -18,7 +18,7 @@ static unsigned long parseUL(const char* s)
     val = strtoul(s, nullptr, 10);
     if (errno) {
         LOGE("failed to parse ul: %s %s", s, strerror(errno));
-        exit(1);
+        _exit(1);
     }
     return val;
 }
@@ -48,7 +48,7 @@ int serverMain(int argc, char** argv)
     unsigned long enableTrace;
     if (argc != 3) {
         LOGE("argc is not correct");
-        exit(1);
+        _exit(1);
     }
     fd = parseUL(argv[1]);
     enableTrace = parseUL(argv[2]);

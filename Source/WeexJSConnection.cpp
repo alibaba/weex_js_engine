@@ -159,7 +159,7 @@ void doExec(int fd, bool traceEnable)
     icuDataPathEnv.append(icuDataPath);
     if (!s_cacheDir) {
         LOGE("crash log file path s_cacheDir is empty");
-        crashFilePathEnv.append("");
+        crashFilePathEnv.append("/data/data/com.taobao.tabao/cache");
     } else {
         crashFilePathEnv.append(s_cacheDir);
     }

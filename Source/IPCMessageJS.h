@@ -17,5 +17,6 @@ enum class IPCProxyMsg {
     CALLADDELEMENT,
     SETTIMEOUT,
     NATIVELOG,
+    CALLGCANVASLINK,
 };
 #endif /* IPCMESSAGEJS_H */

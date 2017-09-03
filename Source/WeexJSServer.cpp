@@ -150,6 +150,7 @@ static EncodedJSValue JSC_HOST_CALL functionNotifyTrimMemory(ExecState*);
 static EncodedJSValue JSC_HOST_CALL functionMarkupState(ExecState*);
 static EncodedJSValue JSC_HOST_CALL functionAtob(ExecState *);
 static EncodedJSValue JSC_HOST_CALL functionBtoa(ExecState *);
+static EncodedJSValue JSC_HOST_CALL functionGCanvasLinkNative(ExecState*);
 
 static bool ExecuteJavaScript(JSGlobalObject* globalObject,
     const String& source,
@@ -365,6 +366,7 @@ void GlobalObject::initFunction()
         { "markupState", JSC::Function, NoIntrinsic, { (intptr_t) static_cast<NativeFunction>(functionMarkupState), (intptr_t)(0) } },
         { "atob", JSC::Function, NoIntrinsic, { (intptr_t) static_cast<NativeFunction>(functionAtob), (intptr_t)(1) } },
         { "btoa", JSC::Function, NoIntrinsic, { (intptr_t) static_cast<NativeFunction>(functionBtoa), (intptr_t)(1) } },
+        { "callGCanvasLinkNative", JSC::Function, NoIntrinsic, { (intptr_t) static_cast<NativeFunction>(functionGCanvasLinkNative), (intptr_t)(3) } },
     };
     reifyStaticProperties(vm, JSEventTargetPrototypeTableValues, *this);
 }
@@ -439,6 +441,16 @@ static JSValue jString2JSValue(ExecState* state, const uint16_t* str, size_t len
     return jsNontrivialString(&state->vm(), WTFMove(s));
 }
 
+static JSValue String2JSValue(ExecState* state, String s)
+{
+    if (s.isEmpty()) {
+        return jsEmptyString(&state->vm());
+    } else if (s.length() == 1) {
+        return jsSingleCharacterString(&state->vm(), s[0]);
+    }
+    return jsNontrivialString(&state->vm(), WTFMove(s));
+}
+
 static JSValue parseToObject(ExecState* state, const String& data)
 {
     VM& vm = state->vm();
@@ -500,6 +512,50 @@ EncodedJSValue JSC_HOST_CALL functionCallNative(ExecState* state)
     }
 
     return JSValue::encode(jsNumber(result->get<int32_t>()));
+}
+
+EncodedJSValue JSC_HOST_CALL functionGCanvasLinkNative(ExecState* state)
+{
+    base::debug::TraceScope traceScope("weex", "callGCanvasLinkNative");
+
+    VM& vm = state->vm();
+    GlobalObject* globalObject = static_cast<GlobalObject*>(state->lexicalGlobalObject());
+    WeexJSServer* server = globalObject->m_server;
+    IPCSender* sender = server->getSender();
+    IPCSerializer* serializer = server->getSerializer();
+    serializer->setMsg(static_cast<uint32_t>(IPCProxyMsg::CALLGCANVASLINK));
+
+    //contextId args[0]
+    getArgumentAsJString(serializer, state, 0);
+    //type args[1]
+    int32_t type = state->argument(1).asInt32();
+    serializer->add(type);
+    //arg args[2]
+    getArgumentAsJString(serializer, state, 2);
+    JSValue ret = jsUndefined();
+    try {
+        std::unique_ptr<IPCBuffer> buffer = serializer->finish();
+        std::unique_ptr<IPCResult> result = sender->send(buffer.get());
+        // LOGE("weexjsc functionGCanvasLinkNative");
+        // if (result->getType() == IPCType::VOID) {
+        //     return JSValue::encode(ret);
+        // } else if (result->getStringLength() > 0) {
+        //     WTF::String retWString = jString2String(result->getStringContent(), result->getStringLength());
+        //     LOGE("weexjsc functionGCanvasLinkNative result length > 1 retWString:%s", retWString.utf8().data());
+        //     ret = String2JSValue(state, retWString);
+            
+        // }
+        if (result->getType() != IPCType::VOID) {
+            if ( result->getStringLength() > 0) {
+                ret = jString2JSValue(state, result->getStringContent(), result->getStringLength());
+            }
+        }
+    } catch (IPCException& e) {
+        LOGE("functionGCanvasLinkNative exception %s", e.msg());
+        _exit(1);
+    }
+    
+    return JSValue::encode(ret);
 }
 
 EncodedJSValue JSC_HOST_CALL functionCallNativeModule(ExecState* state)

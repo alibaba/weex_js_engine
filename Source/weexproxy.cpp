@@ -14,6 +14,7 @@
 #include <jni.h>
 #include <string>
 #include <unistd.h>
+#include "weexproxy.h"
 
 namespace {
 
@@ -117,7 +118,7 @@ static JavaVM* sVm = NULL;
 static IPCSender* sSender;
 static std::unique_ptr<IPCHandler> sHandler;
 static std::unique_ptr<WeexJSConnection> sConnection;
-
+static WEEXJSC::FunType gCanvasFunc = NULL;
 const char* s_cacheDir = NULL;
 
 JNIEnv* getJNIEnv()
@@ -150,6 +151,16 @@ static jstring getArgumentAsJString(JNIEnv* env, IPCArguments* arguments, int ar
     if (arguments->getType(argument) == IPCType::STRING) {
         const IPCString* s = arguments->getString(argument);
         ret = env->NewString(s->content, s->length);
+    }
+    return ret;
+}
+
+static int getArgumentAsInt32(JNIEnv* env, IPCArguments* arguments, int argument)
+{
+    int ret = 0;
+    if (arguments->getType(argument) == IPCType::INT32) {
+        const int32_t type = arguments->get<int32_t>(argument);
+        ret = type;
     }
     return ret;
 }
@@ -404,6 +415,41 @@ static std::unique_ptr<IPCResult> handleCallNativeLog(IPCArguments* arguments)
     return createInt32Result(static_cast<int32_t>(true));
 }
 
+static std::unique_ptr<IPCResult> handleCallGCanvasLinkNative(IPCArguments* arguments)
+{
+    base::debug::TraceScope traceScope("weex", "callGCanvasLinkNative");
+    JNIEnv* env = getJNIEnv();
+    //instacneID args[0]
+    jstring jContextId = getArgumentAsJString(env, arguments, 0);
+    const char* conextId = env->GetStringUTFChars(jContextId, NULL);
+    
+    // jstring jType = getArgumentAsJString(env, arguments, 1);
+    int type = getArgumentAsInt32(env, arguments, 1);
+    // need tansfer jtype to type
+    
+    jstring val = getArgumentAsJString(env, arguments, 2);
+    const char* args = env->GetStringUTFChars(val, NULL);
+
+    // LOGE("handleCallGCanvasLinkNative conextId:%s, type:%d, args:%s", conextId, type, args);
+
+    const char* retVal = NULL;
+    if (gCanvasFunc) {
+        retVal = WEEXJSC::callGCanvasFun(gCanvasFunc, conextId, type, args);
+    }
+    // LOGE("handleCallGCanvasLinkNative retVal:%s", retVal);
+    std::unique_ptr<IPCResult> ret = createVoidResult();
+    if (retVal) {
+        jstring jDataStr = env->NewStringUTF(retVal);
+        ret = std::move(createStringResult(env, jDataStr));
+        env->DeleteLocalRef(jDataStr);
+        retVal = NULL;
+    }
+    env->DeleteLocalRef(jContextId);
+    // env->DeleteLocalRef(jType);
+    env->DeleteLocalRef(val);
+    return ret;
+}
+
 static void initHandler(IPCHandler* handler)
 {
     handler->registerHandler(static_cast<uint32_t>(IPCProxyMsg::SETJSFVERSION), handleSetJSVersion);
@@ -414,6 +460,7 @@ static void initHandler(IPCHandler* handler)
     handler->registerHandler(static_cast<uint32_t>(IPCProxyMsg::CALLADDELEMENT), handleCallAddElement);
     handler->registerHandler(static_cast<uint32_t>(IPCProxyMsg::SETTIMEOUT), handleSetTimeout);
     handler->registerHandler(static_cast<uint32_t>(IPCProxyMsg::NATIVELOG), handleCallNativeLog);
+    handler->registerHandler(static_cast<uint32_t>(IPCProxyMsg::CALLGCANVASLINK), handleCallGCanvasLinkNative);
 }
 
 static void addString(JNIEnv* env, IPCSerializer* serializer, jstring str)
@@ -869,4 +916,18 @@ void reportServerCrash(jstring jinstanceid)
     env->DeleteLocalRef(crashFile);
 no_method:
     env->ExceptionClear();
+}
+
+namespace WEEXJSC {
+
+extern "C" void Inject_GCanvasFunc(FunType fp)
+{
+    gCanvasFunc = fp;
+    LOGE("weexjsc injectGCanvasFunc gCanvasFunc");
+}
+
+const char* callGCanvasFun(FunType fp, const char* conextId, int x, const char* args) {
+        return fp(conextId, x, args);
+}
+
 }

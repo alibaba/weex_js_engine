@@ -57,7 +57,11 @@ void IPCFutexPageQueue::unlock(size_t id)
     IPC_LOGD("unlock: %zu", id);
     volatile uint32_t* pageStart = static_cast<volatile uint32_t*>(getPage(id));
 
-    uint32_t l = __atomic_load_n(pageStart, __ATOMIC_RELAXED);
+    uint32_t l = m_tid;
+    if (__atomic_compare_exchange_n(pageStart, &l, 0,
+            false, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST)) {
+        return;
+    }
     if ((l & FUTEX_WAITERS) != 0) {
         int futexReturn = __futex(pageStart, FUTEX_UNLOCK_PI, 0, nullptr);
         if (futexReturn == -1) {
@@ -67,7 +71,7 @@ void IPCFutexPageQueue::unlock(size_t id)
     } else if ((l & FUTEX_TID_MASK) != m_tid) {
         throw IPCException("l is not equal to tid: %d %d", l, m_tid);
     }
-    __atomic_store_n(pageStart, 0, __ATOMIC_SEQ_CST);
+    throw IPCException("expected lock value");
 }
 
 void IPCFutexPageQueue::lock(size_t id, bool checkFinish)

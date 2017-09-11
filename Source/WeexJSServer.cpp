@@ -150,7 +150,18 @@ static EncodedJSValue JSC_HOST_CALL functionNotifyTrimMemory(ExecState*);
 static EncodedJSValue JSC_HOST_CALL functionMarkupState(ExecState*);
 static EncodedJSValue JSC_HOST_CALL functionAtob(ExecState *);
 static EncodedJSValue JSC_HOST_CALL functionBtoa(ExecState *);
+static EncodedJSValue JSC_HOST_CALL functionCallCreateBody(ExecState *);
+static EncodedJSValue JSC_HOST_CALL functionCallUpdateFinish(ExecState *);
+static EncodedJSValue JSC_HOST_CALL functionCallCreateFinish(ExecState *);
+static EncodedJSValue JSC_HOST_CALL functionCallRefreshFinish(ExecState *);
+static EncodedJSValue JSC_HOST_CALL functionCallUpdateAttrs(ExecState *);
+static EncodedJSValue JSC_HOST_CALL functionCallUpdateStyle(ExecState *);
+static EncodedJSValue JSC_HOST_CALL functionCallRemoveElement(ExecState *);
+static EncodedJSValue JSC_HOST_CALL functionCallMoveElement(ExecState *);
+static EncodedJSValue JSC_HOST_CALL functionCallAddEvent(ExecState *);
+static EncodedJSValue JSC_HOST_CALL functionCallRemoveEvent(ExecState *);
 static EncodedJSValue JSC_HOST_CALL functionGCanvasLinkNative(ExecState*);
+
 
 static bool ExecuteJavaScript(JSGlobalObject* globalObject,
     const String& source,
@@ -364,9 +375,20 @@ void GlobalObject::initFunction()
         { "nativeLog", JSC::Function, NoIntrinsic, { (intptr_t) static_cast<NativeFunction>(functionNativeLog), (intptr_t)(5) } },
         { "notifyTrimMemory", JSC::Function, NoIntrinsic, { (intptr_t) static_cast<NativeFunction>(functionNotifyTrimMemory), (intptr_t)(0) } },
         { "markupState", JSC::Function, NoIntrinsic, { (intptr_t) static_cast<NativeFunction>(functionMarkupState), (intptr_t)(0) } },
+
         { "atob", JSC::Function, NoIntrinsic, { (intptr_t) static_cast<NativeFunction>(functionAtob), (intptr_t)(1) } },
         { "btoa", JSC::Function, NoIntrinsic, { (intptr_t) static_cast<NativeFunction>(functionBtoa), (intptr_t)(1) } },
-        { "callGCanvasLinkNative", JSC::Function, NoIntrinsic, { (intptr_t) static_cast<NativeFunction>(functionGCanvasLinkNative), (intptr_t)(3) } },
+        { "callCreateBody", JSC::Function, NoIntrinsic, { (intptr_t) static_cast<NativeFunction>(functionCallCreateBody), (intptr_t)(3) } },
+        { "callUpdateFinish", JSC::Function, NoIntrinsic, { (intptr_t) static_cast<NativeFunction>(functionCallUpdateFinish), (intptr_t)(3) } },
+        { "callCreateFinish", JSC::Function, NoIntrinsic, { (intptr_t) static_cast<NativeFunction>(functionCallCreateFinish), (intptr_t)(3) } },
+        { "callRefreshFinish", JSC::Function, NoIntrinsic, { (intptr_t) static_cast<NativeFunction>(functionCallRefreshFinish), (intptr_t)(3) } },
+        { "callUpdateAttrs", JSC::Function, NoIntrinsic, { (intptr_t) static_cast<NativeFunction>(functionCallUpdateAttrs), (intptr_t)(4) } },
+        { "callUpdateStyle", JSC::Function, NoIntrinsic, { (intptr_t) static_cast<NativeFunction>(functionCallUpdateStyle), (intptr_t)(4) } },
+        { "callRemoveElement", JSC::Function, NoIntrinsic, { (intptr_t) static_cast<NativeFunction>(functionCallRemoveElement), (intptr_t)(3) } },
+        { "callMoveElement", JSC::Function, NoIntrinsic, { (intptr_t) static_cast<NativeFunction>(functionCallMoveElement), (intptr_t)(5) } },
+        { "callAddEvent", JSC::Function, NoIntrinsic, { (intptr_t) static_cast<NativeFunction>(functionCallAddEvent), (intptr_t)(4) } },
+        { "callRemoveEvent", JSC::Function, NoIntrinsic, { (intptr_t) static_cast<NativeFunction>(functionCallRemoveEvent), (intptr_t)(4) } },
+		{ "callGCanvasLinkNative", JSC::Function, NoIntrinsic, { (intptr_t) static_cast<NativeFunction>(functionGCanvasLinkNative), (intptr_t)(3) } },
     };
     reifyStaticProperties(vm, JSEventTargetPrototypeTableValues, *this);
 }
@@ -657,6 +679,254 @@ EncodedJSValue JSC_HOST_CALL functionCallAddElement(ExecState* state)
     std::unique_ptr<IPCResult> result = sender->send(buffer.get());
 
     return JSValue::encode(jsNumber(0));
+}
+
+EncodedJSValue JSC_HOST_CALL functionCallCreateBody(ExecState* state)
+{
+    base::debug::TraceScope traceScope("weex", "callCreateBody");
+    GlobalObject* globalObject = static_cast<GlobalObject*>(state->lexicalGlobalObject());
+    WeexJSServer* server = globalObject->m_server;
+    IPCSender* sender = server->getSender();
+    IPCSerializer* serializer = server->getSerializer();
+    serializer->setMsg(static_cast<uint32_t>(IPCProxyMsg::CALLCREATEBODY));
+    //instacneID args[0]
+    getArgumentAsJString(serializer, state, 0);
+    //task args[1]
+    getArgumentAsJByteArray(serializer, state, 1);
+    //callback args[2]
+    getArgumentAsJString(serializer, state, 2);
+    std::unique_ptr<IPCBuffer> buffer = serializer->finish();
+    std::unique_ptr<IPCResult> result = sender->send(buffer.get());
+    if (result->getType() != IPCType::INT32) {
+        LOGE("functionCallNative: unexpected result: %d", result->getType());
+        return JSValue::encode(jsNumber(0));
+    }
+    return JSValue::encode(jsNumber(result->get<int32_t>()));
+}
+
+EncodedJSValue JSC_HOST_CALL functionCallUpdateFinish(ExecState* state)
+{
+    base::debug::TraceScope traceScope("weex", "functionCallUpdateFinish");
+    GlobalObject* globalObject = static_cast<GlobalObject*>(state->lexicalGlobalObject());
+    WeexJSServer* server = globalObject->m_server;
+    IPCSender* sender = server->getSender();
+    IPCSerializer* serializer = server->getSerializer();
+    serializer->setMsg(static_cast<uint32_t>(IPCProxyMsg::CALLUPDATEFINISH));
+    //instacneID args[0]
+    getArgumentAsJString(serializer, state, 0);
+    //task args[1]
+    getArgumentAsJByteArray(serializer, state, 1);
+    //callback args[2]
+    getArgumentAsJString(serializer, state, 2);
+    std::unique_ptr<IPCBuffer> buffer = serializer->finish();
+    std::unique_ptr<IPCResult> result = sender->send(buffer.get());
+    if (result->getType() != IPCType::INT32) {
+        LOGE("functionCallUpdateFinish: unexpected result: %d", result->getType());
+        return JSValue::encode(jsNumber(0));
+    }
+    return JSValue::encode(jsNumber(result->get<int32_t>()));
+}
+
+EncodedJSValue JSC_HOST_CALL functionCallCreateFinish(ExecState* state)
+{
+    base::debug::TraceScope traceScope("weex", "functionCallCreateFinish");
+    GlobalObject* globalObject = static_cast<GlobalObject*>(state->lexicalGlobalObject());
+    WeexJSServer* server = globalObject->m_server;
+    IPCSender* sender = server->getSender();
+    IPCSerializer* serializer = server->getSerializer();
+    serializer->setMsg(static_cast<uint32_t>(IPCProxyMsg::CALLCREATEFINISH));
+    //instacneID args[0]
+    getArgumentAsJString(serializer, state, 0);
+    //task args[1]
+    getArgumentAsJByteArray(serializer, state, 1);
+    //callback args[2]
+    getArgumentAsJString(serializer, state, 2);
+    std::unique_ptr<IPCBuffer> buffer = serializer->finish();
+    std::unique_ptr<IPCResult> result = sender->send(buffer.get());
+    if (result->getType() != IPCType::INT32) {
+        LOGE("functionCallCreateFinish: unexpected result: %d", result->getType());
+        return JSValue::encode(jsNumber(0));
+    }
+    return JSValue::encode(jsNumber(result->get<int32_t>()));
+}
+
+EncodedJSValue JSC_HOST_CALL functionCallRefreshFinish(ExecState* state)
+{
+    base::debug::TraceScope traceScope("weex", "functionCallRefreshFinish");
+    GlobalObject* globalObject = static_cast<GlobalObject*>(state->lexicalGlobalObject());
+    WeexJSServer* server = globalObject->m_server;
+    IPCSender* sender = server->getSender();
+    IPCSerializer* serializer = server->getSerializer();
+    serializer->setMsg(static_cast<uint32_t>(IPCProxyMsg::CALLREFRESHFINISH));
+    //instacneID args[0]
+    getArgumentAsJString(serializer, state, 0);
+    //task args[1]
+    getArgumentAsJByteArray(serializer, state, 1);
+    //callback args[2]
+    getArgumentAsJString(serializer, state, 2);
+    std::unique_ptr<IPCBuffer> buffer = serializer->finish();
+    std::unique_ptr<IPCResult> result = sender->send(buffer.get());
+    if (result->getType() != IPCType::INT32) {
+        LOGE("functionCallRefreshFinish: unexpected result: %d", result->getType());
+        return JSValue::encode(jsNumber(0));
+    }
+    return JSValue::encode(jsNumber(result->get<int32_t>()));
+}
+
+
+EncodedJSValue JSC_HOST_CALL functionCallUpdateAttrs(ExecState* state)
+{
+    base::debug::TraceScope traceScope("weex", "functionCallUpdateAttrs");
+    GlobalObject* globalObject = static_cast<GlobalObject*>(state->lexicalGlobalObject());
+    WeexJSServer* server = globalObject->m_server;
+    IPCSender* sender = server->getSender();
+    IPCSerializer* serializer = server->getSerializer();
+    serializer->setMsg(static_cast<uint32_t>(IPCProxyMsg::CALLUPDATEATTRS));
+    //instacneID args[0]
+    getArgumentAsJString(serializer, state, 0);
+    //instacneID args[1]
+    getArgumentAsJString(serializer, state, 1);
+    //task args[2]
+    getArgumentAsJByteArray(serializer, state, 2);
+    //callback args[3]
+    getArgumentAsJString(serializer, state, 3);
+    std::unique_ptr<IPCBuffer> buffer = serializer->finish();
+    std::unique_ptr<IPCResult> result = sender->send(buffer.get());
+    if (result->getType() != IPCType::INT32) {
+        LOGE("functionCallUpdateAttrs: unexpected result: %d", result->getType());
+        return JSValue::encode(jsNumber(0));
+    }
+    return JSValue::encode(jsNumber(result->get<int32_t>()));
+}
+
+EncodedJSValue JSC_HOST_CALL functionCallUpdateStyle(ExecState* state)
+{
+    base::debug::TraceScope traceScope("weex", "functionCallUpdateStyle");
+    GlobalObject* globalObject = static_cast<GlobalObject*>(state->lexicalGlobalObject());
+    WeexJSServer* server = globalObject->m_server;
+    IPCSender* sender = server->getSender();
+    IPCSerializer* serializer = server->getSerializer();
+    serializer->setMsg(static_cast<uint32_t>(IPCProxyMsg::CALLUPDATESTYLE));
+    //instacneID args[0]
+    getArgumentAsJString(serializer, state, 0);
+    //instacneID args[1]
+    getArgumentAsJString(serializer, state, 1);
+    //task args[2]
+    getArgumentAsJByteArray(serializer, state, 2);
+    //callback args[3]
+    getArgumentAsJString(serializer, state, 3);
+    std::unique_ptr<IPCBuffer> buffer = serializer->finish();
+    std::unique_ptr<IPCResult> result = sender->send(buffer.get());
+    if (result->getType() != IPCType::INT32) {
+        LOGE("functionCallUpdateStyle: unexpected result: %d", result->getType());
+        return JSValue::encode(jsNumber(0));
+    }
+    return JSValue::encode(jsNumber(result->get<int32_t>()));
+}
+
+EncodedJSValue JSC_HOST_CALL functionCallRemoveElement(ExecState* state)
+{
+    base::debug::TraceScope traceScope("weex", "functionCallRemoveElement");
+    GlobalObject* globalObject = static_cast<GlobalObject*>(state->lexicalGlobalObject());
+    WeexJSServer* server = globalObject->m_server;
+    IPCSender* sender = server->getSender();
+    IPCSerializer* serializer = server->getSerializer();
+    serializer->setMsg(static_cast<uint32_t>(IPCProxyMsg::CALLREMOVEELEMENT));
+    //instacneID args[0]
+    getArgumentAsJString(serializer, state, 0);
+    //instacneID args[1]
+    getArgumentAsJString(serializer, state, 1);
+    //callback args[2]
+    getArgumentAsJString(serializer, state, 2);
+    std::unique_ptr<IPCBuffer> buffer = serializer->finish();
+    std::unique_ptr<IPCResult> result = sender->send(buffer.get());
+    if (result->getType() != IPCType::INT32) {
+        LOGE("functionCallRemoveElement: unexpected result: %d", result->getType());
+        return JSValue::encode(jsNumber(0));
+    }
+    return JSValue::encode(jsNumber(result->get<int32_t>()));
+}
+
+EncodedJSValue JSC_HOST_CALL functionCallMoveElement(ExecState* state)
+{
+    base::debug::TraceScope traceScope("weex", "functionCallMoveElement");
+    GlobalObject* globalObject = static_cast<GlobalObject*>(state->lexicalGlobalObject());
+    WeexJSServer* server = globalObject->m_server;
+    IPCSender* sender = server->getSender();
+    IPCSerializer* serializer = server->getSerializer();
+    serializer->setMsg(static_cast<uint32_t>(IPCProxyMsg::CALLMOVEELEMENT));
+    //instacneID args[0]
+    getArgumentAsJString(serializer, state, 0);
+    //instacneID args[1]
+    getArgumentAsJString(serializer, state, 1);
+    //callback args[2]
+    getArgumentAsJString(serializer, state, 2);
+
+    //callback args[3]
+    getArgumentAsJString(serializer, state, 3);
+
+    //callback args[4]
+    getArgumentAsJString(serializer, state, 4);
+
+    std::unique_ptr<IPCBuffer> buffer = serializer->finish();
+    std::unique_ptr<IPCResult> result = sender->send(buffer.get());
+    if (result->getType() != IPCType::INT32) {
+        LOGE("functionCallMoveElement: unexpected result: %d", result->getType());
+        return JSValue::encode(jsNumber(0));
+    }
+    return JSValue::encode(jsNumber(result->get<int32_t>()));
+}
+
+EncodedJSValue JSC_HOST_CALL functionCallAddEvent(ExecState* state)
+{
+    base::debug::TraceScope traceScope("weex", "functionCallAddEvent");
+    GlobalObject* globalObject = static_cast<GlobalObject*>(state->lexicalGlobalObject());
+    WeexJSServer* server = globalObject->m_server;
+    IPCSender* sender = server->getSender();
+    IPCSerializer* serializer = server->getSerializer();
+    serializer->setMsg(static_cast<uint32_t>(IPCProxyMsg::CALLADDEVENT));
+    //instacneID args[0]
+    getArgumentAsJString(serializer, state, 0);
+    //instacneID args[1]
+    getArgumentAsJString(serializer, state, 1);
+    //callback args[2]
+    getArgumentAsJString(serializer, state, 2);
+    //callback args[3]
+    getArgumentAsJString(serializer, state, 3);
+
+    std::unique_ptr<IPCBuffer> buffer = serializer->finish();
+    std::unique_ptr<IPCResult> result = sender->send(buffer.get());
+    if (result->getType() != IPCType::INT32) {
+        LOGE("functionCallAddEvent: unexpected result: %d", result->getType());
+        return JSValue::encode(jsNumber(0));
+    }
+    return JSValue::encode(jsNumber(result->get<int32_t>()));
+}
+
+EncodedJSValue JSC_HOST_CALL functionCallRemoveEvent(ExecState* state)
+{
+    base::debug::TraceScope traceScope("weex", "functionCallRemoveEvent");
+    GlobalObject* globalObject = static_cast<GlobalObject*>(state->lexicalGlobalObject());
+    WeexJSServer* server = globalObject->m_server;
+    IPCSender* sender = server->getSender();
+    IPCSerializer* serializer = server->getSerializer();
+    serializer->setMsg(static_cast<uint32_t>(IPCProxyMsg::CALLREMOVEEVENT));
+    //instacneID args[0]
+    getArgumentAsJString(serializer, state, 0);
+    //instacneID args[1]
+    getArgumentAsJString(serializer, state, 1);
+    //callback args[2]
+    getArgumentAsJString(serializer, state, 2);
+    //callback args[3]
+    getArgumentAsJString(serializer, state, 3);
+
+    std::unique_ptr<IPCBuffer> buffer = serializer->finish();
+    std::unique_ptr<IPCResult> result = sender->send(buffer.get());
+    if (result->getType() != IPCType::INT32) {
+        LOGE("functionCallRemoveEvent: unexpected result: %d", result->getType());
+        return JSValue::encode(jsNumber(0));
+    }
+    return JSValue::encode(jsNumber(result->get<int32_t>()));
 }
 
 EncodedJSValue JSC_HOST_CALL functionSetTimeoutNative(ExecState* state)

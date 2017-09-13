@@ -127,7 +127,10 @@ static void findPath(std::string& executablePath, std::string& icuDataPath)
             continue;
         if (val > target) {
             executablePath.assign(strstr(end, "/"));
-            executablePath = executablePath.substr(0, executablePath.rfind('/'));
+            std::size_t found = executablePath.rfind('/');
+            if (found != std::string::npos) {
+                executablePath = executablePath.substr(0, found);
+            }
         }
         if (!executablePath.empty()
             && !icuDataPath.empty()) {

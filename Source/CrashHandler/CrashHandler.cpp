@@ -299,8 +299,9 @@ bool CrashHandlerInfo::printIP(void* ip)
 {
     Dl_info info;
     if (dladdr(ip, &info)) {
-        printf("%s + %08lx\n", info.dli_fname,
-            reinterpret_cast<unsigned long>(ip) - reinterpret_cast<unsigned long>(info.dli_fbase));
+        printf("%s + %08lx(%s)\n", info.dli_fname,
+            reinterpret_cast<unsigned long>(ip) - reinterpret_cast<unsigned long>(info.dli_fbase),
+            info.dli_sname ? info.dli_sname : "unknown symbol");
     } else {
         printf("unknown dso: %p\n", ip);
     }

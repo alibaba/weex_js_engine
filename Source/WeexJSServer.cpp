@@ -184,6 +184,7 @@ static void initCrashHandler(const char* path)
     LOGD("CRASH_FILE_PATH %s:", path);
     if (path) {
         crash_handler::initializeCrashHandler(path);
+        freopen(path, "w", stderr);
     }
 }
 

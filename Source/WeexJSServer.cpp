@@ -161,7 +161,8 @@ static EncodedJSValue JSC_HOST_CALL functionCallMoveElement(ExecState *);
 static EncodedJSValue JSC_HOST_CALL functionCallAddEvent(ExecState *);
 static EncodedJSValue JSC_HOST_CALL functionCallRemoveEvent(ExecState *);
 static EncodedJSValue JSC_HOST_CALL functionGCanvasLinkNative(ExecState*);
-
+static EncodedJSValue JSC_HOST_CALL functionSetIntervalWeex(ExecState*);
+static EncodedJSValue JSC_HOST_CALL functionClearIntervalWeex(ExecState*);
 
 static bool ExecuteJavaScript(JSGlobalObject* globalObject,
     const String& source,
@@ -390,6 +391,8 @@ void GlobalObject::initFunction()
         { "callAddEvent", JSC::Function, NoIntrinsic, { (intptr_t) static_cast<NativeFunction>(functionCallAddEvent), (intptr_t)(4) } },
         { "callRemoveEvent", JSC::Function, NoIntrinsic, { (intptr_t) static_cast<NativeFunction>(functionCallRemoveEvent), (intptr_t)(4) } },
 		{ "callGCanvasLinkNative", JSC::Function, NoIntrinsic, { (intptr_t) static_cast<NativeFunction>(functionGCanvasLinkNative), (intptr_t)(3) } },
+		{ "setIntervalWeex", JSC::Function, NoIntrinsic, { (intptr_t) static_cast<NativeFunction>(functionSetIntervalWeex), (intptr_t)(3) } },
+        { "clearIntervalWeex", JSC::Function, NoIntrinsic, { (intptr_t) static_cast<NativeFunction>(functionClearIntervalWeex), (intptr_t)(1) } },
     };
     reifyStaticProperties(vm, JSEventTargetPrototypeTableValues, *this);
 }
@@ -510,6 +513,55 @@ EncodedJSValue JSC_HOST_CALL functionGCAndSweep(ExecState* exec)
     JSLockHolder lock(exec);
     // exec->heap()->collectAllGarbage();
     return JSValue::encode(jsNumber(exec->heap()->sizeAfterLastFullCollection()));
+}
+
+EncodedJSValue JSC_HOST_CALL functionSetIntervalWeex(ExecState* state)
+{
+    base::debug::TraceScope traceScope("weex", "functionSetIntervalWeex");
+    GlobalObject* globalObject = static_cast<GlobalObject*>(state->lexicalGlobalObject());
+    WeexJSServer* server = globalObject->m_server;
+    IPCSender* sender = server->getSender();
+    IPCSerializer* serializer = server->getSerializer();
+    serializer->setMsg(static_cast<uint32_t>(IPCProxyMsg::SETINTERVAL));
+    //instacneID args[0]
+    getArgumentAsJString(serializer, state, 0);
+    //task args[1]
+    getArgumentAsJString(serializer, state, 1);
+    //callback args[2]
+    getArgumentAsJString(serializer, state, 2);
+    try {
+        std::unique_ptr<IPCBuffer> buffer = serializer->finish();
+        std::unique_ptr<IPCResult> result = sender->send(buffer.get());
+        if (result->getType() != IPCType::INT32) {
+            LOGE("functionSetIntervalWeex: unexpected result: %d", result->getType());
+            return JSValue::encode(jsNumber(0));
+        }
+        return JSValue::encode(jsNumber(result->get<int32_t>()));
+    } catch (IPCException& e) {
+        LOGE("functionSetIntervalWeex exception %s", e.msg());
+    }
+    return JSValue::encode(jsNumber(0));
+}
+
+EncodedJSValue JSC_HOST_CALL functionClearIntervalWeex(ExecState* state)
+{
+    base::debug::TraceScope traceScope("weex", "functionClearIntervalWeex");
+    GlobalObject* globalObject = static_cast<GlobalObject*>(state->lexicalGlobalObject());
+    WeexJSServer* server = globalObject->m_server;
+    IPCSender* sender = server->getSender();
+    IPCSerializer* serializer = server->getSerializer();
+    serializer->setMsg(static_cast<uint32_t>(IPCProxyMsg::CLEARINTERVAL));
+    //instacneID args[0]
+    getArgumentAsJString(serializer, state, 0);
+    //task args[1]
+    getArgumentAsJString(serializer, state, 1);
+    try {
+        std::unique_ptr<IPCBuffer> buffer = serializer->finish();
+        std::unique_ptr<IPCResult> result = sender->send(buffer.get());
+    } catch (IPCException& e) {
+        LOGE("functionClearIntervalWeex exception %s", e.msg());
+    }
+    return JSValue::encode(jsBoolean(true));
 }
 
 EncodedJSValue JSC_HOST_CALL functionCallNative(ExecState* state)
@@ -1071,8 +1123,12 @@ bool ExecuteJavaScript(JSGlobalObject* globalObject,
     if (report_exceptions && evaluationException) {
         ReportException(globalObject, evaluationException.get(), "", "");
     }
-    if (evaluationException)
+    if (evaluationException) {
+        String exceptionInfo = exceptionToString(globalObject, evaluationException.get()->value());
+        LOGE("ExecuteJavaScript exception:%s", exceptionInfo.utf8().data());
         return false;
+    }
+        
     globalObject->vm().drainMicrotasks();
     return true;
 }
@@ -1364,6 +1420,21 @@ WeexJSServer::WeexJSServer(int fd, bool enableTrace)
     handler->registerHandler(static_cast<uint32_t>(IPCJSMsg::TAKEHEAPSNAPSHOT), [this](IPCArguments* arguments) {
         return createVoidResult();
 
+    });
+
+    handler->registerHandler(static_cast<uint32_t>(IPCJSMsg::EXECTIMERCALLBACK), [this](IPCArguments* arguments) {
+        base::debug::TraceScope traceScope("weex", "EXECTIMERCALLBACK");
+        LOGE("IPC EXECTIMERCALLBACK and ExecuteJavaScript");
+        JSGlobalObject* globalObject = m_impl->globalObject.get();
+        const IPCByteArray* ipcSource = arguments->getByteArray(0);
+        String&& value = String::fromUTF8(ipcSource->content);
+        String source = value;
+        VM& vm = globalObject->vm();
+        JSLockHolder locker(&vm);
+        if (!ExecuteJavaScript(globalObject, source, ("weex service"), false)) {
+            LOGE("jsLog EXECTIMERCALLBACK >>> scriptStr :%s", source.utf8().data());
+        }
+        return createVoidResult();
     });
 
     handler->registerHandler(static_cast<uint32_t>(IPCJSMsg::EXECJS), [this](IPCArguments* arguments) {

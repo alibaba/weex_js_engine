@@ -17,7 +17,9 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
+
 #include <sys/mman.h>
+#include <vector>
 
 static void doExec(int fd, bool traceEnable);
 static void closeAllButThis(int fd);
@@ -141,6 +143,39 @@ static void findPath(std::string& executablePath, std::string& icuDataPath)
     return;
 }
 
+class EnvPBuilder {
+public:
+    EnvPBuilder();
+    ~EnvPBuilder() = default;
+
+    void addNew(const char* n);
+    std::unique_ptr<const char* []> build();
+
+private:
+    std::vector<const char*> m_vec;
+};
+
+EnvPBuilder::EnvPBuilder()
+{
+    for (char** env = environ; *env; env++) {
+        addNew(*env);
+    }
+}
+
+void EnvPBuilder::addNew(const char* n)
+{
+    m_vec.emplace_back(n);
+}
+
+std::unique_ptr<const char* []> EnvPBuilder::build() {
+    std::unique_ptr<const char* []> ptr(new const char*[m_vec.size() + 1]);
+    for (size_t i = 0; i < m_vec.size(); ++i) {
+        ptr.get()[i] = m_vec[i];
+    }
+    ptr.get()[m_vec.size()] = nullptr;
+    return ptr;
+}
+
 void doExec(int fd, bool traceEnable)
 {
     std::string executablePath;
@@ -170,15 +205,16 @@ void doExec(int fd, bool traceEnable)
     crashFilePathEnv.append("/jsserver_crash");
     char fdStr[16];
     snprintf(fdStr, 16, "%d", fd);
-    const char* envp[] = { ldLibraryPathEnv.c_str(),
-        icuDataPathEnv.c_str(),
-        crashFilePathEnv.c_str(),
-        nullptr };
+    EnvPBuilder envpBuilder;
+    envpBuilder.addNew(ldLibraryPathEnv.c_str());
+    envpBuilder.addNew(icuDataPathEnv.c_str());
+    envpBuilder.addNew(crashFilePathEnv.c_str());
+    auto envp = envpBuilder.build();
     {
         std::string executableName = executablePath + '/' + "libweexjsb64.so";
         chmod(executableName.c_str(), 0755);
         const char* argv[] = { executableName.c_str(), fdStr, traceEnable ? "1" : "0", nullptr };
-        if (-1 == execve(argv[0], const_cast<char* const*>(&argv[0]), const_cast<char* const*>(envp))) {
+        if (-1 == execve(argv[0], const_cast<char* const*>(&argv[0]), const_cast<char* const*>(envp.get()))) {
             LOGE("execve failed: %s", strerror(errno));
         }
     }
@@ -186,7 +222,7 @@ void doExec(int fd, bool traceEnable)
         std::string executableName = executablePath + '/' + "libweexjsb.so";
         chmod(executableName.c_str(), 0755);
         const char* argv[] = { executableName.c_str(), fdStr, traceEnable ? "1" : "0", nullptr };
-        if (-1 == execve(argv[0], const_cast<char* const*>(&argv[0]), const_cast<char* const*>(envp))) {
+        if (-1 == execve(argv[0], const_cast<char* const*>(&argv[0]), const_cast<char* const*>(envp.get()))) {
             LOGE("execve failed: %s", strerror(errno));
         }
     }

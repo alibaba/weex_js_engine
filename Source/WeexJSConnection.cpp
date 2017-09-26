@@ -158,7 +158,16 @@ private:
 EnvPBuilder::EnvPBuilder()
 {
     for (char** env = environ; *env; env++) {
-        addNew(*env);
+        // fixme:add for ANDROID_ROOT envp
+        // if cannot find some env, can use such as
+        // PATH/ANDROID_BOOTLOGO/ANDROID_ASSETS/ANDROID_DATA/ASEC_MOUNTPOINT
+        // LOOP_MOUNTPOINT/BOOTCLASSPATH and etc
+        // but don't use LD_LIBRARY_PATH env may cause so cannot be found
+        const char *android_root_env = "ANDROID_ROOT=";
+        if (std::strstr(*env, android_root_env) != nullptr) {
+            addNew(*env);
+            break;
+        }
     }
 }
 

@@ -633,11 +633,13 @@ static jint doInitFramework(JNIEnv* env,
         std::unique_ptr<IPCResult> result = sSender->send(buffer.get());
         if (result->getType() != IPCType::INT32) {
             LOGE("initFramework Unexpected result type");
+            reportException("", "initFramework", "doInitFramework error, initFramework Unexpected result type");
             return false;
         }
         return result->get<jint>();
     } catch (IPCException& e) {
         LOGE("%s", e.msg());
+        reportException("", "initFramework", e.msg());
         return false;
     }
     return true;

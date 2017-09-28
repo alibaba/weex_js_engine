@@ -167,7 +167,8 @@ static EncodedJSValue JSC_HOST_CALL functionClearIntervalWeex(ExecState*);
 static bool ExecuteJavaScript(JSGlobalObject* globalObject,
     const String& source,
     const String& url,
-    bool report_exceptions);
+    bool report_exceptions,
+    const char* func);
 
 static void ReportException(JSGlobalObject* globalObject,
     Exception* exception,
@@ -1115,13 +1116,14 @@ EncodedJSValue JSC_HOST_CALL functionBtoa(ExecState *state)
 bool ExecuteJavaScript(JSGlobalObject* globalObject,
     const String& source,
     const String& url,
-    bool report_exceptions)
+    bool report_exceptions,
+    const char* func)
 {
     SourceOrigin sourceOrigin(String::fromUTF8("(weex)"));
     NakedPtr<Exception> evaluationException;
     JSValue returnValue = evaluate(globalObject->globalExec(), makeSource(source, sourceOrigin, url), JSValue(), evaluationException);
     if (report_exceptions && evaluationException) {
-        ReportException(globalObject, evaluationException.get(), "", "");
+        ReportException(globalObject, evaluationException.get(), "", func);
     }
     if (evaluationException) {
         String exceptionInfo = exceptionToString(globalObject, evaluationException.get()->value());
@@ -1394,7 +1396,8 @@ WeexJSServer::WeexJSServer(int fd, bool enableTrace)
         globalObject->initFunction();
         const IPCString* ipcSource = arguments->getString(0);
         String source = jString2String(ipcSource->content, ipcSource->length);
-        if (!ExecuteJavaScript(globalObject, source, "(weex framework)", true)) {
+        if (!ExecuteJavaScript(globalObject, source, "(weex framework)", true, "initFramework")) {
+
             return createInt32Result(static_cast<int32_t>(false));
         }
 
@@ -1409,7 +1412,7 @@ WeexJSServer::WeexJSServer(int fd, bool enableTrace)
         String source = jString2String(ipcSource->content, ipcSource->length);
         VM& vm = globalObject->vm();
         JSLockHolder locker(&vm);
-        if (!ExecuteJavaScript(globalObject, source, ("weex service"), true)) {
+        if (!ExecuteJavaScript(globalObject, source, ("weex service"), true, "execjsservice")) {
             LOGE("jsLog JNI_Error >>> scriptStr :%s", source.utf8().data());
             return createInt32Result(static_cast<int32_t>(false));
         }

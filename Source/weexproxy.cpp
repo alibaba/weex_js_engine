@@ -618,11 +618,13 @@ static jint doInitFramework(JNIEnv* env,
     jstring script,
     jobject params)
 {
+    bool reinit = false;
+startInitFrameWork:
     try {
         base::debug::TraceScope traceScope("weex", "initFramework");
         sHandler = std::move(createIPCHandler());
         sConnection.reset(new WeexJSConnection());
-        sSender = sConnection->start(sHandler.get());
+        sSender = sConnection->start(sHandler.get(), reinit);
         initHandler(sHandler.get());
         using base::debug::TraceEvent;
         TraceEvent::StartATrace(env);
@@ -638,9 +640,14 @@ static jint doInitFramework(JNIEnv* env,
         }
         return result->get<jint>();
     } catch (IPCException& e) {
-        LOGE("%s", e.msg());
-        reportException("", "initFramework", e.msg());
-        return false;
+        if (!reinit) {
+            reinit = true;
+            goto startInitFrameWork;
+        } else {
+            LOGE("%s", e.msg());
+            reportException("", "initFramework", e.msg());
+            return false;
+        }
     }
     return true;
 }

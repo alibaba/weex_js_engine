@@ -20,10 +20,14 @@
 
 #include <sys/mman.h>
 #include <vector>
+#include <iostream>
+#include <fstream>
 
 static void doExec(int fd, bool traceEnable);
 static void closeAllButThis(int fd);
 extern const char* s_cacheDir;
+static std::string logFilePath = "/data/data/com.taobao.taobao/cache";
+static void printLogOnFile(const char* log);
 
 struct WeexJSConnection::WeexJSConnectionImpl {
     std::unique_ptr<IPCSender> serverSender;
@@ -41,7 +45,7 @@ WeexJSConnection::~WeexJSConnection()
     end();
 }
 
-IPCSender* WeexJSConnection::start(IPCHandler* handler)
+IPCSender* WeexJSConnection::start(IPCHandler* handler, bool reinit)
 {
     int fd = ashmem_create_region("WEEX_IPC", IPCFutexPageQueue::ipc_size);
     if (-1 == fd) {
@@ -57,7 +61,34 @@ IPCSender* WeexJSConnection::start(IPCHandler* handler)
     std::unique_ptr<IPCSender> sender(createIPCSender(futexPageQueue.get(), handler));
     m_impl->serverSender = std::move(sender);
     m_impl->futexPageQueue = std::move(futexPageQueue);
-    pid_t child = fork();
+#if PRINT_LOG_CACHEFILE
+    if (s_cacheDir) {
+        logFilePath = s_cacheDir;
+    }
+    logFilePath.append("/jsserver_start.log");
+    std::ofstream mcfile;
+    if (reinit) {
+        mcfile.open(logFilePath, std::ios::app);
+        mcfile << "restart fork a process" << std::endl;
+    } else {
+        mcfile.open(logFilePath);
+        mcfile << "start fork a process" << std::endl;
+    }
+#endif
+    pid_t child;
+    if (reinit) {
+#if PRINT_LOG_CACHEFILE
+        mcfile << "reinit is ture use vfork" << std::endl;
+        mcfile.close();
+#endif
+        child = vfork();
+    } else {
+#if PRINT_LOG_CACHEFILE
+        mcfile << "reinit is false use fork" << std::endl;
+        mcfile.close();
+#endif
+        child = fork();
+    }
     if (child == -1) {
         int myerrno = errno;
         munmap(base, IPCFutexPageQueue::ipc_size);
@@ -68,11 +99,15 @@ IPCSender* WeexJSConnection::start(IPCHandler* handler)
         closeAllButThis(fd);
         // implements close all but handles[1]
         // do exec
+        printLogOnFile("fork success on subprocess and start doExec");;
         doExec(fd, base::debug::TraceEvent::isEnable());
+        printLogOnFile("exec Failed completely.");
         LOGE("exec Failed completely.");
         // failed to exec
         _exit(1);
     } else {
+        printLogOnFile("fork success on main process and start m_impl->futexPageQueue->spinWaitPeer()");
+
         close(fd);
         m_impl->child = child;
         m_impl->futexPageQueue->spinWaitPeer();
@@ -96,6 +131,15 @@ void WeexJSConnection::end()
                 break;
         }
     }
+}
+
+void printLogOnFile(const char* log) {
+#if PRINT_LOG_CACHEFILE
+    std::ofstream mcfile;
+    mcfile.open(logFilePath, std::ios::app);
+    mcfile << log << std::endl;
+    mcfile.close();
+#endif
 }
 
 static std::string __attribute__((noinline)) findPath();
@@ -164,7 +208,7 @@ EnvPBuilder::EnvPBuilder()
         // LOOP_MOUNTPOINT/BOOTCLASSPATH and etc
         // but don't use LD_LIBRARY_PATH env may cause so cannot be found
         const char *android_root_env = "ANDROID_ROOT=";
-        if (std::strstr(*env, android_root_env) != nullptr) {
+        if (std::strstr(*env, android_root_env) != nullptr) { 
             addNew(*env);
             break;
         }
@@ -190,27 +234,45 @@ void doExec(int fd, bool traceEnable)
     std::string executablePath;
     std::string icuDataPath;
     findPath(executablePath, icuDataPath);
+#if PRINT_LOG_CACHEFILE
+    std::ofstream mcfile;
+    mcfile.open(logFilePath , std::ios::app);
+    mcfile << "jsengine WeexJSConnection::doExec executablePath:" << executablePath << std::endl;
+    mcfile << "jsengine WeexJSConnection::doExec icuDataPath:" << icuDataPath << std::endl;
+#endif
+
     if (executablePath.empty()) {
         LOGE("executablePath is empty");
+
+#if PRINT_LOG_CACHEFILE
+        mcfile << "jsengine WeexJSConnection::doExec executablePath is empty and return" << std::endl;
+        mcfile.close();
+#endif
+
         return;
     }
     if (icuDataPath.empty()) {
         LOGE("icuDataPath is empty");
+#if PRINT_LOG_CACHEFILE
+        mcfile << "jsengine WeexJSConnection::doExec icuDataPath is empty and return" << std::endl;
+        mcfile.close();
+#endif
         return;
     }
-    
     std::string ldLibraryPathEnv("LD_LIBRARY_PATH=");
     std::string icuDataPathEnv("ICU_DATA_PATH=");
     std::string crashFilePathEnv("CRASH_FILE_PATH=");
     ldLibraryPathEnv.append(executablePath);
     icuDataPathEnv.append(icuDataPath);
+#if PRINT_LOG_CACHEFILE
+    mcfile << "jsengine ldLibraryPathEnv:" << ldLibraryPathEnv << " icuDataPathEnv:" << icuDataPathEnv << std::endl;
+#endif
     if (!s_cacheDir) {
         LOGE("crash log file path s_cacheDir is empty");
-        crashFilePathEnv.append("/data/data/com.taobao.taobao/cache");
+        crashFilePathEnv.append(logFilePath);
     } else {
         crashFilePathEnv.append(s_cacheDir);
     }
-    
     crashFilePathEnv.append("/jsserver_crash");
     char fdStr[16];
     snprintf(fdStr, 16, "%d", fd);
@@ -230,11 +292,20 @@ void doExec(int fd, bool traceEnable)
     {
         std::string executableName = executablePath + '/' + "libweexjsb.so";
         chmod(executableName.c_str(), 0755);
+#if PRINT_LOG_CACHEFILE
+        mcfile << "jsengine WeexJSConnection::doExec start execve so name:" << executableName << std::endl;
+ #endif
         const char* argv[] = { executableName.c_str(), fdStr, traceEnable ? "1" : "0", nullptr };
         if (-1 == execve(argv[0], const_cast<char* const*>(&argv[0]), const_cast<char* const*>(envp.get()))) {
+#if PRINT_LOG_CACHEFILE
+            mcfile << "execve failed:" << strerror(errno) << std::endl;
+#endif
             LOGE("execve failed: %s", strerror(errno));
         }
     }
+#if PRINT_LOG_CACHEFILE
+    mcfile.close();
+#endif
 }
 
 static void closeAllButThis(int exceptfd)
@@ -245,7 +316,14 @@ static void closeAllButThis(int exceptfd)
     }
     int dirFd = dirfd(dir);
     struct dirent* cur;
+    struct timespec start;
+    clock_gettime(CLOCK_MONOTONIC, &start);
     while ((cur = readdir(dir))) {
+        struct timespec now;
+        clock_gettime(CLOCK_MONOTONIC, &now);
+        if ((now.tv_sec - start.tv_sec) > 6) {
+            break;
+        }
         if (!strcmp(cur->d_name, ".")
             || !strcmp(cur->d_name, "..")) {
             continue;

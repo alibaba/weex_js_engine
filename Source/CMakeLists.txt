@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 2.8.12)
 
+add_definitions(-DPRINT_LOG_CACHEFILE=1)
+
 if (NOT USE_SYSTEM_MALLOC)
     add_subdirectory(bmalloc)
 endif ()

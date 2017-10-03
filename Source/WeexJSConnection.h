@@ -9,7 +9,7 @@ class WeexJSConnection {
 public:
     WeexJSConnection();
     ~WeexJSConnection();
-    IPCSender* start(IPCHandler* handler);
+    IPCSender* start(IPCHandler* handler, bool reinit = false);
     void end();
 
 private:

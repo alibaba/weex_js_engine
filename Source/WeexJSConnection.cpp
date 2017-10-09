@@ -23,9 +23,10 @@
 #include <iostream>
 #include <fstream>
 
-static void doExec(int fd, bool traceEnable);
+static void doExec(int fd, bool traceEnable, bool installOnSdcard);
 static void closeAllButThis(int fd);
 extern const char* s_cacheDir;
+extern bool s_start_sdcard;
 static std::string logFilePath = "/data/data/com.taobao.taobao/cache";
 static void printLogOnFile(const char* log);
 
@@ -75,6 +76,8 @@ IPCSender* WeexJSConnection::start(IPCHandler* handler, bool reinit)
         mcfile << "start fork a process" << std::endl;
     }
 #endif
+
+    static bool startupSdcard = s_start_sdcard;
     pid_t child;
     if (reinit) {
 #if PRINT_LOG_CACHEFILE
@@ -100,7 +103,7 @@ IPCSender* WeexJSConnection::start(IPCHandler* handler, bool reinit)
         // implements close all but handles[1]
         // do exec
         printLogOnFile("fork success on subprocess and start doExec");;
-        doExec(fd, base::debug::TraceEvent::isEnable());
+        doExec(fd, base::debug::TraceEvent::isEnable(), startupSdcard);
         printLogOnFile("exec Failed completely.");
         LOGE("exec Failed completely.");
         // failed to exec
@@ -229,7 +232,7 @@ std::unique_ptr<const char* []> EnvPBuilder::build() {
     return ptr;
 }
 
-void doExec(int fd, bool traceEnable)
+void doExec(int fd, bool traceEnable, bool installOnSdcard)
 {
     std::string executablePath;
     std::string icuDataPath;
@@ -286,22 +289,46 @@ void doExec(int fd, bool traceEnable)
         chmod(executableName.c_str(), 0755);
         const char* argv[] = { executableName.c_str(), fdStr, traceEnable ? "1" : "0", nullptr };
         if (-1 == execve(argv[0], const_cast<char* const*>(&argv[0]), const_cast<char* const*>(envp.get()))) {
-            LOGE("execve failed: %s", strerror(errno));
+            // LOGE("execve failed: %s", strerror(errno));
         }
     }
+
     {
         std::string executableName = executablePath + '/' + "libweexjsb.so";
         chmod(executableName.c_str(), 0755);
+        int result = access(executableName.c_str(), 01);
+
 #if PRINT_LOG_CACHEFILE
-        mcfile << "jsengine WeexJSConnection::doExec start execve so name:" << executableName << std::endl;
- #endif
-        const char* argv[] = { executableName.c_str(), fdStr, traceEnable ? "1" : "0", nullptr };
-        if (-1 == execve(argv[0], const_cast<char* const*>(&argv[0]), const_cast<char* const*>(envp.get()))) {
-#if PRINT_LOG_CACHEFILE
-            mcfile << "execve failed:" << strerror(errno) << std::endl;
+        mcfile << "jsengine WeexJSConnection::doExec file exsist result:" 
+               << result << " installOnSdcard:" << installOnSdcard << std::endl;
 #endif
-            LOGE("execve failed: %s", strerror(errno));
+        if (result == -1) {
+            executableName = std::string(s_cacheDir) + '/' +"libweexjsb.so";
+            chmod(executableName.c_str(), 0755);
+#if PRINT_LOG_CACHEFILE
+            mcfile << "jsengine WeexJSConnection::doExec start path on sdcard, start execve so name:" 
+                   << executableName << std::endl;
+ #endif
+            const char* argv[] = { executableName.c_str(), fdStr, traceEnable ? "1" : "0", nullptr };
+            if (-1 == execve(argv[0], const_cast<char* const*>(&argv[0]), const_cast<char* const*>(envp.get()))) {
+#if PRINT_LOG_CACHEFILE
+                mcfile << "execve failed11:" << strerror(errno) << std::endl;
+#endif
+            }
+        } else {
+            // std::string executableName = executablePath + '/' + "libweexjsb.so";
+            chmod(executableName.c_str(), 0755);
+#if PRINT_LOG_CACHEFILE
+            mcfile << "jsengine WeexJSConnection::doExec start execve so name:" << executableName << std::endl;
+ #endif
+            const char* argv[] = { executableName.c_str(), fdStr, traceEnable ? "1" : "0", nullptr };
+            if (-1 == execve(argv[0], const_cast<char* const*>(&argv[0]), const_cast<char* const*>(envp.get()))) {
+#if PRINT_LOG_CACHEFILE
+                mcfile << "execve failed:" << strerror(errno) << std::endl;
+#endif
+            }
         }
+    
     }
 #if PRINT_LOG_CACHEFILE
     mcfile.close();

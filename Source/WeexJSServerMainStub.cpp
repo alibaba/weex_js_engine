@@ -6,7 +6,7 @@ int serverMain(int argc, char** argv);
 
 int main(int argc, char** argv)
 {
-    __android_log_print(ANDROID_LOG_INFO, "jsengine", "start stub");
+    __android_log_print(ANDROID_LOG_INFO, "jsengine", "stub start");
     return serverMain(argc, argv);
 }
 

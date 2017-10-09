@@ -583,7 +583,7 @@ EncodedJSValue JSC_HOST_CALL functionCallNative(ExecState* state)
     std::unique_ptr<IPCBuffer> buffer = serializer->finish();
     std::unique_ptr<IPCResult> result = sender->send(buffer.get());
     if (result->getType() != IPCType::INT32) {
-        LOGE("functionCallNative: unexpected result: %d", result->getType());
+        LOGE("functionCallNative:unexpected result: %d", result->getType());
         return JSValue::encode(jsNumber(0));
     }
 

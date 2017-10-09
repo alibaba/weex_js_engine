@@ -120,6 +120,7 @@ static std::unique_ptr<IPCHandler> sHandler;
 static std::unique_ptr<WeexJSConnection> sConnection;
 static WEEXJSC::FunType gCanvasFunc = NULL;
 const char* s_cacheDir = NULL;
+bool s_start_sdcard = false;
 
 JNIEnv* getJNIEnv()
 {
@@ -665,14 +666,15 @@ static jint native_initFramework_cacheDir(JNIEnv* env,
     jobject object,
     jstring script,
     jobject params,
-    jstring cacheDir)
+    jstring cacheDir,
+    jboolean installOnSdcard)
 {
     jThis = env->NewGlobalRef(object);
     const char* cache = env->GetStringUTFChars(reinterpret_cast<jstring>(cacheDir), nullptr);
     if (strlen(cache) > 0) {
         s_cacheDir = cache;
     }
-    env->ReleaseStringUTFChars(reinterpret_cast<jstring>(cacheDir), cache);
+    s_start_sdcard = installOnSdcard;
     return doInitFramework(env, jThis, script, params);
 }
 
@@ -764,7 +766,7 @@ static JNINativeMethod gMethods[] = {
         "(Ljava/lang/String;Lcom/taobao/weex/bridge/WXParams;)I",
         (void*)native_initFramework },
     { "initFramework",
-        "(Ljava/lang/String;Lcom/taobao/weex/bridge/WXParams;Ljava/lang/String;)I",
+        "(Ljava/lang/String;Lcom/taobao/weex/bridge/WXParams;Ljava/lang/String;Z)I",
         (void*)native_initFramework_cacheDir },
     { "execJS",
         "(Ljava/lang/String;Ljava/lang/String;"

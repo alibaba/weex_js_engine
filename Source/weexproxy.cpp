@@ -661,6 +661,21 @@ static jint native_initFramework(JNIEnv* env,
     return doInitFramework(env, jThis, script, params);
 }
 
+static jint native_initFramework_cacheDir(JNIEnv* env,
+    jobject object,
+    jstring script,
+    jobject params,
+    jstring cacheDir)
+{
+    jThis = env->NewGlobalRef(object);
+    const char* cache = env->GetStringUTFChars(reinterpret_cast<jstring>(cacheDir), nullptr);
+    if (strlen(cache) > 0) {
+        s_cacheDir = cache;
+    }
+    env->ReleaseStringUTFChars(reinterpret_cast<jstring>(cacheDir), cache);
+    return doInitFramework(env, jThis, script, params);
+}
+
 /**
  * Called to execute JavaScript such as . createInstance(),destroyInstance ext.
  *
@@ -748,6 +763,9 @@ static JNINativeMethod gMethods[] = {
     { "initFramework",
         "(Ljava/lang/String;Lcom/taobao/weex/bridge/WXParams;)I",
         (void*)native_initFramework },
+    { "initFramework",
+        "(Ljava/lang/String;Lcom/taobao/weex/bridge/WXParams;Ljava/lang/String;)I",
+        (void*)native_initFramework_cacheDir },
     { "execJS",
         "(Ljava/lang/String;Ljava/lang/String;"
         "Ljava/lang/String;[Lcom/taobao/weex/bridge/WXJSObject;)I",

@@ -24,6 +24,7 @@
 #include <fstream>
 
 static void doExec(int fd, bool traceEnable, bool installOnSdcard);
+static int copyFile(const char *SourceFile, const char *NewFile);
 static void closeAllButThis(int fd);
 extern const char* s_cacheDir;
 extern bool s_start_sdcard;
@@ -304,6 +305,15 @@ void doExec(int fd, bool traceEnable, bool installOnSdcard)
 #endif
         if (result == -1) {
             executableName = std::string(s_cacheDir) + '/' +"libweexjsb.so";
+            int result_cache = access(executableName.c_str(), 00);
+            if (result_cache == -1) {
+                std::string sourceSo = executablePath + '/' + "libweexjsb.so";
+                int ret = copyFile(sourceSo.c_str(), executableName.c_str());
+#if PRINT_LOG_CACHEFILE
+            mcfile << "jsengine WeexJSConnection::doExec copy so from:" << sourceSo
+                   << " to:" << executableName << ", success: " << ret << std::endl;
+ #endif
+            }
             chmod(executableName.c_str(), 0755);
 #if PRINT_LOG_CACHEFILE
             mcfile << "jsengine WeexJSConnection::doExec start path on sdcard, start execve so name:" 
@@ -366,4 +376,26 @@ static void closeAllButThis(int exceptfd)
         }
     }
     closedir(dir);
+}
+
+int copyFile(const char *SourceFile, const char *NewFile) {
+    std::ifstream in;
+    std::ofstream out;
+    in.open(SourceFile,std::ios::binary);
+    if(in.fail()) {
+        in.close();
+        out.close();
+        return 0;
+    }
+    out.open(NewFile,std::ios::binary);
+    if(out.fail()) {
+        out.close();
+        in.close();
+        return 0;
+    } else {
+        out<<in.rdbuf();
+        out.close();
+        in.close();
+        return 1;
+    }
 }

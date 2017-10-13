@@ -627,7 +627,7 @@ EncodedJSValue JSC_HOST_CALL functionGCanvasLinkNative(ExecState* state)
             }
         }
     } catch (IPCException& e) {
-        LOGE("functionGCanvasLinkNative exception %s", e.msg());
+        LOGE("functionGCanvasLinkNative exception: %s", e.msg());
         _exit(1);
     }
     

@@ -28,7 +28,9 @@ static int copyFile(const char *SourceFile, const char *NewFile);
 static void closeAllButThis(int fd);
 extern const char* s_cacheDir;
 extern bool s_start_sdcard;
+#if PRINT_LOG_CACHEFILE
 static std::string logFilePath = "/data/data/com.taobao.taobao/cache";
+#endif
 static void printLogOnFile(const char* log);
 
 struct WeexJSConnection::WeexJSConnectionImpl {
@@ -273,7 +275,7 @@ void doExec(int fd, bool traceEnable, bool installOnSdcard)
 #endif
     if (!s_cacheDir) {
         LOGE("crash log file path s_cacheDir is empty");
-        crashFilePathEnv.append(logFilePath);
+        crashFilePathEnv.append("/data/data/com.taobao.taobao/cache");
     } else {
         crashFilePathEnv.append(s_cacheDir);
     }

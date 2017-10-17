@@ -120,7 +120,7 @@ static std::unique_ptr<IPCHandler> sHandler;
 static std::unique_ptr<WeexJSConnection> sConnection;
 static WEEXJSC::FunType gCanvasFunc = NULL;
 const char* s_cacheDir = NULL;
-bool s_start_sdcard = false;
+bool s_start_pie = true;
 
 JNIEnv* getJNIEnv()
 {
@@ -667,14 +667,14 @@ static jint native_initFramework_cacheDir(JNIEnv* env,
     jstring script,
     jobject params,
     jstring cacheDir,
-    jboolean installOnSdcard)
+    jboolean pieSupport)
 {
     jThis = env->NewGlobalRef(object);
     const char* cache = env->GetStringUTFChars(reinterpret_cast<jstring>(cacheDir), nullptr);
     if (strlen(cache) > 0) {
         s_cacheDir = cache;
     }
-    s_start_sdcard = installOnSdcard;
+    s_start_pie = pieSupport;
     return doInitFramework(env, jThis, script, params);
 }
 

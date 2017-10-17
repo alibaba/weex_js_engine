@@ -183,7 +183,7 @@ static void markupStateInternally();
 static void initCrashHandler(const char* path)
 {
     // const char* path = getenv("CRASH_FILE_PATH");
-    LOGD("CRASH_FILE_PATH %s:", path);
+    LOGD("CRASH_FILE_PATH: %s:", path);
     if (path) {
         crash_handler::initializeCrashHandler(path);
         freopen(path, "w", stderr);

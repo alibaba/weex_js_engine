@@ -23,11 +23,11 @@
 #include <iostream>
 #include <fstream>
 
-static void doExec(int fd, bool traceEnable, bool installOnSdcard);
+static void doExec(int fd, bool traceEnable, bool startupPie = true);
 static int copyFile(const char *SourceFile, const char *NewFile);
 static void closeAllButThis(int fd);
 extern const char* s_cacheDir;
-extern bool s_start_sdcard;
+extern bool s_start_pie;
 #if PRINT_LOG_CACHEFILE
 static std::string logFilePath = "/data/data/com.taobao.taobao/cache";
 #endif
@@ -80,7 +80,8 @@ IPCSender* WeexJSConnection::start(IPCHandler* handler, bool reinit)
     }
 #endif
 
-    static bool startupSdcard = s_start_sdcard;
+    static bool startupPie = s_start_pie;
+    LOGE("startupPie :%d", startupPie);
     pid_t child;
     if (reinit) {
 #if PRINT_LOG_CACHEFILE
@@ -106,7 +107,7 @@ IPCSender* WeexJSConnection::start(IPCHandler* handler, bool reinit)
         // implements close all but handles[1]
         // do exec
         printLogOnFile("fork success on subprocess and start doExec");;
-        doExec(fd, base::debug::TraceEvent::isEnable(), startupSdcard);
+        doExec(fd, base::debug::TraceEvent::isEnable(), startupPie);
         printLogOnFile("exec Failed completely.");
         LOGE("exec Failed completely.");
         // failed to exec
@@ -235,7 +236,7 @@ std::unique_ptr<const char* []> EnvPBuilder::build() {
     return ptr;
 }
 
-void doExec(int fd, bool traceEnable, bool installOnSdcard)
+void doExec(int fd, bool traceEnable, bool startupPie)
 {
     std::string executablePath;
     std::string icuDataPath;
@@ -296,20 +297,27 @@ void doExec(int fd, bool traceEnable, bool installOnSdcard)
         }
     }
 
+    std::string start_so = "";
+    if (startupPie) {
+        start_so = "libweexjsb.so";
+    } else {
+        start_so = "libweexjst.so";
+    }
+
     {
-        std::string executableName = executablePath + '/' + "libweexjsb.so";
+        std::string executableName = executablePath + '/' + start_so;
         chmod(executableName.c_str(), 0755);
         int result = access(executableName.c_str(), 01);
 
 #if PRINT_LOG_CACHEFILE
         mcfile << "jsengine WeexJSConnection::doExec file exsist result:" 
-               << result << " installOnSdcard:" << installOnSdcard << std::endl;
+               << result << " startupPie:" << startupPie << std::endl;
 #endif
         if (result == -1) {
-            executableName = std::string(s_cacheDir) + '/' +"libweexjsb.so";
+            executableName = std::string(s_cacheDir) + '/' + start_so;
             int result_cache = access(executableName.c_str(), 00);
             if (result_cache == -1) {
-                std::string sourceSo = executablePath + '/' + "libweexjsb.so";
+                std::string sourceSo = executablePath + '/' + start_so;
                 int ret = copyFile(sourceSo.c_str(), executableName.c_str());
 #if PRINT_LOG_CACHEFILE
             mcfile << "jsengine WeexJSConnection::doExec copy so from:" << sourceSo

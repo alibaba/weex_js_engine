@@ -1434,7 +1434,7 @@ WeexJSServer::WeexJSServer(int fd, bool enableTrace)
         String source = value;
         VM& vm = globalObject->vm();
         JSLockHolder locker(&vm);
-        if (!ExecuteJavaScript(globalObject, source, ("weex service"), false)) {
+        if (!ExecuteJavaScript(globalObject, source, ("weex service"), false, "timercallback")) {
             LOGE("jsLog EXECTIMERCALLBACK >>> scriptStr :%s", source.utf8().data());
         }
         return createVoidResult();

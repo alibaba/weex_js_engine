@@ -788,7 +788,7 @@ const char* SymbolResolver::getString(uint64_t offset)
 void* SymbolResolver::findSym(const char* symName)
 {
     for (auto& e : entries_) {
-        if (strstr(e.symName, symName)) {
+        if (strstr(e.symName, symName) == e.symName) {
             return e.addr;
         }
     }

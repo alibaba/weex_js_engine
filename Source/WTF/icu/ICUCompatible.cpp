@@ -787,12 +787,16 @@ const char* SymbolResolver::getString(uint64_t offset)
 
 void* SymbolResolver::findSym(const char* symName)
 {
+    void* candidate = nullptr;
     for (auto& e : entries_) {
-        if (strstr(e.symName, symName) == e.symName) {
+        const char* where = strstr(e.symName, symName);
+        if (where == e.symName) {
             return e.addr;
         }
+        if (where)
+          candidate = e.addr;
     }
-    return nullptr;
+    return candidate;
 }
 #define i18n_macro(V) \
     V(ucol_close) \

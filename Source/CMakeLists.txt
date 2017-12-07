@@ -24,39 +24,6 @@ add_subdirectory(CrashHandler)
 
 include(WebKitCommon)
 
-if (${CMAKE_TARGET_WORD_BITS} EQUAL 32)
-    set(SERVERSUFFIX "")
-    set(weexjsc_SOURCES
-    Compatible.cpp
-    WeexJSConnection.cpp
-    weexproxy.cpp
-    )
-
-    set(weexjsc_LIBRARY_TYPE SHARED)
-
-    set(weexjsc_LIBRARIES
-    IPC
-    WTF
-    log)
-
-    WEBKIT_FRAMEWORK(weexjsc)
-
-
-    set_target_properties(weexjsc
-    PROPERTIES
-    LINK_FLAGS "-Wl,--version-script=${CMAKE_CURRENT_SOURCE_DIR}//weexjsc_version_script.txt -Wl,--no-undefined -Wl,-soname,libweexjsc.so"
-    )
-
-    add_custom_command(
-        TARGET weexjsc
-        POST_BUILD
-        COMMAND ${CMAKE_STRIP} $<TARGET_FILE:weexjsc> -o ${CMAKE_SOURCE_DIR}/libweexjsc.so
-        VERBATIM
-    )
-else()
-    set(SERVERSUFFIX 64)
-endif()
-
 set(WEEXJSSERVER_NAME weexjss${SERVERSUFFIX})
 set(${WEEXJSSERVER_NAME}_SOURCES
 

@@ -187,6 +187,7 @@ static void initCrashHandler(const char* path)
     if (path) {
         crash_handler::initializeCrashHandler(path);
         freopen(path, "w", stderr);
+        chmod(path, 0600);
     }
 }
 

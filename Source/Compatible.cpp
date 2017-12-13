@@ -90,6 +90,18 @@ int getpagesize()
     return PAGE_SIZE;
 }
 
+size_t __ctype_get_mb_cur_max(void){
+    return MB_CUR_MAX;
+}
+
+long double strtold(const char*p, char**end) {
+  return strtod(p, end);
+}
+
+float strtof(const char* p, char** end) {
+  return (float) strtod(p, end);
+}
+
 void srandom(unsigned int __s) { srand48(__s); }
 
 int isinf(double n)
@@ -126,4 +138,10 @@ int abs(int j)
 long labs(long j)
 {
 	return(j < 0 ? -j : j);
+}
+
+double log2(double n)
+{
+    // log(n)/log(2) is log2
+    return log(n) / log(2);
 }

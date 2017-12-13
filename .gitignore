@@ -1,5 +1,11 @@
 *.pyc
 build32/
 build64/
+arm-sysroot/
+arm-sysroot/usr/include/linux/netfilter/
+arm-sysroot/usr/include/linux/netfilter_ipv4/
+arm-sysroot/usr/include/linux/netfilter_ipv6/
+arm-sysroot/usr/include/linux/netfilter/xt_CONNMARK.h
+arm-sysroot/usr/include/linux/netfilter/xt_CONNMARK.h
 cscope.out
 *.so

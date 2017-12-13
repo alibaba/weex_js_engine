@@ -281,6 +281,8 @@ set(WTF_SOURCES
     ../icu/ICUCompatible.cpp
 )
 
+set_source_files_properties(../icu/ICUCompatible.cpp PROPERTIES COMPILE_FLAGS -fno-lto)
+
 set(WTF_INCLUDE_DIRECTORIES
     "${BMALLOC_DIR}"
     "${WTF_DIR}"

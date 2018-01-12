@@ -281,7 +281,11 @@ set(WTF_SOURCES
     ../icu/ICUCompatible.cpp
 )
 
-set_source_files_properties(../icu/ICUCompatible.cpp PROPERTIES COMPILE_FLAGS -fno-lto)
+if ("${CMAKE_BUILD_ENGINE}" STREQUAL "gcc")
+    set_source_files_properties(../icu/ICUCompatible.cpp PROPERTIES COMPILE_FLAGS -fno-lto)
+else ()
+    # FIXME
+endif()
 
 set(WTF_INCLUDE_DIRECTORIES
     "${BMALLOC_DIR}"

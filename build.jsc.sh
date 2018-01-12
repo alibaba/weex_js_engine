@@ -1,10 +1,49 @@
 #!/bin/bash
-if [ $# -eq 0 ]; then
-    TARGET=arm
-else
-    TARGET=$1
-fi
+usage() {
+cat<<EOFHELP
+    Options:
+      -t {arm|arm64|x86} the v8 engine abi type, default is arm
+        'arm'=armeabi-v7a,
+        'arm64'=arm64-v8a,
+        'x86'=x86
+      -c {clang|gcc} the compiler engine type, default is clang
+        'clang'=clang,
+        'gcc'=gcc7.2
+EOFHELP
+}
 
+TARGET=arm
+BUILD_ENGINE=clang
+while getopts "t:c:h" arg
+do
+    case $arg in
+        t)
+            [[ "$OPTARG" == 'arm' ]] && { TARGET='arm'; }
+            [[ "$OPTARG" == 'arm64' ]] && { TARGET='arm64'; }
+            [[ "$OPTARG" == 'x86' ]] && { TARGET='x86'; }
+            ;;
+        c)
+            [[ "$OPTARG" == 'clang' ]] && { BUILD_ENGINE='clang'; }
+            [[ "$OPTARG" == 'gcc' ]] && { BUILD_ENGINE='gcc'; }
+            ;;
+        h)
+            usage; exit 0;
+            ;;
+        ?)
+            echo 'unkown options'
+            ;;
+    esac
+done
+
+# if [ $# -eq 0 ]; then
+#     TARGET=arm
+# else
+#     TARGET=$1
+# fi
+echo $TARGET
+echo $BUILD_ENGINE
+
+export BUILD_ENGINE=$BUILD_ENGINE
 export NDK_ROOT=`dirname $(which ndk-build)`
 echo $NDK_ROOT
 export APILEVEL=21

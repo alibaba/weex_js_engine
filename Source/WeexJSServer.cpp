@@ -727,19 +727,15 @@ EncodedJSValue JSC_HOST_CALL functionCallAddElement(ExecState* state)
     serializer->setMsg(static_cast<uint32_t>(IPCProxyMsg::CALLADDELEMENT) | MSG_FLAG_ASYNC);
     //instacneID args[0]
     getArgumentAsCString(serializer, state, 0);
-    //getArgumentAsCString(serializer, state, 0);
     //instacneID args[1]
     getArgumentAsCString(serializer, state, 1);
-    // getArgumentAsCString(serializer, state, 1);
     //dom node args[2]
     getArgumentAsJByteArray(serializer, state, 2);
-    // getArgumentAsCString(serializer, state, 2);
     //index  args[3]
     getArgumentAsCString(serializer, state, 3);
-    // getArgumentAsCString(serializer, state, 3);
     //callback  args[4]
     getArgumentAsCString(serializer, state, 4);
-    // getArgumentAsCString(serializer, state, 4);
+
     std::unique_ptr<IPCBuffer> buffer = serializer->finish();
     std::unique_ptr<IPCResult> result = sender->send(buffer.get());
 
@@ -760,6 +756,7 @@ EncodedJSValue JSC_HOST_CALL functionCallCreateBody(ExecState* state)
     getArgumentAsJByteArray(serializer, state, 1);
     //callback args[2]
     getArgumentAsCString(serializer, state, 2);
+
     std::unique_ptr<IPCBuffer> buffer = serializer->finish();
     std::unique_ptr<IPCResult> result = sender->send(buffer.get());
     if (result->getType() != IPCType::INT32) {
@@ -783,6 +780,7 @@ EncodedJSValue JSC_HOST_CALL functionCallUpdateFinish(ExecState* state)
     getArgumentAsJByteArray(serializer, state, 1);
     //callback args[2]
     getArgumentAsJString(serializer, state, 2);
+
     std::unique_ptr<IPCBuffer> buffer = serializer->finish();
     std::unique_ptr<IPCResult> result = sender->send(buffer.get());
     if (result->getType() != IPCType::INT32) {
@@ -801,11 +799,12 @@ EncodedJSValue JSC_HOST_CALL functionCallCreateFinish(ExecState* state)
     IPCSerializer* serializer = server->getSerializer();
     serializer->setMsg(static_cast<uint32_t>(IPCProxyMsg::CALLCREATEFINISH));
     //instacneID args[0]
-    getArgumentAsJString(serializer, state, 0);
+    getArgumentAsCString(serializer, state, 0);
     //task args[1]
     getArgumentAsJByteArray(serializer, state, 1);
     //callback args[2]
-    getArgumentAsJString(serializer, state, 2);
+    getArgumentAsCString(serializer, state, 2);
+
     std::unique_ptr<IPCBuffer> buffer = serializer->finish();
     std::unique_ptr<IPCResult> result = sender->send(buffer.get());
     if (result->getType() != IPCType::INT32) {
@@ -848,13 +847,14 @@ EncodedJSValue JSC_HOST_CALL functionCallUpdateAttrs(ExecState* state)
     IPCSerializer* serializer = server->getSerializer();
     serializer->setMsg(static_cast<uint32_t>(IPCProxyMsg::CALLUPDATEATTRS));
     //instacneID args[0]
-    getArgumentAsJString(serializer, state, 0);
+    getArgumentAsCString(serializer, state, 0);
     //instacneID args[1]
-    getArgumentAsJString(serializer, state, 1);
+    getArgumentAsCString(serializer, state, 1);
     //task args[2]
     getArgumentAsJByteArray(serializer, state, 2);
     //callback args[3]
-    getArgumentAsJString(serializer, state, 3);
+    getArgumentAsCString(serializer, state, 3);
+
     std::unique_ptr<IPCBuffer> buffer = serializer->finish();
     std::unique_ptr<IPCResult> result = sender->send(buffer.get());
     if (result->getType() != IPCType::INT32) {
@@ -873,13 +873,14 @@ EncodedJSValue JSC_HOST_CALL functionCallUpdateStyle(ExecState* state)
     IPCSerializer* serializer = server->getSerializer();
     serializer->setMsg(static_cast<uint32_t>(IPCProxyMsg::CALLUPDATESTYLE));
     //instacneID args[0]
-    getArgumentAsJString(serializer, state, 0);
+    getArgumentAsCString(serializer, state, 0);
     //instacneID args[1]
-    getArgumentAsJString(serializer, state, 1);
+    getArgumentAsCString(serializer, state, 1);
     //task args[2]
     getArgumentAsJByteArray(serializer, state, 2);
     //callback args[3]
-    getArgumentAsJString(serializer, state, 3);
+    getArgumentAsCString(serializer, state, 3);
+
     std::unique_ptr<IPCBuffer> buffer = serializer->finish();
     std::unique_ptr<IPCResult> result = sender->send(buffer.get());
     if (result->getType() != IPCType::INT32) {
@@ -898,11 +899,12 @@ EncodedJSValue JSC_HOST_CALL functionCallRemoveElement(ExecState* state)
     IPCSerializer* serializer = server->getSerializer();
     serializer->setMsg(static_cast<uint32_t>(IPCProxyMsg::CALLREMOVEELEMENT));
     //instacneID args[0]
-    getArgumentAsJString(serializer, state, 0);
+    getArgumentAsCString(serializer, state, 0);
     //instacneID args[1]
-    getArgumentAsJString(serializer, state, 1);
+    getArgumentAsCString(serializer, state, 1);
     //callback args[2]
-    getArgumentAsJString(serializer, state, 2);
+    getArgumentAsCString(serializer, state, 2);
+
     std::unique_ptr<IPCBuffer> buffer = serializer->finish();
     std::unique_ptr<IPCResult> result = sender->send(buffer.get());
     if (result->getType() != IPCType::INT32) {
@@ -921,17 +923,15 @@ EncodedJSValue JSC_HOST_CALL functionCallMoveElement(ExecState* state)
     IPCSerializer* serializer = server->getSerializer();
     serializer->setMsg(static_cast<uint32_t>(IPCProxyMsg::CALLMOVEELEMENT));
     //instacneID args[0]
-    getArgumentAsJString(serializer, state, 0);
+    getArgumentAsCString(serializer, state, 0);
     //instacneID args[1]
-    getArgumentAsJString(serializer, state, 1);
+    getArgumentAsCString(serializer, state, 1);
     //callback args[2]
-    getArgumentAsJString(serializer, state, 2);
-
+    getArgumentAsCString(serializer, state, 2);
     //callback args[3]
-    getArgumentAsJString(serializer, state, 3);
-
+    getArgumentAsCString(serializer, state, 3);
     //callback args[4]
-    getArgumentAsJString(serializer, state, 4);
+    getArgumentAsCString(serializer, state, 4);
 
     std::unique_ptr<IPCBuffer> buffer = serializer->finish();
     std::unique_ptr<IPCResult> result = sender->send(buffer.get());
@@ -951,13 +951,13 @@ EncodedJSValue JSC_HOST_CALL functionCallAddEvent(ExecState* state)
     IPCSerializer* serializer = server->getSerializer();
     serializer->setMsg(static_cast<uint32_t>(IPCProxyMsg::CALLADDEVENT));
     //instacneID args[0]
-    getArgumentAsJString(serializer, state, 0);
+    getArgumentAsCString(serializer, state, 0);
     //instacneID args[1]
-    getArgumentAsJString(serializer, state, 1);
+    getArgumentAsCString(serializer, state, 1);
     //callback args[2]
-    getArgumentAsJString(serializer, state, 2);
+    getArgumentAsCString(serializer, state, 2);
     //callback args[3]
-    getArgumentAsJString(serializer, state, 3);
+    getArgumentAsCString(serializer, state, 3);
 
     std::unique_ptr<IPCBuffer> buffer = serializer->finish();
     std::unique_ptr<IPCResult> result = sender->send(buffer.get());
@@ -977,13 +977,13 @@ EncodedJSValue JSC_HOST_CALL functionCallRemoveEvent(ExecState* state)
     IPCSerializer* serializer = server->getSerializer();
     serializer->setMsg(static_cast<uint32_t>(IPCProxyMsg::CALLREMOVEEVENT));
     //instacneID args[0]
-    getArgumentAsJString(serializer, state, 0);
+    getArgumentAsCString(serializer, state, 0);
     //instacneID args[1]
-    getArgumentAsJString(serializer, state, 1);
+    getArgumentAsCString(serializer, state, 1);
     //callback args[2]
-    getArgumentAsJString(serializer, state, 2);
+    getArgumentAsCString(serializer, state, 2);
     //callback args[3]
-    getArgumentAsJString(serializer, state, 3);
+    getArgumentAsCString(serializer, state, 3);
 
     std::unique_ptr<IPCBuffer> buffer = serializer->finish();
     std::unique_ptr<IPCResult> result = sender->send(buffer.get());

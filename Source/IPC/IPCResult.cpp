@@ -65,6 +65,23 @@ private:
     bool m_isJSON{ false };
 };
 
+
+class ByteArrayResult: public IPCResult{
+public:
+    ByteArrayResult(const char* data, size_t length);
+    ~ByteArrayResult();
+
+    const void* getData() override;
+    IPCType getType() override;
+    const uint16_t* getStringContent() override;
+    size_t getStringLength() override;
+    const char* getByteArrayContent() override;
+    size_t getByteArrayLength() override;
+private:
+    char* m_data;
+    size_t m_length;
+};
+
 const void*
 VoidResult::getData()
 {
@@ -187,7 +204,54 @@ void StringResult::setJSON()
 {
     m_isJSON = true;
 }
+
+ByteArrayResult::ByteArrayResult(const char* data, size_t length):m_length(length)
+{
+    if(length > 0){
+        m_data = (char*)malloc(length*sizeof(char));
+        memcpy(m_data,  data, length);
+    }else{
+        m_data = nullptr;
+    }
 }
+IPCType  ByteArrayResult::getType()
+{
+    return IPCType::BYTEARRAY;
+}
+
+const void* ByteArrayResult::getData()
+{
+    return nullptr;
+}
+
+const uint16_t* ByteArrayResult::getStringContent(){
+    return nullptr;
+}
+
+size_t ByteArrayResult::getStringLength(){
+    return 0l;
+}
+
+const char* ByteArrayResult::getByteArrayContent(){
+    return  m_data;
+}
+
+size_t ByteArrayResult::getByteArrayLength(){
+    return m_length;
+}
+ByteArrayResult::~ByteArrayResult()
+{
+    if (m_data){
+        free(m_data);
+        m_data= NULL;
+    }
+    m_length = 0;
+}
+
+}
+
+
+
 
 std::unique_ptr<IPCResult> createVoidResult()
 {
@@ -216,7 +280,6 @@ std::unique_ptr<IPCResult> createJSONStringResult(JNIEnv* env, jstring str)
     return std::unique_ptr<IPCResult>(result.release());
 }
 
-std::unique_ptr<IPCResult> createByteArrayResult(const char* data, size_t length)
-{
+std::unique_ptr<IPCResult> createByteArrayResult(const char* data, size_t length){
     return std::unique_ptr<IPCResult>(new ByteArrayResult(data, length));
 }

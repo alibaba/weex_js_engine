@@ -164,6 +164,13 @@ static EncodedJSValue JSC_HOST_CALL functionGCanvasLinkNative(ExecState*);
 static EncodedJSValue JSC_HOST_CALL functionSetIntervalWeex(ExecState*);
 static EncodedJSValue JSC_HOST_CALL functionClearIntervalWeex(ExecState*);
 
+static void doUpdateGlobalSwitchConfig(const char* config){
+    if(!config){
+        return;
+    }
+    // TODO
+}
+
 static bool ExecuteJavaScript(JSGlobalObject* globalObject,
     const String& source,
     const String& url,
@@ -1602,6 +1609,17 @@ WeexJSServer::WeexJSServer(int fd, bool enableTrace)
         CString cstring = string.utf8();
         return createByteArrayResult(cstring.data(), cstring.length());
     });
+
+    handler->registerHandler(static_cast<uint32_t>(IPCJSMsg::UPDATEGLOBALCONFIG), [this](IPCArguments* arguments) {
+        JSGlobalObject* globalObject = m_impl->globalObject.get();
+        VM& vm = globalObject->vm();
+        JSLockHolder locker(&vm);
+        const IPCString* ipcConfig = arguments->getString(0);
+        String configString = jString2String(ipcConfig->content, ipcConfig->length);
+        const char* config = configString.utf8().data();
+        doUpdateGlobalSwitchConfig(config);
+        return createVoidResult();
+    }); 
 }
 
 WeexJSServer::~WeexJSServer()

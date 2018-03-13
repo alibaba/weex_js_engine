@@ -215,3 +215,8 @@ std::unique_ptr<IPCResult> createJSONStringResult(JNIEnv* env, jstring str)
     result->setJSON();
     return std::unique_ptr<IPCResult>(result.release());
 }
+
+std::unique_ptr<IPCResult> createByteArrayResult(const char* data, size_t length)
+{
+    return std::unique_ptr<IPCResult>(new ByteArrayResult(data, length));
+}

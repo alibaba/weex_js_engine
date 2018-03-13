@@ -27,5 +27,5 @@ std::unique_ptr<IPCResult> createInt32Result(int32_t val);
 std::unique_ptr<IPCResult> createDoubleResult(double val);
 std::unique_ptr<IPCResult> createStringResult(JNIEnv* env, jstring str);
 std::unique_ptr<IPCResult> createJSONStringResult(JNIEnv* env, jstring str);
-
+std::unique_ptr<IPCResult> createByteArrayResult(const char* data, size_t length);
 #endif /* IPCRESULT_H */

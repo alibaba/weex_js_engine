@@ -1516,6 +1516,92 @@ WeexJSServer::WeexJSServer(int fd, bool enableTrace)
         return createInt32Result(static_cast<int32_t>(true));
 
     });
+
+    handler->registerHandler(static_cast<uint32_t>(IPCJSMsg::EXECJSWITHRESULT), [this](IPCArguments* arguments) {
+        JSGlobalObject* globalObject = m_impl->globalObject.get();
+        VM& vm = globalObject->vm();
+        JSLockHolder locker(&vm);
+        const IPCString* ipcInstanceId = arguments->getString(0);
+        const IPCString* ipcNamespaceStr = arguments->getString(1);
+        const IPCString* ipcFunc = arguments->getString(2);
+        String instanceId = jString2String(ipcInstanceId->content, ipcInstanceId->length);
+        String namespaceStr = jString2String(ipcNamespaceStr->content, ipcNamespaceStr->length);
+        String func = jString2String(ipcFunc->content, ipcFunc->length);
+        MarkedArgumentBuffer obj;
+        base::debug::TraceScope traceScope("weex", "exeJSWithResult", "function", func.utf8().data());
+        ExecState* state = globalObject->globalExec();
+        size_t count = arguments->getCount();
+        for (size_t i = 3; i < count; ++i) {
+            switch (arguments->getType(i)) {
+            case IPCType::DOUBLE:
+                obj.append(jsNumber(arguments->get<double>(i)));
+                break;
+            case IPCType::STRING: {
+                const IPCString* ipcstr = arguments->getString(i);
+                obj.append(jString2JSValue(state, ipcstr->content, ipcstr->length));
+            } break;
+            case IPCType::JSONSTRING: {
+                const IPCString* ipcstr = arguments->getString(i);
+
+                String str = jString2String(ipcstr->content, ipcstr->length);
+
+                JSValue o = parseToObject(state, str);
+                obj.append(o);
+            } break;
+            default:
+                obj.append(jsUndefined());
+                break;
+            }
+        }
+
+        Identifier funcIdentifier = Identifier::fromString(&vm, func);
+        JSValue function;
+        JSValue result;
+        if (namespaceStr.isEmpty()) {
+            function = globalObject->get(state, funcIdentifier);
+        } else {
+            Identifier namespaceIdentifier = Identifier::fromString(&vm, namespaceStr);
+            JSValue master = globalObject->get(state, namespaceIdentifier);
+            if (!master.isObject()) {
+                return createByteArrayResult(nullptr, 0);
+            }
+            function = master.toObject(state)->get(state, funcIdentifier);
+        }
+        CallData callData;
+        CallType callType = getCallData(function, callData);
+        NakedPtr<Exception> returnedException;
+        JSValue ret = call(state, function, callType, callData, globalObject, obj, returnedException);
+
+        globalObject->vm().drainMicrotasks();
+
+        if (returnedException) {
+            ReportException(globalObject, returnedException.get(), instanceId.utf8().data(), func.utf8().data());
+            return createByteArrayResult(nullptr, 0);
+        }
+        if(ret.isUndefined() || ret.isNull() || !isJSArray(ret)){
+            // createInstance return whole source object, which is big, only accept array result
+            return createByteArrayResult(nullptr, 0);
+        }
+        
+        /** most scene, return result is array of null */
+        JSArray* array = asArray(ret);
+        uint32_t length = array->length();
+        bool isAllNull = true;
+        for(uint32_t i=0; i<length; i++){
+            JSValue ele = array->getIndex(state, i);
+            if(!ele.isUndefinedOrNull()){
+                isAllNull = false;
+                break;
+            }
+        }
+        if(isAllNull){
+            return createByteArrayResult(nullptr, 0);
+        }
+        
+        String string = JSONStringify(state, ret, 0);
+        CString cstring = string.utf8();
+        return createByteArrayResult(cstring.data(), cstring.length());
+    });
 }
 
 WeexJSServer::~WeexJSServer()

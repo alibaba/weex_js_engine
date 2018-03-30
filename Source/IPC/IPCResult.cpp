@@ -283,3 +283,63 @@ std::unique_ptr<IPCResult> createJSONStringResult(JNIEnv* env, jstring str)
 std::unique_ptr<IPCResult> createByteArrayResult(const char* data, size_t length){
     return std::unique_ptr<IPCResult>(new ByteArrayResult(data, length));
 }
+
+class CharArrayResult : public IPCResult {
+public:
+    CharArrayResult(char* chars);
+    // ByteArrayResult(const char* data);
+    ~CharArrayResult();
+
+    const void* getData() override;
+    IPCType getType() override;
+    const uint16_t* getStringContent() override;
+    size_t getStringLength() override;
+    const char* getByteArrayContent() override;
+    size_t getByteArrayLength() override;
+
+private:
+    char*  m_char;
+    size_t m_length{ 0U };
+};
+
+CharArrayResult::CharArrayResult(char* chars)
+    : m_char(chars) {
+    m_length = strlen(m_char);
+}
+
+CharArrayResult::~CharArrayResult() {
+    delete[] m_char;
+}
+
+const void* CharArrayResult::getData()
+{
+    return m_char;
+}
+
+IPCType CharArrayResult::getType()
+{
+    return IPCType::CHARARRAY;
+}
+
+const uint16_t* CharArrayResult::getStringContent()
+{
+    return nullptr;
+}
+
+size_t CharArrayResult::getStringLength()
+{
+    return m_length;
+}
+
+const char* CharArrayResult::getByteArrayContent() {
+    return nullptr;
+}
+
+size_t CharArrayResult::getByteArrayLength() {
+
+    return 0U;
+}
+
+std::unique_ptr<IPCResult> createCharArrayResult(char* bytes) {
+    return std::unique_ptr<IPCResult>(new CharArrayResult(bytes));
+}

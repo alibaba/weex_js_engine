@@ -31,6 +31,8 @@
 #include "JSCInlines.h"
 #include "ScriptArguments.h"
 #include "ScriptCallStackFactory.h"
+#include "LogUtils.h"
+#include "JSONObject.h"
 
 namespace JSC {
 
@@ -104,8 +106,31 @@ static String valueToStringWithUndefinedOrNullCheck(ExecState* exec, JSValue val
     return value.toWTFString(exec);
 }
 
+static void printConsoleLog(ExecState* exec, MessageLevel level) {
+    JSValue val = exec->argument(0);
+    if (val.isString()) {
+        String s = val.toWTFString(exec);
+        Weex::LogUtil::ConsoleLogPrint((int)level, "jsLog", s.utf8().data());
+        // LOGE("consoleLogWithLevel level: %d log:%s", level, s.utf8().data());
+        return;
+    } else if (val.isObject()) {
+        VM &vm_catch = exec->vm();
+        auto scope = DECLARE_CATCH_SCOPE(vm_catch);
+        String str = JSONStringify(exec, val, 0);
+        JSC::VM &vm = exec->vm();
+        if (UNLIKELY(scope.exception())) {
+            scope.clearException();
+            return;
+        }
+        Weex::LogUtil::ConsoleLogPrint((int)level, "jsLog", str.utf8().data());
+        // LOGE("consoleLogWithLevel level: %d log:%s", level, str.utf8().data());
+    }
+    Weex::LogUtil::ConsoleLogPrint((int)level, "jsLog", "[object]");
+}
+
 static EncodedJSValue consoleLogWithLevel(ExecState* exec, MessageLevel level)
 {
+    printConsoleLog(exec, level);
     ConsoleClient* client = exec->lexicalGlobalObject()->consoleClient();
     if (!client)
         return JSValue::encode(jsUndefined());

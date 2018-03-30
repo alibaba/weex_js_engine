@@ -34,4 +34,13 @@
   void operator=(const TypeName&) = delete
 #endif
 
+namespace Weex {
+  class LogUtil {
+    private:
+      static bool mDebugMode;
+    public:
+      static void setDebugMode(bool debug);
+      static void ConsoleLogPrint(int level, const char* tag, const char* log);
+  };
+}
 #endif //_LOG_UTILS_H_

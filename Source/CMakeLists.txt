@@ -29,6 +29,7 @@ set(${WEEXJSSERVER_NAME}_SOURCES
 
 ./base/base64/base64.cpp
 ./base/base64/modp_base64/modp_b64.cc
+LogUtils.cpp
 Compatible.cpp
 WeexJSServer.cpp
 WeexJSServerMain.cpp

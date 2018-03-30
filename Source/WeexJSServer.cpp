@@ -70,6 +70,7 @@
 #include <wtf/StringPrintStream.h>
 #include <wtf/text/StringBuilder.h>
 #include <wtf/unicode/WTFUTF8.h>
+#include "Heap.h"
 
 #if OS(WINDOWS)
 #include <direct.h>
@@ -111,6 +112,7 @@
 
 using namespace JSC;
 using namespace WTF;
+
 #include "Buffering/IPCBuffer.h"
 #include "CrashHandler.h"
 #include "IPCArguments.h"
@@ -128,16 +130,27 @@ using namespace WTF;
 #include "Serializing/IPCSerializer.h"
 #include "Trace.h"
 #include "WeexJSServer.h"
+#include "APICast.h"
+#include "JSStringRef.h"
+#include "JSContextRef.h"
 
 #include "./base/base64/base64.h"
 
+#include <map>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <sys/mman.h>
 #include <unistd.h>
 #include <dlfcn.h>
+#include <wtf/text/Base64.h>
+#define WX_GLOBAL_CONFIG_KEY "global_switch_config"
+using namespace JSC;
+using namespace WTF;
+
 namespace {
+
+static bool  config_use_wson  = true;
 
 static EncodedJSValue JSC_HOST_CALL functionGCAndSweep(ExecState*);
 static EncodedJSValue JSC_HOST_CALL functionCallNative(ExecState*);
@@ -163,12 +176,19 @@ static EncodedJSValue JSC_HOST_CALL functionCallRemoveEvent(ExecState *);
 static EncodedJSValue JSC_HOST_CALL functionGCanvasLinkNative(ExecState*);
 static EncodedJSValue JSC_HOST_CALL functionSetIntervalWeex(ExecState*);
 static EncodedJSValue JSC_HOST_CALL functionClearIntervalWeex(ExecState*);
+static EncodedJSValue JSC_HOST_CALL functionT3DLinkNative(ExecState*);
+static EncodedJSValue JSC_HOST_CALL functionNativeLogContext(ExecState*);
 
 static void doUpdateGlobalSwitchConfig(const char* config){
     if(!config){
         return;
     }
-    // TODO
+    LOGE("doUpdateGlobalSwitchConfig %s", config);
+    if(strstr(config, "wson_off") != NULL){
+        config_use_wson = false;
+    }else{
+        config_use_wson = true;
+    }
 }
 
 static bool ExecuteJavaScript(JSGlobalObject* globalObject,
@@ -216,6 +236,7 @@ public:
     typedef JSGlobalObject Base;
     friend class WeexJSServer;
     WeexJSServer* m_server{ nullptr };
+    std::map<std::string, std::string> m_initparam;
 
     static GlobalObject* create(VM& vm, Structure* structure)
     {
@@ -237,7 +258,9 @@ public:
     static RuntimeFlags javaScriptRuntimeFlags(const JSGlobalObject*) { return RuntimeFlags::createAllEnabled(); }
 
     void initWXEnvironment(IPCArguments* arguments);
+    void initWXEnvironment(std::map<std::string, std::string> initMap);
     void initFunction();
+    void initFunctionForContext();
 
 protected:
     void finishCreation(VM& vm)
@@ -337,6 +360,21 @@ GlobalObject::GlobalObject(VM& vm, Structure* structure)
 {
 }
 
+void GlobalObject::initWXEnvironment(std::map<std::string, std::string> initMap)
+{
+    VM& vm = this->vm();
+    JSNonFinalObject* WXEnvironment = SimpleObject::create(vm, this);
+    std::map<std::string, std::string> :: iterator it;
+    for (it = initMap.begin(); it != initMap.end(); ++it) {
+        // LOGE("initMap key:%s value:%s", it->first.c_str(), it->second.c_str());
+        const char* key = it->first.c_str();
+        String&& value = String::fromUTF8(it->second.c_str());
+        addString(vm, WXEnvironment, key, WTFMove(value));
+    }
+    
+    addValue(vm, "WXEnvironment", WXEnvironment);
+}
+
 void GlobalObject::initWXEnvironment(IPCArguments* arguments)
 {
     size_t count = arguments->getCount();
@@ -365,6 +403,17 @@ void GlobalObject::initWXEnvironment(IPCArguments* arguments)
             initCrashHandler(path.utf8().data());
             hasInitCrashHandler = true;
         }
+        if(strstr(type.utf8().data(), WX_GLOBAL_CONFIG_KEY) != NULL){
+             const char* config = value.utf8().data();
+             doUpdateGlobalSwitchConfig(config);
+        }
+		// --------------------------------------------------------
+        // add for debug mode
+        if (String("debugMode") == type && String("true") == value) {
+            Weex::LogUtil::setDebugMode(true);
+        }
+        // --------------------------------------------------------
+        m_initparam[type.utf8().data()] = value.utf8().data();
         addString(vm, WXEnvironment, arguments->getByteArray(i)->content, WTFMove(value));
     }
     if (!hasInitCrashHandler) {
@@ -372,6 +421,18 @@ void GlobalObject::initWXEnvironment(IPCArguments* arguments)
         initCrashHandler(path);
     }
     addValue(vm, "WXEnvironment", WXEnvironment);
+}
+
+void GlobalObject::initFunctionForContext() {
+    VM& vm = this->vm();
+    const HashTableValue JSEventTargetPrototypeTableValues[] = {
+        { "nativeLog", JSC::Function, NoIntrinsic, { (intptr_t) static_cast<NativeFunction>(functionNativeLogContext), (intptr_t)(5) } },
+        { "atob", JSC::Function, NoIntrinsic, { (intptr_t) static_cast<NativeFunction>(functionAtob), (intptr_t)(1) } },
+        { "btoa", JSC::Function, NoIntrinsic, { (intptr_t) static_cast<NativeFunction>(functionBtoa), (intptr_t)(1) } },
+        { "callGCanvasLinkNative", JSC::Function, NoIntrinsic, { (intptr_t) static_cast<NativeFunction>(functionGCanvasLinkNative), (intptr_t)(3) } },
+        { "callT3DLinkNative", JSC::Function, NoIntrinsic, { (intptr_t) static_cast<NativeFunction>(functionT3DLinkNative), (intptr_t)(2) } },
+    };
+    reifyStaticProperties(vm, JSEventTargetPrototypeTableValues, *this);
 }
 
 void GlobalObject::initFunction()
@@ -386,7 +447,6 @@ void GlobalObject::initFunction()
         { "nativeLog", JSC::Function, NoIntrinsic, { (intptr_t) static_cast<NativeFunction>(functionNativeLog), (intptr_t)(5) } },
         { "notifyTrimMemory", JSC::Function, NoIntrinsic, { (intptr_t) static_cast<NativeFunction>(functionNotifyTrimMemory), (intptr_t)(0) } },
         { "markupState", JSC::Function, NoIntrinsic, { (intptr_t) static_cast<NativeFunction>(functionMarkupState), (intptr_t)(0) } },
-
         { "atob", JSC::Function, NoIntrinsic, { (intptr_t) static_cast<NativeFunction>(functionAtob), (intptr_t)(1) } },
         { "btoa", JSC::Function, NoIntrinsic, { (intptr_t) static_cast<NativeFunction>(functionBtoa), (intptr_t)(1) } },
         { "callCreateBody", JSC::Function, NoIntrinsic, { (intptr_t) static_cast<NativeFunction>(functionCallCreateBody), (intptr_t)(3) } },
@@ -402,6 +462,7 @@ void GlobalObject::initFunction()
 		{ "callGCanvasLinkNative", JSC::Function, NoIntrinsic, { (intptr_t) static_cast<NativeFunction>(functionGCanvasLinkNative), (intptr_t)(3) } },
 		{ "setIntervalWeex", JSC::Function, NoIntrinsic, { (intptr_t) static_cast<NativeFunction>(functionSetIntervalWeex), (intptr_t)(3) } },
         { "clearIntervalWeex", JSC::Function, NoIntrinsic, { (intptr_t) static_cast<NativeFunction>(functionClearIntervalWeex), (intptr_t)(1) } },
+        { "callT3DLinkNative", JSC::Function, NoIntrinsic, { (intptr_t) static_cast<NativeFunction>(functionT3DLinkNative), (intptr_t)(2) } },
     };
     reifyStaticProperties(vm, JSEventTargetPrototypeTableValues, *this);
 }
@@ -415,7 +476,6 @@ static void addString(IPCSerializer* serializer, const String& s)
         Vector<UChar, 1024> buffer(length);
         UChar* p = buffer.data();
         bool sourceIsAllASCII;
-
         if (WTF::Unicode::conversionOK == WTF::Unicode::convertUTF8ToUTF16(&cstr, cstr + length, &p, p + length, &sourceIsAllASCII)) {
             serializer->add(buffer.data(), std::distance(buffer.data(), p));
         } else {
@@ -581,7 +641,6 @@ EncodedJSValue JSC_HOST_CALL functionClearIntervalWeex(ExecState* state)
 EncodedJSValue JSC_HOST_CALL functionCallNative(ExecState* state)
 {
     base::debug::TraceScope traceScope("weex", "callNative");
-
     GlobalObject* globalObject = static_cast<GlobalObject*>(state->lexicalGlobalObject());
     WeexJSServer* server = globalObject->m_server;
     IPCSender* sender = server->getSender();
@@ -647,6 +706,47 @@ EncodedJSValue JSC_HOST_CALL functionGCanvasLinkNative(ExecState* state)
     return JSValue::encode(ret);
 }
 
+EncodedJSValue JSC_HOST_CALL functionT3DLinkNative(ExecState* state)
+{
+    base::debug::TraceScope traceScope("weex", "functionT3DLinkNative");
+
+    VM& vm = state->vm();
+    GlobalObject* globalObject = static_cast<GlobalObject*>(state->lexicalGlobalObject());
+    WeexJSServer* server = globalObject->m_server;
+    IPCSender* sender = server->getSender();
+    IPCSerializer* serializer = server->getSerializer();
+    serializer->setMsg(static_cast<uint32_t>(IPCProxyMsg::CALLT3DLINK));
+    //type args[1]
+    int32_t type = state->argument(0).asInt32();
+    serializer->add(type);
+    //arg args[2]
+    getArgumentAsJString(serializer, state, 1);
+    JSValue ret = jsUndefined();
+    try {
+        std::unique_ptr<IPCBuffer> buffer = serializer->finish();
+        std::unique_ptr<IPCResult> result = sender->send(buffer.get());
+        // LOGE("weexjsc functionT3DLinkNative");
+        // if (result->getType() == IPCType::VOID) {
+        //     return JSValue::encode(ret);
+        // } else if (result->getStringLength() > 0) {
+        //     WTF::String retWString = jString2String(result->getStringContent(), result->getStringLength());
+        //     LOGE("weexjsc functionT3DLinkNative result length > 1 retWString:%s", retWString.utf8().data());
+        //     ret = String2JSValue(state, retWString);
+
+        // }
+        if (result->getType() != IPCType::VOID) {
+            if ( result->getStringLength() > 0) {
+                ret = jString2JSValue(state, result->getStringContent(), result->getStringLength());
+            }
+        }
+    } catch (IPCException& e) {
+        LOGE("functionT3DLinkNative exception: %s", e.msg());
+        _exit(1);
+    }
+    
+    return JSValue::encode(ret);
+}
+
 EncodedJSValue JSC_HOST_CALL functionCallNativeModule(ExecState* state)
 {
     base::debug::TraceScope traceScope("weex", "callNativeModule");
@@ -683,6 +783,9 @@ EncodedJSValue JSC_HOST_CALL functionCallNativeModule(ExecState* state)
     case IPCType::JSONSTRING: {
         String val = jString2String(result->getStringContent(), result->getStringLength());
         ret = parseToObject(state, val);
+    } break;
+    case IPCType::BYTEARRAY: {
+        // ret = wson::toJSValue(state, (void*)result->getByteArrayContent(), result->getByteArrayLength());
     } break;
     default:
         ret = jsUndefined();
@@ -1028,6 +1131,31 @@ EncodedJSValue JSC_HOST_CALL functionSetTimeoutNative(ExecState* state)
 EncodedJSValue JSC_HOST_CALL functionNativeLog(ExecState* state)
 {
     bool result = false;
+    StringBuilder sb;
+    for (int i = 0; i < state->argumentCount(); i++) {
+        sb.append(state->argument(i).toWTFString(state));
+    }
+
+    if (!sb.isEmpty()) {
+        GlobalObject* globalObject = static_cast<GlobalObject*>(state->lexicalGlobalObject());
+        WeexJSServer* server = globalObject->m_server;
+        IPCSender* sender = server->getSender();
+        IPCSerializer* serializer = server->getSerializer();
+
+        serializer->setMsg(static_cast<uint32_t>(IPCProxyMsg::NATIVELOG) | MSG_FLAG_ASYNC);
+        // String s = sb.toString();
+        // addString(serializer, s);
+        CString data = sb.toString().utf8();
+        serializer->add(data.data(), data.length());
+        std::unique_ptr<IPCBuffer> buffer = serializer->finish();
+        sender->send(buffer.get());
+    }
+    return JSValue::encode(jsBoolean(true));
+}
+
+EncodedJSValue JSC_HOST_CALL functionNativeLogContext(ExecState* state)
+{
+    bool result = false;
 
     StringBuilder sb;
     for (int i = 0; i < state->argumentCount(); i++) {
@@ -1064,67 +1192,43 @@ EncodedJSValue JSC_HOST_CALL functionMarkupState(ExecState* state)
 
 EncodedJSValue JSC_HOST_CALL functionAtob(ExecState *state)
 {
-    LOGD("[ExtendJSApi] functionAtob");
     base::debug::TraceScope traceScope("weex", "atob");
-
     JSValue ret = jsUndefined();
     JSValue val = state->argument(0);
 
-    if (!val.isUndefined())
-    {
+    if (!val.isUndefined()) {
         String original = val.toWTFString(state);
-
-        std::string input_str(original.utf8().data());
-
-        //LOGD("btoa input: %s", input_str.c_str());
-
-        std::string output_str;
-
-        Base64Decode(input_str, &output_str);
-        //LOGD("btoa output: %s", output_str.c_str());
-
-        WTF::String s(output_str.c_str());
-        ret = jsNontrivialString(&state->vm(), WTFMove(s));
-    }
-    else
-    {
+        // std::string input_str(original.utf8().data());
+        // std::string output_str;
+        // Base64Decode(input_str, &output_str);
+        // WTF::String s(output_str.c_str());
+        // ret = jsNontrivialString(&state->vm(), WTFMove(s));
+        Vector<char> out;
+        if (base64Decode(original, out, Base64ValidatePadding | Base64IgnoreSpacesAndNewLines)) {
+            WTF::String output = String(out.data(), out.size());
+            ret = jsNontrivialString(&state->vm(), WTFMove(output));
+        }
+    } else {
         //ret = "";
     }
-    LOGD("[ExtendJSApi] functionAtob complete");
-
     return JSValue::encode(ret);
 }
 
 EncodedJSValue JSC_HOST_CALL functionBtoa(ExecState *state)
 {
-    LOGD("[ExtendJSApi] functionBtoa");
     base::debug::TraceScope traceScope("weex", "btoa");
 
     JSValue ret = jsUndefined();
     JSValue val = state->argument(0);
-
-    //if (!val.isUndefined()) {
     String original = val.toWTFString(state);
+    String out;
+    if (original.isNull())
+        out = String("");
 
-    std::string input_str(original.utf8().data());
-
-    LOGD("btoa input: %s", input_str.c_str());
-
-    std::string output_str;
-
-    Base64Encode(input_str, &output_str);
-    LOGD("btoa output: %s", output_str.c_str());
-
-    //JSString* asString(JSValue value)
-
-    WTF::String s(output_str.c_str());
-    ret = jsNontrivialString(&state->vm(), WTFMove(s));
-    //}else{
-    //ret = "";
-    //}
-
-    LOGD("[ExtendJSApi] functionBtoa complete");
-
+    if (original.containsOnlyLatin1()) {
+        out = base64Encode(original.latin1());
+    }
+    ret = jsNontrivialString(&state->vm(), WTFMove(out));
     return JSValue::encode(ret);
 }
 
@@ -1143,12 +1247,8 @@ bool ExecuteJavaScript(JSGlobalObject* globalObject,
     if (report_exceptions && evaluationException) {
         ReportException(globalObject, evaluationException.get(), "", func);
     }
-    if (evaluationException) {
-        String exceptionInfo = exceptionToString(globalObject, evaluationException.get()->value());
-        LOGE("ExecuteJavaScript exception:%s", exceptionInfo.utf8().data());
+    if (evaluationException)
         return false;
-    }
-        
     globalObject->vm().drainMicrotasks();
     return true;
 }
@@ -1353,6 +1453,8 @@ struct WeexJSServer::WeexJSServerImpl {
     bool enableTrace;
     RefPtr<VM> globalVM;
     Strong<JSGlobalObject> globalObject;
+    std::map<std::string, GlobalObject*> mJSGlobalObjectMap;
+    std::map<std::string, std::string> mInitPrams;
     std::unique_ptr<IPCFutexPageQueue> futexPageQueue;
     std::unique_ptr<IPCSender> sender;
     std::unique_ptr<IPCHandler> handler;
@@ -1411,6 +1513,7 @@ WeexJSServer::WeexJSServer(int fd, bool enableTrace)
         globalObject->m_server = this;
         m_impl->globalObject.set(vm, globalObject);
         globalObject->initWXEnvironment(arguments);
+        m_impl->mInitPrams = globalObject->m_initparam;
         globalObject->initFunction();
         const IPCString* ipcSource = arguments->getString(0);
         String source = jString2String(ipcSource->content, ipcSource->length);
@@ -1459,15 +1562,31 @@ WeexJSServer::WeexJSServer(int fd, bool enableTrace)
     });
 
     handler->registerHandler(static_cast<uint32_t>(IPCJSMsg::EXECJS), [this](IPCArguments* arguments) {
-        JSGlobalObject* globalObject = m_impl->globalObject.get();
-        VM& vm = globalObject->vm();
-        JSLockHolder locker(&vm);
+        
         const IPCString* ipcInstanceId = arguments->getString(0);
         const IPCString* ipcNamespaceStr = arguments->getString(1);
         const IPCString* ipcFunc = arguments->getString(2);
         String instanceId = jString2String(ipcInstanceId->content, ipcInstanceId->length);
         String namespaceStr = jString2String(ipcNamespaceStr->content, ipcNamespaceStr->length);
         String func = jString2String(ipcFunc->content, ipcFunc->length);
+        // LOGE("EXECJS func:%s", func.utf8().data());
+        JSGlobalObject* globalObject;
+        // fix instanceof Object error
+        // if function is callJs on instance, should us Instance object to call __WEEX_CALL_JAVASCRIPT__
+        if (std::strcmp("callJS" ,func.utf8().data()) == 0) {
+                globalObject = m_impl->mJSGlobalObjectMap[instanceId.utf8().data()];
+            if (globalObject == NULL) {
+                globalObject = m_impl->globalObject.get();
+            } else {
+                WTF::String funcWString("__WEEX_CALL_JAVASCRIPT__");
+                func = funcWString;
+            }
+        } else {
+            globalObject = m_impl->globalObject.get();
+        }
+        VM& vm = globalObject->vm();
+        JSLockHolder locker(&vm);
+
         MarkedArgumentBuffer obj;
         base::debug::TraceScope traceScope("weex", "exeJS", "function", func.utf8().data());
         ExecState* state = globalObject->globalExec();
@@ -1488,6 +1607,11 @@ WeexJSServer::WeexJSServer(int fd, bool enableTrace)
 
                 JSValue o = parseToObject(state, str);
                 obj.append(o);
+            } break;
+            case IPCType::BYTEARRAY: {
+                // const IPCByteArray* array = arguments->getByteArray(i);
+                // JSValue o = wson::toJSValue(state, (void*)array->content, array->length);
+                // obj.append(o);
             } break;
             default:
                 obj.append(jsUndefined());
@@ -1524,16 +1648,32 @@ WeexJSServer::WeexJSServer(int fd, bool enableTrace)
 
     });
 
+
     handler->registerHandler(static_cast<uint32_t>(IPCJSMsg::EXECJSWITHRESULT), [this](IPCArguments* arguments) {
-        JSGlobalObject* globalObject = m_impl->globalObject.get();
-        VM& vm = globalObject->vm();
-        JSLockHolder locker(&vm);
         const IPCString* ipcInstanceId = arguments->getString(0);
         const IPCString* ipcNamespaceStr = arguments->getString(1);
         const IPCString* ipcFunc = arguments->getString(2);
         String instanceId = jString2String(ipcInstanceId->content, ipcInstanceId->length);
         String namespaceStr = jString2String(ipcNamespaceStr->content, ipcNamespaceStr->length);
         String func = jString2String(ipcFunc->content, ipcFunc->length);
+        // LOGE("EXECJS func:%s", func.utf8().data());
+        JSGlobalObject* globalObject;
+        // fix instanceof Object error
+        // if function is callJs should us Instance object to call __WEEX_CALL_JAVASCRIPT__
+        if (std::strcmp("callJS" ,func.utf8().data()) == 0) {
+            globalObject = m_impl->mJSGlobalObjectMap[instanceId.utf8().data()];
+            if (globalObject == NULL) {
+                globalObject = m_impl->globalObject.get();
+            } else {
+                WTF::String funcWString("__WEEX_CALL_JAVASCRIPT__");
+                func = funcWString;
+            }
+        } else {
+            globalObject = m_impl->globalObject.get();
+        }
+        VM& vm = globalObject->vm();
+        JSLockHolder locker(&vm);
+         
         MarkedArgumentBuffer obj;
         base::debug::TraceScope traceScope("weex", "exeJSWithResult", "function", func.utf8().data());
         ExecState* state = globalObject->globalExec();
@@ -1555,12 +1695,16 @@ WeexJSServer::WeexJSServer(int fd, bool enableTrace)
                 JSValue o = parseToObject(state, str);
                 obj.append(o);
             } break;
+            case IPCType::BYTEARRAY: {
+                // const IPCByteArray* array = arguments->getByteArray(i);
+                // JSValue o = wson::toJSValue(state, (void*)array->content, array->length);
+                // obj.append(o);
+            } break;
             default:
                 obj.append(jsUndefined());
                 break;
             }
         }
-
         Identifier funcIdentifier = Identifier::fromString(&vm, func);
         JSValue function;
         JSValue result;
@@ -1578,7 +1722,6 @@ WeexJSServer::WeexJSServer(int fd, bool enableTrace)
         CallType callType = getCallData(function, callData);
         NakedPtr<Exception> returnedException;
         JSValue ret = call(state, function, callType, callData, globalObject, obj, returnedException);
-
         globalObject->vm().drainMicrotasks();
 
         if (returnedException) {
@@ -1589,7 +1732,6 @@ WeexJSServer::WeexJSServer(int fd, bool enableTrace)
             // createInstance return whole source object, which is big, only accept array result
             return createByteArrayResult(nullptr, 0);
         }
-        
         /** most scene, return result is array of null */
         JSArray* array = asArray(ret);
         uint32_t length = array->length();
@@ -1609,7 +1751,184 @@ WeexJSServer::WeexJSServer(int fd, bool enableTrace)
         CString cstring = string.utf8();
         return createByteArrayResult(cstring.data(), cstring.length());
     });
+	
+	handler->registerHandler(static_cast<uint32_t>(IPCJSMsg::CREATEINSTANCE), [this](IPCArguments* arguments) {
+        JSGlobalObject* impl_globalObject = m_impl->globalObject.get();
+        const IPCString* ipcInstanceId = arguments->getString(0);
+        const IPCString* ipcFunc = arguments->getString(1);
+        const IPCString* ipcScript = arguments->getString(2);
+        const IPCString* ipcOpts = arguments->getString(3);
+        const IPCString* ipcInitData = arguments->getString(4);
+        const IPCString* ipcExtendApi = arguments->getString(5);
+        
+        String instanceID = jString2String(ipcInstanceId->content, ipcInstanceId->length);
+        String func = jString2String(ipcFunc->content, ipcFunc->length);
+        String script = jString2String(ipcScript->content, ipcScript->length);
+        String opts = jString2String(ipcOpts->content, ipcOpts->length);
+        String initData = jString2String(ipcInitData->content, ipcInitData->length);
+        String extendsApi = jString2String(ipcExtendApi->content, ipcExtendApi->length);
 
+        JSGlobalObject* globalObject;
+        if (instanceID == "") {
+            globalObject = impl_globalObject;
+        } else {
+            GlobalObject* temp_object  = m_impl->mJSGlobalObjectMap[instanceID.utf8().data()];
+
+            if (temp_object == NULL) {
+                // new a global object
+                // --------------------------------------------------
+                VM& vm =  *m_impl->globalVM.get();
+                JSLockHolder locker(&vm);
+                temp_object = GlobalObject::create(vm,
+                    GlobalObject::createStructure(vm, jsNull()));
+                temp_object->m_server = this;
+                temp_object->initWXEnvironment(m_impl->mInitPrams);
+                temp_object->initFunctionForContext();
+                // --------------------------------------------------
+
+                // use impl global object run createInstanceContext
+                // --------------------------------------------------
+                // RAx or vue
+                JSGlobalObject* globalObject_local = impl_globalObject;
+                PropertyName createInstanceContextProperty(Identifier::fromString(&vm, "createInstanceContext"));
+                ExecState* state = globalObject_local->globalExec();
+                JSValue createInstanceContextFunction = globalObject_local->get(state, createInstanceContextProperty);
+                MarkedArgumentBuffer args;
+                args.append(String2JSValue(state, instanceID));
+                JSValue optsObject = parseToObject(state, opts);
+                args.append(optsObject);
+                JSValue initDataObject = parseToObject(state, initData);
+                args.append(initDataObject);
+                // args.append(String2JSValue(state, ""));
+                CallData callData;
+                CallType callType = getCallData(createInstanceContextFunction, callData);
+                NakedPtr<Exception> returnedException;
+                JSValue ret = call(state, createInstanceContextFunction, callType, callData,
+                        globalObject_local, args, returnedException);
+                if (returnedException) {
+                    // ReportException(globalObject, returnedException.get(), nullptr, "");
+                    String exceptionInfo = exceptionToString(globalObject_local, returnedException->value());
+                    LOGE("getJSGlobalObject returnedException %s", exceptionInfo.utf8().data());
+                }
+                // --------------------------------------------------
+
+                // String str = getArgumentAsString(state, ret); 
+                //(ret.toWTFString(state));
+
+                // use it to set Vue prototype to instance context 
+                JSObject* object = ret.toObject(state, temp_object);
+                JSObjectRef ref = toRef(object);
+                JSGlobalContextRef contextRef = toGlobalRef(state);
+                JSValueRef vueRef = JSObjectGetProperty(contextRef, ref, JSStringCreateWithUTF8CString("Vue"), nullptr);
+                if (vueRef != nullptr) {
+                    JSObjectRef vueObject = JSValueToObject(contextRef, vueRef, nullptr);
+                    if (vueObject != nullptr) {
+                        JSGlobalContextRef instanceContextRef = toGlobalRef(temp_object->globalExec());
+                        JSObjectSetPrototype(instanceContextRef, vueObject,
+                            JSObjectGetPrototype(instanceContextRef, JSContextGetGlobalObject(instanceContextRef)));
+                    }
+                }
+                //-------------------------------------------------
+
+                temp_object->resetPrototype(vm, ret);
+                m_impl->mJSGlobalObjectMap[instanceID.utf8().data()] = temp_object;
+
+                // -----------------------------------------
+                // ExecState* exec =temp_object->globalExec();
+                // JSLockHolder temp_locker(exec);
+                // VM& temp_vm = exec->vm();
+                // gcProtect(exec->vmEntryGlobalObject());
+                // temp_vm.ref();
+                // ------------------------------------------
+            }
+            globalObject = temp_object;
+        }
+
+        VM& vm = globalObject->vm();
+        JSLockHolder locker(&vm);
+
+        // if extend api is not null should exec befor createInstanceContext, such as rax-api
+        if (!extendsApi.isEmpty() && extendsApi.length() > 0) {
+            if (!ExecuteJavaScript(globalObject, extendsApi, ("weex run raxApi"), true, "runRaxApi")) {
+                LOGE("before createInstanceContext run rax api Error");
+                return createInt32Result(static_cast<int32_t>(false));
+            }
+        }
+        if (!ExecuteJavaScript(globalObject, script, ("weex createInstanceContext"), true, "createInstanceContext")) {
+            LOGE("createInstanceContext and ExecuteJavaScript Error");
+            return createInt32Result(static_cast<int32_t>(false));
+        }
+        return createInt32Result(static_cast<int32_t>(true));
+    });
+
+    handler->registerHandler(static_cast<uint32_t>(IPCJSMsg::DESTORYINSTANCE), [this](IPCArguments* arguments) {
+        const IPCString* ipcInstanceId = arguments->getString(0);
+        String instanceID = jString2String(ipcInstanceId->content, ipcInstanceId->length);
+        if (instanceID.isEmpty()) {
+            LOGE("DestoryInstance instanceId is NULL");
+            return createInt32Result(static_cast<int32_t>(false));
+        }
+        // LOGE("IPCJSMsg::DESTORYINSTANCE");
+        GlobalObject* globalObject = m_impl->mJSGlobalObjectMap[instanceID.utf8().data()];
+        if (globalObject == NULL) {
+            return createInt32Result(static_cast<int32_t>(true));
+        }
+        // LOGE("DestoryInstance map 11 length:%d", m_impl->mJSGlobalObjectMap.size());
+        m_impl->mJSGlobalObjectMap.erase(instanceID.utf8().data());
+        // LOGE("DestoryInstance map 22 length:%d", m_impl->mJSGlobalObjectMap.size());
+        
+        // release JSGlobalContextRelease
+        // when instanceID % 20 == 0 GC
+        bool needGc = false;
+        if (instanceID.length() > 0) {
+            int index = atoi(instanceID.utf8().data());
+            if(index > 0 && index % 20 == 0) {
+                // LOGE("needGc is true, instanceID.utf8().data():%s index:%d", instanceID.utf8().data(), index);
+                needGc = true;
+            }
+        }
+        if (needGc) {
+            ExecState* exec = globalObject->globalExec();
+            JSLockHolder locker(exec);
+            VM& vm = exec->vm();
+            vm.heap.collectAllGarbage();
+        }
+        
+        globalObject->m_server = nullptr;
+        globalObject = NULL;
+        
+        return createInt32Result(static_cast<int32_t>(true));
+
+    });
+
+    handler->registerHandler(static_cast<uint32_t>(IPCJSMsg::EXECJSONINSTANCE), [this](IPCArguments* arguments) {
+        const IPCString* ipcInstanceId = arguments->getString(0);
+        const IPCString* ipcScript = arguments->getString(1);
+        String instanceID = jString2String(ipcInstanceId->content, ipcInstanceId->length);
+        String script = jString2String(ipcScript->content, ipcScript->length);
+        JSGlobalObject* globalObject = m_impl->mJSGlobalObjectMap[instanceID.utf8().data()];
+        if (globalObject == NULL) {
+            globalObject = m_impl->globalObject.get();
+        }
+        VM& vm = globalObject->vm();
+        JSLockHolder locker(&vm);
+        SourceOrigin sourceOrigin(String::fromUTF8("(weex)"));
+        NakedPtr<Exception> evaluationException;
+        JSValue returnValue = evaluate(globalObject->globalExec(), makeSource(script, sourceOrigin, "execjs on instance context"), JSValue(), evaluationException);
+        globalObject->vm().drainMicrotasks();
+        if (evaluationException) {
+            // String exceptionInfo = exceptionToString(globalObject, evaluationException.get()->value());
+            // LOGE("EXECJSONINSTANCE exception:%s", exceptionInfo.utf8().data());
+            ReportException(globalObject, evaluationException.get(), instanceID.utf8().data(), "execJSOnInstance");
+            return createVoidResult();
+        }
+        // WTF::String str = returnValue.toWTFString(globalObject->globalExec());
+        const char* data = returnValue.toWTFString(globalObject->globalExec()).utf8().data();
+        char *buf = new char[strlen(data)+1];
+        strcpy(buf, data);
+        return createCharArrayResult(buf);
+    });
+    
     handler->registerHandler(static_cast<uint32_t>(IPCJSMsg::UPDATEGLOBALCONFIG), [this](IPCArguments* arguments) {
         JSGlobalObject* globalObject = m_impl->globalObject.get();
         VM& vm = globalObject->vm();

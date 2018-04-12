@@ -647,11 +647,11 @@ EncodedJSValue JSC_HOST_CALL functionCallNative(ExecState* state)
     IPCSerializer* serializer = server->getSerializer();
     serializer->setMsg(static_cast<uint32_t>(IPCProxyMsg::CALLNATIVE));
     //instacneID args[0]
-    getArgumentAsJString(serializer, state, 0);
+    getArgumentAsCString(serializer, state, 0);
     //task args[1]
     getArgumentAsJByteArray(serializer, state, 1);
     //callback args[2]
-    getArgumentAsJString(serializer, state, 2);
+    getArgumentAsCString(serializer, state, 2);
     std::unique_ptr<IPCBuffer> buffer = serializer->finish();
     std::unique_ptr<IPCResult> result = sender->send(buffer.get());
     if (result->getType() != IPCType::INT32) {
@@ -758,13 +758,13 @@ EncodedJSValue JSC_HOST_CALL functionCallNativeModule(ExecState* state)
     IPCSerializer* serializer = server->getSerializer();
     serializer->setMsg(static_cast<uint32_t>(IPCProxyMsg::CALLNATIVEMODULE));
     //instacneID args[0]
-    getArgumentAsJString(serializer, state, 0);
+    getArgumentAsCString(serializer, state, 0);
 
     //module args[1]
-    getArgumentAsJString(serializer, state, 1);
+    getArgumentAsCString(serializer, state, 1);
 
     //method args[2]
-    getArgumentAsJString(serializer, state, 2);
+    getArgumentAsCString(serializer, state, 2);
 
     // arguments args[3]
     getArgumentAsJByteArrayJSON(serializer, state, 3);
@@ -804,13 +804,13 @@ EncodedJSValue JSC_HOST_CALL functionCallNativeComponent(ExecState* state)
     serializer->setMsg(static_cast<uint32_t>(IPCProxyMsg::CALLNATIVECOMPONENT));
 
     //instacneID args[0]
-    getArgumentAsJString(serializer, state, 0);
+    getArgumentAsCString(serializer, state, 0);
 
     //module args[1]
-    getArgumentAsJString(serializer, state, 1);
+    getArgumentAsCString(serializer, state, 1);
 
     //method args[2]
-    getArgumentAsJString(serializer, state, 2);
+    getArgumentAsCString(serializer, state, 2);
 
     // arguments args[3]
     getArgumentAsJByteArrayJSON(serializer, state, 3);

@@ -674,12 +674,12 @@ EncodedJSValue JSC_HOST_CALL functionGCanvasLinkNative(ExecState* state)
     serializer->setMsg(static_cast<uint32_t>(IPCProxyMsg::CALLGCANVASLINK));
 
     //contextId args[0]
-    getArgumentAsJString(serializer, state, 0);
+    getArgumentAsCString(serializer, state, 0);
     //type args[1]
     int32_t type = state->argument(1).asInt32();
     serializer->add(type);
     //arg args[2]
-    getArgumentAsJString(serializer, state, 2);
+    getArgumentAsCString(serializer, state, 2);
     JSValue ret = jsUndefined();
     try {
         std::unique_ptr<IPCBuffer> buffer = serializer->finish();
@@ -720,7 +720,7 @@ EncodedJSValue JSC_HOST_CALL functionT3DLinkNative(ExecState* state)
     int32_t type = state->argument(0).asInt32();
     serializer->add(type);
     //arg args[2]
-    getArgumentAsJString(serializer, state, 1);
+    getArgumentAsCString(serializer, state, 1);
     JSValue ret = jsUndefined();
     try {
         std::unique_ptr<IPCBuffer> buffer = serializer->finish();

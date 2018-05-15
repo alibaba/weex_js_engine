@@ -36,23 +36,26 @@ String char2String(const char *string) {
     return String(string);
 }
 
-const char *newCharString(const char *str, size_t length) {
-    char *result = new char[length + 1];
-    for (int i = 0; i < length; ++i) {
-        result[i] = str[i];
-    }
+char * newCharString(const char *str, size_t length) {
+    auto count = length + 1;
+    auto *result = (char *) malloc(count);
+    if(result == nullptr)
+        return nullptr;
+
+    memset(result,0,count);
+    memcpy(result, str, length);
     result[length] = '\0';
     return result;
 }
 
-const char *getCharJSONStringFromState(ExecState *state, int argument) {
+char * getCharJSONStringFromState(ExecState *state, int argument) {
     if (argument >= state->argumentCount()) {
         return nullptr;
     }
     JSValue val = state->argument(argument);
-    VM & vm = state->vm();
+    VM &vm = state->vm();
     if (val.isObject()) {
-        VM & vm = state->vm();
+        VM &vm = state->vm();
         auto scope = DECLARE_CATCH_SCOPE(vm);
         String str = JSONStringify(state, val, 0);
         if (UNLIKELY(scope.exception())) {
@@ -60,11 +63,13 @@ const char *getCharJSONStringFromState(ExecState *state, int argument) {
             return nullptr;
         }
         CString data = str.utf8();
-        return newCharString(data.data(), data.length() + 1);
+        return newCharString(data.data(), data.length());
+    } else {
+        return nullptr;
     }
 }
 
-const char *getCharOrJSONStringFromState(ExecState *state, int argument) {
+char * getCharOrJSONStringFromState(ExecState *state, int argument) {
     if (argument >= state->argumentCount()) {
         return nullptr;
     }
@@ -72,9 +77,9 @@ const char *getCharOrJSONStringFromState(ExecState *state, int argument) {
     if (val.isString()) {
         String str(val.toWTFString(state));
         CString data = str.utf8();
-        return newCharString(data.data(), data.length() + 1);
+        return newCharString(data.data(), data.length());
     } else if (val.isObject()) {
-        VM & vm = state->vm();
+        VM &vm = state->vm();
         auto scope = DECLARE_CATCH_SCOPE(vm);
         String str = JSONStringify(state, val, 0);
         if (UNLIKELY(scope.exception())) {
@@ -82,11 +87,13 @@ const char *getCharOrJSONStringFromState(ExecState *state, int argument) {
             return nullptr;
         }
         CString data = str.utf8();
-        return newCharString(data.data(), data.length() + 1);
+        return newCharString(data.data(), data.length());
+    } else {
+        return nullptr;
     }
 }
 
-const char *getCharStringFromState(ExecState *state, int argument) {
+char * getCharStringFromState(ExecState *state, int argument) {
     JSValue val = state->argument(argument);
     String s = val.toWTFString(state);
     size_t length = s.length() + 1;
@@ -135,11 +142,11 @@ void getArgumentAsJByteArrayJSON(IPCSerializer *serializer, ExecState *state, in
         return;
     }
     JSValue val = state->argument(argument);
-    VM & vm = state->vm();
+    VM &vm = state->vm();
     if (val.isObject()) {
         auto scope = DECLARE_CATCH_SCOPE(vm);
         String str = JSONStringify(state, val, 0);
-        JSC::VM & vm = state->vm();
+        JSC::VM &vm = state->vm();
         if (UNLIKELY(scope.exception())) {
             scope.clearException();
             serializer->addJSUndefined();
@@ -156,11 +163,11 @@ WeexByteArray *getArgumentAsWeexByteArrayJSON(ExecState *state, int argument) {
         return nullptr;
     }
     JSValue val = state->argument(argument);
-    VM & vm = state->vm();
+    VM &vm = state->vm();
     if (val.isObject()) {
         auto scope = DECLARE_CATCH_SCOPE(vm);
         String str = JSONStringify(state, val, 0);
-        JSC::VM & vm = state->vm();
+        JSC::VM &vm = state->vm();
         if (UNLIKELY(scope.exception())) {
             scope.clearException();
             return nullptr;
@@ -212,7 +219,7 @@ JSValue String2JSValue(ExecState *state, String s) {
 }
 
 JSValue parseToObject(ExecState *state, const String &data) {
-    VM & vm = state->vm();
+    VM &vm = state->vm();
     auto scope = DECLARE_CATCH_SCOPE(vm);
     JSValue ret = JSONParse(state, data);
     if (UNLIKELY(scope.exception())) {
@@ -277,7 +284,7 @@ void doUpdateGlobalSwitchConfig(const char *config) {
 
 String exceptionToString(JSGlobalObject *globalObject, JSValue exception) {
     StringBuilder sb;
-    VM & vm = globalObject->vm();
+    VM &vm = globalObject->vm();
     auto scope = DECLARE_CATCH_SCOPE(vm);
 
 #define CHECK_EXCEPTION()           \
@@ -324,9 +331,9 @@ String exceptionToString(JSGlobalObject *globalObject, JSValue exception) {
 }
 
 void setJSFVersion(WeexGlobalObject *globalObject) {
-    VM & vm = globalObject->vm();
+    VM &vm = globalObject->vm();
     PropertyName getJSFMVersionProperty(Identifier::fromString(&vm, "getJSFMVersion"));
-    ExecState * state = globalObject->globalExec();
+    ExecState *state = globalObject->globalExec();
     JSValue getJSFMVersionFunction = globalObject->get(state, getJSFMVersionProperty);
     MarkedArgumentBuffer args;
     CallData callData;
@@ -408,11 +415,13 @@ bool ExecuteJavaScript(JSGlobalObject *globalObject,
     return true;
 }
 
-void deleteChar(const char *str) {
-    if (str == nullptr)
-        return;;
+void deleteChar(char *str) {
+//    if (str == nullptr)
+//        return;;
 
-    delete str;
+    //free(str);
+    //str = nullptr;
+    return;
 }
 
 WeexByteArray *IPCByteArrayToWeexByteArray(const IPCByteArray *byteArray) {

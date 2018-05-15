@@ -176,13 +176,13 @@ void getArgumentAsJByteArrayJSON(IPCSerializer *serializer, ExecState *state, in
 
 void getArgumentAsJByteArray(IPCSerializer *serializer, ExecState *state, int argument);
 
-const char *getCharJSONStringFromState(ExecState *state, int argument);
+char * getCharJSONStringFromState(ExecState *state, int argument);
 
-const char *getCharOrJSONStringFromState(ExecState *state, int argument);
+char * getCharOrJSONStringFromState(ExecState *state, int argument);
 
-const char *getCharStringFromState(ExecState *state, int argument);
+char * getCharStringFromState(ExecState *state, int argument);
 
-const char *newCharString(const char *str, size_t length);
+char * newCharString(const char *str, size_t length);
 
 void getArgumentAsCString(IPCSerializer *serializer, ExecState *state, int argument);
 
@@ -214,7 +214,7 @@ bool ExecuteJavaScript(JSGlobalObject *globalObject,
                        const char *func,
                        const char *instanceId = "");
 
-void deleteChar(const char * str);
+void deleteChar(char * str);
 
 WeexByteArray *IPCByteArrayToWeexByteArray(const IPCByteArray *byteArray);
 

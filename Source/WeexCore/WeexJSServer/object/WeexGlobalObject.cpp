@@ -120,7 +120,7 @@ void WeexGlobalObject::initWXEnvironmentWithIPCArguments(IPCArguments *arguments
 }
 
 void WeexGlobalObject::initWxEnvironment(std::vector<INIT_FRAMEWORK_PARAMS *> params, bool forAppContext, bool isSave) {
-    VM & vm = this->vm();
+    VM &vm = this->vm();
     JSNonFinalObject *WXEnvironment = SimpleObject::create(vm, this);
     bool hasInitCrashHandler = false;
     for (int i = 0; i < params.size(); i++) {
@@ -177,7 +177,7 @@ void WeexGlobalObject::initWxEnvironment(std::vector<INIT_FRAMEWORK_PARAMS *> pa
 }
 
 void WeexGlobalObject::initFunctionForContext() {
-    VM & vm = this->vm();
+    VM &vm = this->vm();
     const HashTableValue JSEventTargetPrototypeTableValues[] = {
             {"nativeLog",             JSC::Function, NoIntrinsic, {(intptr_t) static_cast<NativeFunction>(functionNativeLogContext),  (intptr_t) (5)}},
             {"atob",                  JSC::Function, NoIntrinsic, {(intptr_t) static_cast<NativeFunction>(functionAtob),              (intptr_t) (1)}},
@@ -189,7 +189,7 @@ void WeexGlobalObject::initFunctionForContext() {
 }
 
 void WeexGlobalObject::initFunction() {
-    VM & vm = this->vm();
+    VM &vm = this->vm();
     const HashTableValue JSEventTargetPrototypeTableValues[] = {
             {"callNative",            JSC::Function, NoIntrinsic, {(intptr_t) static_cast<NativeFunction>(functionCallNative),          (intptr_t) (3)}},
             {"callNativeModule",      JSC::Function, NoIntrinsic, {(intptr_t) static_cast<NativeFunction>(functionCallNativeModule),    (intptr_t) (5)}},
@@ -220,7 +220,7 @@ void WeexGlobalObject::initFunction() {
 }
 
 void WeexGlobalObject::initFunctionForAppContext() {
-    VM & vm = this->vm();
+    VM &vm = this->vm();
     const HashTableValue JSEventTargetPrototypeTableValues[] = {
             {"nativeLog",            JSC::Function, NoIntrinsic, {(intptr_t) static_cast<NativeFunction>(functionNativeLogContext), (intptr_t) (5)}},
             {"__dispatch_message__", JSC::Function, NoIntrinsic, {(intptr_t) static_cast<NativeFunction>(functionDisPatchMeaage),   (intptr_t) (3)}},
@@ -248,7 +248,8 @@ EncodedJSValue JSC_HOST_CALL functionSetIntervalWeex(ExecState *state) {
                                                     callbackChar);
 
         deleteChar(idChar);
-
+        deleteChar(taskChar);
+        deleteChar(callbackChar);
     } else {
         WeexJSServer *server = globalObject->m_server;
         IPCSender *sender = server->getSender();
@@ -279,8 +280,12 @@ EncodedJSValue JSC_HOST_CALL functionSetIntervalWeex(ExecState *state) {
 EncodedJSValue JSC_HOST_CALL functionClearIntervalWeex(ExecState *state) {
     base::debug::TraceScope traceScope("weex", "functionClearIntervalWeex");
     if (weex_core_js_api_functions) {
-        weex_core_js_api_functions->funcClearInterval(getCharStringFromState(state, 0),
-                                                      getCharStringFromState(state, 1));
+        auto instanceIdChar = getCharStringFromState(state, 0);
+        auto callBackChar = getCharStringFromState(state, 1);
+        weex_core_js_api_functions->funcClearInterval(instanceIdChar,
+                                                      callBackChar);
+        deleteChar(instanceIdChar);
+        deleteChar(callBackChar);
     } else {
         WeexGlobalObject *globalObject = static_cast<WeexGlobalObject *>(state->lexicalGlobalObject());
         WeexJSServer *server = globalObject->m_server;
@@ -306,10 +311,18 @@ EncodedJSValue JSC_HOST_CALL functionClearIntervalWeex(ExecState *state) {
 EncodedJSValue JSC_HOST_CALL functionCallNative(ExecState *state) {
     base::debug::TraceScope traceScope("weex", "callNative");
 
+    
     if (weex_core_js_api_functions) {
-        weex_core_js_api_functions->funcCallNative(getCharStringFromState(state, 0),
-                                                   getCharOrJSONStringFromState(state, 1),
-                                                   getCharStringFromState(state, 2));
+        auto instanceIdChar = getCharStringFromState(state, 0);
+        auto taskChar = getCharOrJSONStringFromState(state, 1);
+        auto callBackChar = getCharStringFromState(state, 2);
+        weex_core_js_api_functions->funcCallNative(instanceIdChar,
+                                                   taskChar,
+                                                   callBackChar);
+
+        deleteChar(instanceIdChar);
+        deleteChar(taskChar);
+        deleteChar(callBackChar);
         return JSValue::encode(jsNumber(0));
     } else {
         WeexGlobalObject *globalObject = static_cast<WeexGlobalObject *>(state->lexicalGlobalObject());
@@ -335,11 +348,16 @@ EncodedJSValue JSC_HOST_CALL functionCallNative(ExecState *state) {
 
 EncodedJSValue JSC_HOST_CALL functionGCanvasLinkNative(ExecState *state) {
     base::debug::TraceScope traceScope("weex", "callGCanvasLinkNative");
-    VM & vm = state->vm();
+    VM &vm = state->vm();
     if (weex_core_js_api_functions) {
-        auto native = weex_core_js_api_functions->funcCallGCanvasLinkNative(getCharStringFromState(state, 0),
+        //const char *pageId, int type, const char *args
+        auto instanceIdChar = getCharStringFromState(state, 0);
+        auto argStringChar = getCharStringFromState(state, 2);
+        auto native = weex_core_js_api_functions->funcCallGCanvasLinkNative(instanceIdChar,
                                                                             state->argument(1).asInt32(),
-                                                                            getCharStringFromState(state, 2));
+                                                                            argStringChar);
+        deleteChar(instanceIdChar);
+        deleteChar(argStringChar);
         return JSValue::encode(String2JSValue(state, native));
     } else {
         WeexGlobalObject *globalObject = static_cast<WeexGlobalObject *>(state->lexicalGlobalObject());
@@ -386,11 +404,13 @@ EncodedJSValue JSC_HOST_CALL functionGCanvasLinkNative(ExecState *state) {
 
 EncodedJSValue JSC_HOST_CALL functionT3DLinkNative(ExecState *state) {
     base::debug::TraceScope traceScope("weex", "functionT3DLinkNative");
-    VM & vm = state->vm();
+    VM &vm = state->vm();
 
     if (weex_core_js_api_functions) {
+        auto argStringChar = getCharStringFromState(state, 1);
         const char *native = weex_core_js_api_functions->funcT3dLinkNative(state->argument(0).asInt32(),
-                                                                           getCharStringFromState(state, 1));
+                                                                           argStringChar);
+        deleteChar(argStringChar);
 
         return JSValue::encode(String2JSValue(state, native));
     } else {
@@ -433,14 +453,29 @@ EncodedJSValue JSC_HOST_CALL functionT3DLinkNative(ExecState *state) {
 
 EncodedJSValue JSC_HOST_CALL functionCallNativeModule(ExecState *state) {
     base::debug::TraceScope traceScope("weex", "callNativeModule");
-    VM & vm = state->vm();
+    VM &vm = state->vm();
     std::unique_ptr<IPCResult> result;
     if (weex_core_js_api_functions) {
-        result = weex_core_js_api_functions->funcCallNativeModule(getCharStringFromState(state, 0),
-                                                                  getCharStringFromState(state, 1),
-                                                                  getCharStringFromState(state, 2),
-                                                                  getCharJSONStringFromState(state, 3),
-                                                                  getCharJSONStringFromState(state, 4));
+        /*
+         * const char *pageId, const char *module, const char *method,
+                                                           const char *argString, const char *optString
+         */
+        auto instanceIdChar = getCharStringFromState(state, 0);
+        auto moduleChar = getCharStringFromState(state, 1);
+        auto methodChar = getCharStringFromState(state, 2);
+        auto argStringChar = getCharJSONStringFromState(state, 3);
+        auto optStringChar = getCharJSONStringFromState(state, 4);
+        result = weex_core_js_api_functions->funcCallNativeModule(instanceIdChar,
+                                                                  moduleChar,
+                                                                  methodChar,
+                                                                  argStringChar,
+                                                                  optStringChar);
+
+        deleteChar(instanceIdChar);
+        deleteChar(moduleChar);
+        deleteChar(methodChar);
+        deleteChar(argStringChar);
+        deleteChar(optStringChar);
     } else {
         WeexGlobalObject *globalObject = static_cast<WeexGlobalObject *>(state->lexicalGlobalObject());
         WeexJSServer *server = globalObject->m_server;
@@ -492,11 +527,21 @@ EncodedJSValue JSC_HOST_CALL functionCallNativeComponent(ExecState *state) {
     base::debug::TraceScope traceScope("weex", "callNativeComponent");
 
     if (weex_core_js_api_functions) {
-        weex_core_js_api_functions->funcCallNativeComponent(getCharStringFromState(state, 0),
-                                                            getCharStringFromState(state, 1),
-                                                            getCharStringFromState(state, 2),
-                                                            getCharJSONStringFromState(state, 3),
-                                                            getCharJSONStringFromState(state, 4));
+        auto instanceId = getCharStringFromState(state, 0);
+        auto refChar = getCharStringFromState(state, 1);
+        auto methodChar = getCharStringFromState(state, 2);
+        auto argChar = getCharJSONStringFromState(state, 3);
+        auto optChar = getCharJSONStringFromState(state, 4);
+        weex_core_js_api_functions->funcCallNativeComponent(instanceId,
+                                                            refChar,
+                                                            methodChar,
+                                                            argChar,
+                                                            optChar);
+        deleteChar(instanceId);
+        deleteChar(refChar);
+        deleteChar(methodChar);
+        deleteChar(argChar);
+        deleteChar(optChar);
         return JSValue::encode(jsNumber(0));
     } else {
         WeexGlobalObject *globalObject = static_cast<WeexGlobalObject *>(state->lexicalGlobalObject());
@@ -535,10 +580,22 @@ EncodedJSValue JSC_HOST_CALL functionCallAddElement(ExecState *state) {
     base::debug::TraceScope traceScope("weex", "callAddElement");
 
     if (weex_core_js_api_functions) {
-        weex_core_js_api_functions->funcCallAddElement(getCharStringFromState(state, 0),
-                                                       getCharStringFromState(state, 1),
-                                                       getCharOrJSONStringFromState(state, 2),
-                                                       getCharStringFromState(state, 3));
+        /*
+         * const char *pageId, const char *parentRef, const char *domStr,
+                                   const char *index_cstr
+         */
+        auto instanceId = getCharStringFromState(state, 0);
+        auto parentRefChar = getCharStringFromState(state, 1);
+        auto domStr = getCharOrJSONStringFromState(state, 2);
+        auto index_cstr = getCharStringFromState(state, 3);
+        weex_core_js_api_functions->funcCallAddElement(instanceId,
+                                                       parentRefChar,
+                                                       domStr,
+                                                       index_cstr);
+        deleteChar(instanceId);
+        deleteChar(parentRefChar);
+        deleteChar(domStr);
+        deleteChar(index_cstr);
     } else {
         WeexGlobalObject *globalObject = static_cast<WeexGlobalObject *>(state->lexicalGlobalObject());
         WeexJSServer *server = globalObject->m_server;
@@ -831,6 +888,7 @@ EncodedJSValue JSC_HOST_CALL functionCallMoveElement(ExecState *state) {
                                                         dataChar,
                                                         index_int);
         deleteChar(idChar);
+        deleteChar(index);
         deleteChar(refChar);
         deleteChar(dataChar);
         return JSValue::encode(jsNumber(0));
@@ -907,9 +965,18 @@ EncodedJSValue JSC_HOST_CALL functionCallRemoveEvent(ExecState *state) {
 
     //TODO 消息发送和接收的个数不一样..
     if (weex_core_js_api_functions) {
-        weex_core_js_api_functions->funcCallRemoveEvent(getCharStringFromState(state, 0),
-                                                        getCharStringFromState(state, 1),
-                                                        getCharStringFromState(state, 2));
+        /**
+         * const char *pageId, const char *ref, const char *event
+         */
+        auto instanceIdChar = getCharStringFromState(state, 0);
+        auto refChar = getCharStringFromState(state, 1);
+        auto eventChar = getCharStringFromState(state, 2);
+        weex_core_js_api_functions->funcCallRemoveEvent(instanceIdChar,
+                                                        refChar,
+                                                        eventChar);
+        deleteChar(instanceIdChar);
+        deleteChar(refChar);
+        deleteChar(eventChar);
         return JSValue::encode(jsNumber(0));
     } else {
         WeexGlobalObject *globalObject = static_cast<WeexGlobalObject *>(state->lexicalGlobalObject());

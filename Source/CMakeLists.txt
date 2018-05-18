@@ -22,17 +22,24 @@ add_subdirectory(CrashHandler)
 #target_link_libraries(TestCrashHandler
 #CrashHandler)
 
+include_directories(include)
 include(WebKitCommon)
 
 set(WEEXJSSERVER_NAME weexjss${SERVERSUFFIX})
 set(${WEEXJSSERVER_NAME}_SOURCES
-
-./base/base64/base64.cpp
-./base/base64/modp_base64/modp_b64.cc
-LogUtils.cpp
-Compatible.cpp
-WeexJSServer.cpp
-WeexJSServerMain.cpp
+        ./base/base64/base64.cpp
+        ./base/base64/modp_base64/modp_b64.cc
+        WeexCore/WeexJSServer/utils/Utils.cpp
+        WeexCore/WeexJSServer/utils/LogUtils.cpp
+        WeexCore/WeexJSServer/utils/Compatible.cpp
+        WeexCore/WeexJSServer/utils/WeexRuntime.cpp
+        WeexCore/WeexJSServer/object/SimpleObject.cpp
+        WeexCore/WeexJSServer/object/WeexGlobalObject.cpp
+        WeexCore/WeexJSServer/object/WeexObjectHolder.cpp
+        WeexCore/WeexJSServer/WeexJSCExternal.cpp
+        WeexCore/WeexJSServer/WeexJSServerApi.cpp
+        WeexJSServer.cpp
+        WeexJSServerMain.cpp
 )
 
 set(${WEEXJSSERVER_NAME}_LIBRARY_TYPE SHARED)
@@ -60,8 +67,7 @@ add_custom_command(
 
 set(WEEXJSSERVERSTUB_NAME weexjsstub${SERVERSUFFIX})
 add_executable(${WEEXJSSERVERSTUB_NAME}
-WeexJSServerMainStub.cpp
-)
+WeexJSServerMainStub.cpp)
 
 target_link_libraries(${WEEXJSSERVERSTUB_NAME}
 ${WEEXJSSERVER_NAME}

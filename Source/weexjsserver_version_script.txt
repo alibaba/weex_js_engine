@@ -1,4 +1,4 @@
 {
-    global: serverMain;
+    global: serverMain;exchangeMethod;
     local: *;
 };

@@ -9,3 +9,7 @@ arm-sysroot/usr/include/linux/netfilter/xt_CONNMARK.h
 arm-sysroot/usr/include/linux/netfilter/xt_CONNMARK.h
 cscope.out
 *.so
+*.so
+cmake-build-relwithdebinfo
+.idea
+cmake-build-debug

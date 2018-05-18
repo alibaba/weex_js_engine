@@ -31,7 +31,7 @@
 #include "JSCInlines.h"
 #include "ScriptArguments.h"
 #include "ScriptCallStackFactory.h"
-#include "LogUtils.h"
+#include "WeexCore/WeexJSServer/utils/LogUtils.h"
 #include "JSONObject.h"
 
 namespace JSC {

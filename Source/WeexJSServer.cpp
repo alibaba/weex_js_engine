@@ -140,11 +140,14 @@ WeexJSServer::WeexJSServer(int fd, bool enableTrace)
         String namespaceStr = jString2String(ipcNamespaceStr->content, ipcNamespaceStr->length);
         String func = jString2String(ipcFunc->content, ipcFunc->length);
 
-        char *result = m_impl->weexRuntime->exeJSWithResult(instanceId, namespaceStr, func, arguments);
+        WeexJSResult jsResult = m_impl->weexRuntime->exeJSWithResult(instanceId, namespaceStr, func, arguments);
 
-        if (result == nullptr)
+        if (jsResult.length <= 0){
             return createByteArrayResult(nullptr, 0);
-        else return createCharArrayResult(result);
+        }
+        std::unique_ptr<IPCResult> ipcResult = createByteArrayResult(jsResult.data, jsResult.length);
+        WeexJSResultDataFree(jsResult);
+        return ipcResult;
     });
 
     handler->registerHandler(static_cast<uint32_t>(IPCJSMsg::CREATEINSTANCE), [this](IPCArguments *arguments) {

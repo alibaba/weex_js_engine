@@ -20,6 +20,27 @@ struct WeexByteArray {
     char content[1];
 };
 
+
+struct WeexJSResult{
+    char* data = nullptr;
+    int  length = 0;
+    bool fromMalloc = false;
+    bool fromNew = false;
+};
+
+inline void WeexJSResultDataFree(WeexJSResult& result){
+    if(result.fromMalloc){
+        free(result.data);
+        return;
+    }
+    if(result.fromNew){
+        delete[] result.data;
+        return;
+    }
+}
+
+
+
 typedef void (*FuncSetJSVersion)(const char *jsVersion);
 
 typedef void (*FuncReportException)(const char *pageId, const char *func, const char *exception_string);
@@ -27,11 +48,10 @@ typedef void (*FuncReportException)(const char *pageId, const char *func, const 
 typedef void (*FuncCallNative)(const char *pageId, const char *task, const char *callback);
 
 typedef std::unique_ptr<IPCResult> (*FuncCallNativeModule)(const char *pageId, const char *module, const char *method,
-                                                           const char *argString, const char *optString);
+                                                           const char *arguments, int argumentsLen, const char *options, int optionsLen);
 
 typedef void (*FuncCallNativeComponent)(const char *pageId, const char *ref,
-                                        const char *method, const char *argString,
-                                        const char *optString);
+                                        const char *method, const char *arguments, int argumentsLen, const char *options, int optionsLen);
 
 typedef void (*FuncCallAddElement)(const char *pageId, const char *parentRef, const char *domStr,
                                    const char *index_cstr);
@@ -157,7 +177,7 @@ typedef int (*FuncExeCTimeCallback)(const char *source);
 typedef int (*FuncExeJS)(const char *instanceId, const char *nameSpace, const char *func,
                          std::vector<VALUE_WITH_TYPE *> params);
 
-typedef char *(*FuncExeJSWithResult)(const char *instanceId, const char *nameSpace, const char *func,
+typedef WeexJSResult(*FuncExeJSWithResult)(const char *instanceId, const char *nameSpace, const char *func,
                                      std::vector<VALUE_WITH_TYPE *> params);
 
 typedef int (*FuncCreateInstance)(const char *instanceId, const char *func, const char *script, const char *opts,

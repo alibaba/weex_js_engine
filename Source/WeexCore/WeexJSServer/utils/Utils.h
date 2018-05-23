@@ -78,6 +78,8 @@
 #include <wtf/text/StringBuilder.h>
 #include <wtf/unicode/WTFUTF8.h>
 
+
+
 #if OS(WINDOWS)
 #include <direct.h>
 #else
@@ -146,8 +148,11 @@
 #include <WeexApiHeader.h>
 
 #include "WeexCore/WeexJSServer/object/SimpleObject.h"
+#include "WeexCore/WeexJSServer/object/Args.h"
+#include "wson/wsonjsc.h"
 
 using namespace JSC;
+using namespace WeexCore;
 
 
 extern bool config_use_wson;
@@ -183,9 +188,34 @@ std::unique_ptr<char[]> getCharOrJSONStringFromState(ExecState *state, int argum
 
 std::unique_ptr<char[]> getCharStringFromState(ExecState *state, int argument);
 
+/** auto choose use wson or json */
+void getWsonOrJsonArgsFromState(ExecState *state, int argument, Args& args);
+
+/** force string */
+void getStringArgsFromState(ExecState *state, int argument, Args& args);
+
+/**
+ * get wson args with wson parser
+ */
+void getWsonArgsFromState(ExecState *state, int argument, Args& args);
+
+/**
+ * get json args with JSONStringify
+ */
+void getJSONArgsFromState(ExecState *state, int argument, Args& args);
+
+/**
+ * add to ipc argument
+ * 
+ */
+void addObjectArgsToIPC(IPCSerializer *serializer, Args& args);
+void addStringArgsToIPC(IPCSerializer *serializer, Args& args);
+
+
 std::unique_ptr<char[]> newCharString(const char *str, size_t length);
 void printLogOnFileWithNameS(const char * name,const char *log);
 void getArgumentAsCString(IPCSerializer *serializer, ExecState *state, int argument);
+
 
 void initCrashHandler(const char *path);
 

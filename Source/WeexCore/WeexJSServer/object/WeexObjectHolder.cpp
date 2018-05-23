@@ -61,6 +61,7 @@ void WeexObjectHolder::initFromParams(std::vector<INIT_FRAMEWORK_PARAMS *> param
         globalObject->initFunction();
 
     m_globalObject.set(vm, globalObject);
+    wson::init(&vm);
 }
 
 WeexObjectHolder::WeexObjectHolder(bool isMultiProgress) {
@@ -87,6 +88,7 @@ WeexGlobalObject *WeexObjectHolder::cloneWeexObject(bool initContext, bool forAp
 
 WeexObjectHolder::~WeexObjectHolder() {
     VM & vm = *(m_globalVM.get());
+    wson::destory();
     JSLockHolder locker(&vm);
     vm.heap.collectAllGarbage();
     m_globalVM = nullptr;

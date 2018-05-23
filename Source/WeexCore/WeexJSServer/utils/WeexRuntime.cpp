@@ -470,9 +470,48 @@ int WeexRuntime::exeJS(const String &instanceId, const String &nameSpace, const 
     return static_cast<int32_t>(true);
 }
 
-char *WeexRuntime::exeJSWithResult(const String &instanceId, const String &nameSpace, const String &func,
+inline void convertJSArrayToWeexJSResult(ExecState * state, JSValue& ret, WeexJSResult &jsResult){
+    if (ret.isUndefined() || ret.isNull() || !isJSArray(ret)) {
+        // createInstance return whole source object, which is big, only accept array result
+        return;
+    }
+    //
+    /** most scene, return result is array of null */
+    JSArray *array = asArray(ret);
+    uint32_t length = array->length();
+    bool isAllNull = true;
+    for (uint32_t i = 0; i < length; i++) {
+        JSValue ele = array->getIndex(state, i);
+        if (!ele.isUndefinedOrNull()) {
+            isAllNull = false;
+            break;
+        }
+    }
+    if (isAllNull) {
+        return;
+    }
+    if(config_use_wson){
+        wson_buffer* buffer =  wson::toWson(state, ret);
+        jsResult.data = (char*)buffer->data;
+        jsResult.length = buffer->position;
+        jsResult.fromMalloc = true;
+        buffer->data = nullptr;
+        wson_buffer_free(buffer);
+    }else{
+        String string = JSONStringify(state, ret, 0);
+        CString cstring = string.utf8();
+        char *buf = new char[cstring.length() + 1];
+        memcpy(buf, cstring.data(),  cstring.length());
+        buf[cstring.length()] = '\0';
+        jsResult.data = buf;
+        jsResult.length = cstring.length();
+        jsResult.fromNew = true;
+    }
+}
+
+WeexJSResult WeexRuntime::exeJSWithResult(const String &instanceId, const String &nameSpace, const String &func,
                                    std::vector<VALUE_WITH_TYPE *> params) {
-    // LOGE("EXECJS func:%s", func.utf8().data());
+    WeexJSResult jsResult;
     JSGlobalObject *globalObject;
     String runFunc = func;
     // fix instanceof Object error
@@ -511,7 +550,7 @@ char *WeexRuntime::exeJSWithResult(const String &instanceId, const String &nameS
         Identifier namespaceIdentifier = Identifier::fromString(&vm, nameSpace);
         JSValue master = globalObject->get(state, namespaceIdentifier);
         if (!master.isObject()) {
-            return nullptr;
+            return jsResult;
         }
         function = master.toObject(state)->get(state, funcIdentifier);
     }
@@ -523,38 +562,19 @@ char *WeexRuntime::exeJSWithResult(const String &instanceId, const String &nameS
 
     if (returnedException) {
         ReportException(globalObject, returnedException.get(), instanceId.utf8().data(), func.utf8().data());
-        return nullptr;
+        return jsResult;
     }
-    if (ret.isUndefined() || ret.isNull() || !isJSArray(ret)) {
-        // createInstance return whole source object, which is big, only accept array result
-        return nullptr;
-    }
-    /** most scene, return result is array of null */
-    JSArray *array = asArray(ret);
-    uint32_t length = array->length();
-    bool isAllNull = true;
-    for (uint32_t i = 0; i < length; i++) {
-        JSValue ele = array->getIndex(state, i);
-        if (!ele.isUndefinedOrNull()) {
-            isAllNull = false;
-            break;
-        }
-    }
-    if (isAllNull) {
-        return nullptr;
-    }
-
-    String string = JSONStringify(state, ret, 0);
-    CString cstring = string.utf8();
-    auto data = cstring.data();
-    char *buf = new char[strlen(data) + 1];
-    strcpy(buf, data);
-    return buf;
+    convertJSArrayToWeexJSResult(state, ret, jsResult);
+    return jsResult;
 }
 
-char *WeexRuntime::exeJSWithResult(const String &instanceId, const String &nameSpace, const String &func,
+
+
+
+WeexJSResult WeexRuntime::exeJSWithResult(const String &instanceId, const String &nameSpace, const String &func,
                                    IPCArguments *arguments) {
-    // LOGE("EXECJS func:%s", func.utf8().data());
+    WeexJSResult jsResult;
+
     JSGlobalObject *globalObject;
     String runFunc = func;
     // fix instanceof Object error
@@ -572,10 +592,6 @@ char *WeexRuntime::exeJSWithResult(const String &instanceId, const String &nameS
     }
     VM & vm = globalObject->vm();
     JSLockHolder locker(&vm);
-//    if (weexLiteAppObjectHolder.get() != nullptr) {
-//        VM & vm_global = *weexLiteAppObjectHolder->m_globalVM.get();
-//        JSLockHolder locker_global(&vm_global);
-//    }
 
     base::debug::TraceScope traceScope("weex", "exeJSWithResult", "function", runFunc.utf8().data());
 
@@ -584,6 +600,7 @@ char *WeexRuntime::exeJSWithResult(const String &instanceId, const String &nameS
 
     _getArgListFromIPCArguments(&obj, state, arguments, 3);
 
+    
     Identifier funcIdentifier = Identifier::fromString(&vm, runFunc);
     JSValue function;
     JSValue result;
@@ -593,7 +610,7 @@ char *WeexRuntime::exeJSWithResult(const String &instanceId, const String &nameS
         Identifier namespaceIdentifier = Identifier::fromString(&vm, nameSpace);
         JSValue master = globalObject->get(state, namespaceIdentifier);
         if (!master.isObject()) {
-            return nullptr;
+            return jsResult;
         }
         function = master.toObject(state)->get(state, funcIdentifier);
     }
@@ -605,35 +622,13 @@ char *WeexRuntime::exeJSWithResult(const String &instanceId, const String &nameS
 
     if (returnedException) {
         ReportException(globalObject, returnedException.get(), instanceId.utf8().data(), func.utf8().data());
-        return nullptr;
+        return jsResult;
     }
-    if (ret.isUndefined() || ret.isNull() || !isJSArray(ret)) {
-        // createInstance return whole source object, which is big, only accept array result
-        return nullptr;
-    }
-    /** most scene, return result is array of null */
-    JSArray *array = asArray(ret);
-    uint32_t length = array->length();
-    bool isAllNull = true;
-    for (uint32_t i = 0; i < length; i++) {
-        JSValue ele = array->getIndex(state, i);
-        if (!ele.isUndefinedOrNull()) {
-            isAllNull = false;
-            break;
-        }
-    }
-    if (isAllNull) {
-        return nullptr;
-    }
-
-    String string = JSONStringify(state, ret, 0);
-    CString cstring = string.utf8();
-
-    auto data = cstring.data();
-    char *buf = new char[strlen(data) + 1];
-    strcpy(buf, data);
-    return buf;
+    convertJSArrayToWeexJSResult(state, ret, jsResult);
+    return jsResult;
 }
+
+
 
 char *WeexRuntime::exeJSOnInstance(const String &instanceId, const String &script) {
     JSGlobalObject *globalObject = weexObjectHolder->m_jsInstanceGlobalObjectMap[instanceId.utf8().data()];
@@ -887,9 +882,9 @@ WeexRuntime::_getArgListFromIPCArguments(MarkedArgumentBuffer *obj, ExecState *s
             }
                 break;
             case IPCType::BYTEARRAY: {
-                // const IPCByteArray* array = arguments->getByteArray(i);
-                // JSValue o = wson::toJSValue(state, (void*)array->content, array->length);
-                // obj->append(o);
+                 const IPCByteArray* array = arguments->getByteArray(i);
+                 JSValue o = wson::toJSValue(state, (void*)array->content, array->length);
+                 obj->append(o);
             }
                 break;
             default:
@@ -922,10 +917,9 @@ void WeexRuntime::_getArgListFromJSParams(MarkedArgumentBuffer *obj, ExecState *
             }
                 break;
             case ParamsType::BYTEARRAY: {
-
-//                const WeexByteArray *array = paramsObject->value.byteArray;
-//                JSValue o = wson::toJSValue(state, (void *) array->content, array->length);
-//                obj->append(o);
+                const WeexByteArray *array = paramsObject->value.byteArray;
+                JSValue o = wson::toJSValue(state, (void *) array->content, array->length);
+                obj->append(o);
             }
                 break;
             default:

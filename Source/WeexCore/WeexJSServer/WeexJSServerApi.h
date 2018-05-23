@@ -30,7 +30,7 @@ int exeCTimeCallback(const char *source);
 
 int exeJS(const char *instanceId, const char *nameSpace, const char *func, std::vector<VALUE_WITH_TYPE *> params);
 
-char *exeJSWithResult(const char *instanceId, const char *nameSpace, const char *func,
+WeexJSResult exeJSWithResult(const char *instanceId, const char *nameSpace, const char *func,
                       std::vector<VALUE_WITH_TYPE *> params);
 
 int createInstance(const char *instanceId, const char *func, const char *script, const char *opts,

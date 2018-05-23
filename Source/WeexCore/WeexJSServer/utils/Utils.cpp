@@ -108,7 +108,109 @@ std::unique_ptr<char[]> getCharOrJSONStringFromState(ExecState *state, int argum
     }
 }
 
-std::unique_ptr<char[]> getCharStringFromState(ExecState *state, int argument) {
+void getWsonOrJsonArgsFromState(ExecState *state, int argument, Args& args){
+    if(config_use_wson){
+        if (argument >= state->argumentCount()) {
+             args.setWson((wson_buffer*)nullptr);
+             return;
+        }
+        JSValue val = state->argument(argument);
+        wson_buffer* buffer = wson::toWson(state, val);
+        args.setWson(buffer);
+        return;
+    }else{
+        if (argument >= state->argumentCount()) {
+            String str("");
+            args.setString(str);
+            return;
+        }
+        JSValue val = state->argument(argument);
+        if(val.isString()){
+             String str = val.toWTFString(state);
+             args.setString(str);
+             return;
+        }else if(val.isObject()){
+            VM &vm = state->vm();
+            auto scope = DECLARE_CATCH_SCOPE(vm);
+            String str = JSONStringify(state, val, 0);
+            args.setString(str);
+            return;
+        }
+    }
+    String str("");
+    args.setString(str);
+    return;
+}
+
+void getStringArgsFromState(ExecState *state, int argument,Args& args){
+    if (argument >= state->argumentCount()) {
+        String str("");
+       args.setString(str);
+       return;
+    }
+    JSValue val = state->argument(argument);
+    String str = val.toWTFString(state);
+    args.setString(str);
+    return;
+}
+
+void getWsonArgsFromState(ExecState *state, int argument, Args& args){
+     if (argument >= state->argumentCount()) {
+         args.setWson((wson_buffer*)nullptr);
+         return;
+     }
+     JSValue val = state->argument(argument);
+     wson_buffer* buffer = wson::toWson(state, val);
+     args.setWson(buffer);
+     return;
+}
+
+void getJSONArgsFromState(ExecState *state, int argument, Args& args){
+    JSValue val = state->argument(argument);
+    if(val.isString()){
+            String str = val.toWTFString(state);
+            args.setString(str);
+            return;
+    }else if(val.isObject()){
+        VM &vm = state->vm();
+        auto scope = DECLARE_CATCH_SCOPE(vm);
+        String str = JSONStringify(state, val, 0);
+         args.setString(str);
+        return;
+    }
+   String str("");
+   args.setString(str);
+   return;
+}
+
+
+
+void addObjectArgsToIPC(IPCSerializer *serializer, Args& args){
+    if(args.getType() == ARGS_TYPE_WSON){
+        wson_buffer* buffer = args.wson;
+        if(buffer != nullptr && (((char*)buffer->data)[0] != WSON_NULL_TYPE) ){
+           serializer->add((const char*)buffer->data,  buffer->position);
+        }else{
+           serializer->addJSUndefined();
+        }
+    }else {
+        String str = args.json;
+        CString data = str.utf8();
+        serializer->add(data.data(), data.length());
+    }
+}
+
+void addStringArgsToIPC(IPCSerializer *serializer, Args& args){
+    if(args.json.length() > 0){
+        String str = args.json;
+        CString data = str.utf8();
+        serializer->add(data.data(), data.length());
+    }else{
+      serializer->addJSUndefined();
+    }
+}
+
+std::unique_ptr<char[]>  getCharStringFromState(ExecState *state, int argument) {
     JSValue val = state->argument(argument);
     String s = val.toWTFString(state);
     return newCharString(s.utf8().data(), s.length());

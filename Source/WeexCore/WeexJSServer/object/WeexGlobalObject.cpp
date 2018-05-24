@@ -9,7 +9,10 @@
 #define GET_CHARFROM_UNIPTR(str) (str) == nullptr ? nullptr : (reinterpret_cast<const char*>((str).get()))
 using namespace JSC;
 
+static bool  isGlobalConfigStartUpSet = false;
+
 extern WEEX_CORE_JS_API_FUNCTIONS *weex_core_js_api_functions;
+
 
 static EncodedJSValue JSC_HOST_CALL functionGCAndSweep(ExecState *);
 
@@ -134,7 +137,7 @@ void WeexGlobalObject::initWxEnvironment(std::vector<INIT_FRAMEWORK_PARAMS *> pa
             if (init_framework_params == nullptr) {
                 return;
             }
-
+            
             memset(init_framework_params, 0, sizeof(INIT_FRAMEWORK_PARAMS));
             init_framework_params->type = genWeexByteArraySS(param->type->content, param->type->length);
             init_framework_params->value = genWeexByteArraySS(param->value->content, param->value->length);
@@ -149,9 +152,13 @@ void WeexGlobalObject::initWxEnvironment(std::vector<INIT_FRAMEWORK_PARAMS *> pa
             initCrashHandler(path.utf8().data());
             hasInitCrashHandler = true;
         }
-        if (strstr(type.utf8().data(), WX_GLOBAL_CONFIG_KEY) != NULL) {
-            const char *config = value.utf8().data();
-            doUpdateGlobalSwitchConfig(config);
+
+        if(!isGlobalConfigStartUpSet){
+            if (strncmp(type.utf8().data(), WX_GLOBAL_CONFIG_KEY, strlen(WX_GLOBAL_CONFIG_KEY)) == 0) {
+                const char *config = value.utf8().data();
+                doUpdateGlobalSwitchConfig(config);
+            }
+            isGlobalConfigStartUpSet = true;
         }
 
         // --------------------------------------------------------
@@ -305,8 +312,7 @@ EncodedJSValue JSC_HOST_CALL functionClearIntervalWeex(ExecState *state) {
 
 EncodedJSValue JSC_HOST_CALL functionCallNative(ExecState *state) {
     base::debug::TraceScope traceScope("weex", "callNative");
-
-
+    
     if (weex_core_js_api_functions) {
         auto instanceIdChar = getCharStringFromState(state, 0);
         auto taskChar = getCharOrJSONStringFromState(state, 1);
@@ -444,40 +450,47 @@ EncodedJSValue JSC_HOST_CALL functionCallNativeModule(ExecState *state) {
     base::debug::TraceScope traceScope("weex", "callNativeModule");
     VM &vm = state->vm();
     std::unique_ptr<IPCResult> result;
+    Args instanceId;
+    Args moduleChar;
+    Args methodChar;
+    Args arguments;
+    Args options;
+    getStringArgsFromState(state, 0,instanceId);
+    getStringArgsFromState(state, 1, moduleChar);
+    getStringArgsFromState(state, 2, methodChar);
+    getWsonOrJsonArgsFromState(state, 3, arguments);
+    getWsonOrJsonArgsFromState(state, 4, options);
     if (weex_core_js_api_functions) {
         /*
          * const char *pageId, const char *module, const char *method,
                                                            const char *argString, const char *optString
          */
-        auto instanceIdChar = getCharStringFromState(state, 0);
-        auto moduleChar = getCharStringFromState(state, 1);
-        auto methodChar = getCharStringFromState(state, 2);
-        auto argStringChar = getCharJSONStringFromState(state, 3);
-        auto optStringChar = getCharJSONStringFromState(state, 4);
-        result = weex_core_js_api_functions->funcCallNativeModule(GET_CHARFROM_UNIPTR(instanceIdChar),
-                                                                  GET_CHARFROM_UNIPTR(moduleChar),
-                                                                  GET_CHARFROM_UNIPTR(methodChar),
-                                                                  GET_CHARFROM_UNIPTR(argStringChar),
-                                                                  GET_CHARFROM_UNIPTR(optStringChar));
+        result = weex_core_js_api_functions->funcCallNativeModule(instanceId.getValue(),
+                                                                  moduleChar.getValue(),
+                                                                  methodChar.getValue(),
+                                                                  arguments.getValue(),
+                                                                  arguments.getLength(),
+                                                                  options.getValue(),
+                                                                  options.getLength());
     } else {
         WeexGlobalObject *globalObject = static_cast<WeexGlobalObject *>(state->lexicalGlobalObject());
         WeexJSServer *server = globalObject->m_server;
         IPCSender *sender = server->getSender();
         IPCSerializer *serializer = server->getSerializer();
         serializer->setMsg(static_cast<uint32_t>(IPCProxyMsg::CALLNATIVEMODULE));
-        //instacneID args[0]
-        getArgumentAsCString(serializer, state, 0);
 
+
+         //instacneID args[0]
+        addStringArgsToIPC(serializer, instanceId);
         //module args[1]
-        getArgumentAsCString(serializer, state, 1);
-
+        addStringArgsToIPC(serializer, moduleChar);
         //method args[2]
-        getArgumentAsCString(serializer, state, 2);
-
+        addStringArgsToIPC(serializer, methodChar);
         // arguments args[3]
-        getArgumentAsJByteArrayJSON(serializer, state, 3);
-        //arguments args[4]
-        getArgumentAsJByteArrayJSON(serializer, state, 4);
+        addObjectArgsToIPC(serializer, arguments);
+        //options args[4]
+        addObjectArgsToIPC(serializer, options);
+
         std::unique_ptr<IPCBuffer> buffer = serializer->finish();
         result = sender->send(buffer.get());
     }
@@ -495,8 +508,8 @@ EncodedJSValue JSC_HOST_CALL functionCallNativeModule(ExecState *state) {
         }
             break;
         case IPCType::BYTEARRAY: {
-            // ret = wson::toJSValue(state, (void*)result->getByteArrayContent(), result->getByteArrayLength());
-        }
+             ret = wson::toJSValue(state, (void*)result->getByteArrayContent(), result->getByteArrayLength());
+         }
             break;
         default:
             ret = jsUndefined();
@@ -508,18 +521,24 @@ EncodedJSValue JSC_HOST_CALL functionCallNativeModule(ExecState *state) {
 
 EncodedJSValue JSC_HOST_CALL functionCallNativeComponent(ExecState *state) {
     base::debug::TraceScope traceScope("weex", "callNativeComponent");
-
+    Args instanceId;
+    Args moduleChar;
+    Args methodChar;
+    Args arguments;
+    Args options;
+    getStringArgsFromState(state, 0,instanceId);
+    getStringArgsFromState(state, 1, moduleChar);
+    getStringArgsFromState(state, 2, methodChar);
+    getWsonOrJsonArgsFromState(state, 3, arguments);
+    getWsonOrJsonArgsFromState(state, 4, options);
     if (weex_core_js_api_functions) {
-        auto instanceId = getCharStringFromState(state, 0);
-        auto refChar = getCharStringFromState(state, 1);
-        auto methodChar = getCharStringFromState(state, 2);
-        auto argChar = getCharJSONStringFromState(state, 3);
-        auto optChar = getCharJSONStringFromState(state, 4);
-        weex_core_js_api_functions->funcCallNativeComponent(GET_CHARFROM_UNIPTR(instanceId),
-                                                            GET_CHARFROM_UNIPTR(refChar),
-                                                            GET_CHARFROM_UNIPTR(methodChar),
-                                                            GET_CHARFROM_UNIPTR(argChar),
-                                                            GET_CHARFROM_UNIPTR(optChar));
+        weex_core_js_api_functions->funcCallNativeComponent(instanceId.getValue(),
+                                                                  moduleChar.getValue(),
+                                                                  methodChar.getValue(),
+                                                                  arguments.getValue(),
+                                                                  arguments.getLength(),
+                                                                  options.getValue(),
+                                                                  options.getLength());
         return JSValue::encode(jsNumber(0));
     } else {
         WeexGlobalObject *globalObject = static_cast<WeexGlobalObject *>(state->lexicalGlobalObject());
@@ -528,20 +547,17 @@ EncodedJSValue JSC_HOST_CALL functionCallNativeComponent(ExecState *state) {
         IPCSerializer *serializer = server->getSerializer();
         serializer->setMsg(static_cast<uint32_t>(IPCProxyMsg::CALLNATIVECOMPONENT));
 
-        //instacneID args[0]
-        getArgumentAsCString(serializer, state, 0);
-
+         //instacneID args[0]
+        addStringArgsToIPC(serializer, instanceId);
         //module args[1]
-        getArgumentAsCString(serializer, state, 1);
-
+        addStringArgsToIPC(serializer, moduleChar);
         //method args[2]
-        getArgumentAsCString(serializer, state, 2);
-
+        addStringArgsToIPC(serializer, methodChar);
         // arguments args[3]
-        getArgumentAsJByteArrayJSON(serializer, state, 3);
-
-        //arguments args[4]
-        getArgumentAsJByteArrayJSON(serializer, state, 4);
+        addObjectArgsToIPC(serializer, arguments);
+        //options args[4]
+        addObjectArgsToIPC(serializer, options);
+        
         std::unique_ptr<IPCBuffer> buffer = serializer->finish();
         std::unique_ptr<IPCResult> result = sender->send(buffer.get());
         if (result->getType() != IPCType::INT32) {
@@ -556,75 +572,79 @@ EncodedJSValue JSC_HOST_CALL functionCallNativeComponent(ExecState *state) {
 
 EncodedJSValue JSC_HOST_CALL functionCallAddElement(ExecState *state) {
     base::debug::TraceScope traceScope("weex", "callAddElement");
+    Args instanceId; 
+    Args parentRefChar;
+    Args domStr;
+    Args index_cstr;
 
+    getStringArgsFromState(state, 0,instanceId);
+    getStringArgsFromState(state, 1, parentRefChar);
+    getWsonArgsFromState(state, 2, domStr);
+    getStringArgsFromState(state, 3, index_cstr);
     if (weex_core_js_api_functions) {
         /*
          * const char *pageId, const char *parentRef, const char *domStr,
                                    const char *index_cstr
          */
-        auto instanceId = getCharStringFromState(state, 0);
-        auto parentRefChar = getCharStringFromState(state, 1);
-        auto domStr = getCharOrJSONStringFromState(state, 2);
-        auto index_cstr = getCharStringFromState(state, 3);
-        weex_core_js_api_functions->funcCallAddElement(GET_CHARFROM_UNIPTR(instanceId),
-                                                       GET_CHARFROM_UNIPTR(parentRefChar),
-                                                       GET_CHARFROM_UNIPTR(domStr),
-                                                       GET_CHARFROM_UNIPTR(index_cstr));
+        weex_core_js_api_functions->funcCallAddElement(instanceId.getValue(),
+                                                       parentRefChar.getValue(),
+                                                       domStr.getValue(),
+                                                       index_cstr.getValue());
     } else {
         WeexGlobalObject *globalObject = static_cast<WeexGlobalObject *>(state->lexicalGlobalObject());
         WeexJSServer *server = globalObject->m_server;
         IPCSender *sender = server->getSender();
         IPCSerializer *serializer = server->getSerializer();
         serializer->setMsg(static_cast<uint32_t>(IPCProxyMsg::CALLADDELEMENT) | MSG_FLAG_ASYNC);
+
         //instacneID args[0]
-        getArgumentAsCString(serializer, state, 0);
+        addStringArgsToIPC(serializer, instanceId);
         //instacneID args[1]
-        getArgumentAsCString(serializer, state, 1);
+        addStringArgsToIPC(serializer, parentRefChar);
         //dom node args[2]
-        getArgumentAsJByteArray(serializer, state, 2);
+        addObjectArgsToIPC(serializer, domStr);
         //index  args[3]
-        getArgumentAsCString(serializer, state, 3);
-        //callback  args[4]
-        getArgumentAsCString(serializer, state, 4);
+        addStringArgsToIPC(serializer, index_cstr);
 
         std::unique_ptr<IPCBuffer> buffer = serializer->finish();
         std::unique_ptr<IPCResult> result = sender->send(buffer.get());
     }
-
     return JSValue::encode(jsNumber(0));
 }
 
 EncodedJSValue JSC_HOST_CALL functionCallCreateBody(ExecState *state) {
     base::debug::TraceScope traceScope("weex", "callCreateBody");
-
+    Args pageId;
+    Args domStr;
+    getStringArgsFromState(state, 0,pageId);
+    getWsonArgsFromState(state, 1, domStr);
+    JSValue val;
     if (weex_core_js_api_functions) {
-        auto idChar = getCharStringFromState(state, 0);
-        auto taskChar = getCharOrJSONStringFromState(state, 1);
-
-        weex_core_js_api_functions->funcCallCreateBody(GET_CHARFROM_UNIPTR(idChar),
-                                                       GET_CHARFROM_UNIPTR(taskChar));
-        return JSValue::encode(jsNumber(0));
+        weex_core_js_api_functions->funcCallCreateBody(pageId.getValue(),
+                                                       domStr.getValue());
+        val = jsNumber(0);
     } else {
         WeexGlobalObject *globalObject = static_cast<WeexGlobalObject *>(state->lexicalGlobalObject());
         WeexJSServer *server = globalObject->m_server;
         IPCSender *sender = server->getSender();
         IPCSerializer *serializer = server->getSerializer();
         serializer->setMsg(static_cast<uint32_t>(IPCProxyMsg::CALLCREATEBODY));
-        //instacneID args[0]
-        getArgumentAsCString(serializer, state, 0);
-        //task args[1]
-        getArgumentAsJByteArray(serializer, state, 1);
-        //callback args[2]
-        getArgumentAsCString(serializer, state, 2);
 
+        //page id
+        addStringArgsToIPC(serializer, pageId);
+        //dom node args[2]
+        addObjectArgsToIPC(serializer, domStr);
+        
         std::unique_ptr<IPCBuffer> buffer = serializer->finish();
         std::unique_ptr<IPCResult> result = sender->send(buffer.get());
         if (result->getType() != IPCType::INT32) {
             LOGE("functionCallNative: unexpected result: %d", result->getType());
-            return JSValue::encode(jsNumber(0));
+            val = jsNumber(0);
+        }else{
+            val = jsNumber(result->get<int32_t>());
         }
-        return JSValue::encode(jsNumber(result->get<int32_t>()));
     }
+    return JSValue::encode(val);
 }
 
 EncodedJSValue JSC_HOST_CALL functionCallUpdateFinish(ExecState *state) {
@@ -727,15 +747,18 @@ EncodedJSValue JSC_HOST_CALL functionCallRefreshFinish(ExecState *state) {
 
 EncodedJSValue JSC_HOST_CALL functionCallUpdateAttrs(ExecState *state) {
     base::debug::TraceScope traceScope("weex", "functionCallUpdateAttrs");
+    Args instanceId;
+    Args ref;
+    Args domAttrs;
+    getStringArgsFromState(state, 0, instanceId);
+    getStringArgsFromState(state, 1, ref);
+    getWsonArgsFromState(state, 2, domAttrs);
+    JSValue val;
     if (weex_core_js_api_functions) {
-        auto idChar = getCharStringFromState(state, 0);
-        auto taskChar = getCharStringFromState(state, 1);
-        auto callbackChar = getCharOrJSONStringFromState(state, 2);
-        auto x = GET_CHARFROM_UNIPTR(callbackChar);
-        weex_core_js_api_functions->funcCallUpdateAttrs(GET_CHARFROM_UNIPTR(idChar),
-                                                        GET_CHARFROM_UNIPTR(taskChar),
-                                                        x);
-        return JSValue::encode(jsNumber(0));
+        weex_core_js_api_functions->funcCallUpdateAttrs(instanceId.getValue(),
+                                                        ref.getValue(),
+                                                        domAttrs.getValue());
+        val = jsNumber(0);                 
     } else {
         WeexGlobalObject *globalObject = static_cast<WeexGlobalObject *>(state->lexicalGlobalObject());
         WeexJSServer *server = globalObject->m_server;
@@ -743,35 +766,38 @@ EncodedJSValue JSC_HOST_CALL functionCallUpdateAttrs(ExecState *state) {
         IPCSerializer *serializer = server->getSerializer();
         serializer->setMsg(static_cast<uint32_t>(IPCProxyMsg::CALLUPDATEATTRS));
         //instacneID args[0]
-        getArgumentAsCString(serializer, state, 0);
-        //instacneID args[1]
-        getArgumentAsCString(serializer, state, 1);
-        //task args[2]
-        getArgumentAsJByteArray(serializer, state, 2);
-        //callback args[3]
-        getArgumentAsCString(serializer, state, 3);
+        addStringArgsToIPC(serializer, instanceId);
+        //ref args[1]
+        addStringArgsToIPC(serializer, ref);
+        //dom node args[2]
+        addObjectArgsToIPC(serializer, domAttrs);
 
         std::unique_ptr<IPCBuffer> buffer = serializer->finish();
         std::unique_ptr<IPCResult> result = sender->send(buffer.get());
         if (result->getType() != IPCType::INT32) {
             LOGE("functionCallUpdateAttrs: unexpected result: %d", result->getType());
-            return JSValue::encode(jsNumber(0));
+            val = jsNumber(0);  
+        }else{
+            val = jsNumber(result->get<int32_t>());
         }
-        return JSValue::encode(jsNumber(result->get<int32_t>()));
     }
+    return JSValue::encode(val);
 }
 
 EncodedJSValue JSC_HOST_CALL functionCallUpdateStyle(ExecState *state) {
     base::debug::TraceScope traceScope("weex", "functionCallUpdateStyle");
-
+    Args instanceId;
+    Args ref;
+    Args domStyles;
+    getStringArgsFromState(state, 0,instanceId);
+    getStringArgsFromState(state, 1, ref);
+    getWsonArgsFromState(state, 2, domStyles);
+    JSValue val;
     if (weex_core_js_api_functions) {
-        auto idChar = getCharStringFromState(state, 0);
-        auto taskChar = getCharStringFromState(state, 1);
-        auto dataChar = getCharOrJSONStringFromState(state, 2);
-        weex_core_js_api_functions->funcCallUpdateStyle(GET_CHARFROM_UNIPTR(idChar),
-                                                        GET_CHARFROM_UNIPTR(taskChar),
-                                                        GET_CHARFROM_UNIPTR(dataChar));
-        return JSValue::encode(jsNumber(0));
+        weex_core_js_api_functions->funcCallUpdateStyle(instanceId.getValue(),
+                                                        ref.getValue(),
+                                                        domStyles.getValue());
+        val = jsNumber(0);
     } else {
         WeexGlobalObject *globalObject = static_cast<WeexGlobalObject *>(state->lexicalGlobalObject());
         WeexJSServer *server = globalObject->m_server;
@@ -779,22 +805,22 @@ EncodedJSValue JSC_HOST_CALL functionCallUpdateStyle(ExecState *state) {
         IPCSerializer *serializer = server->getSerializer();
         serializer->setMsg(static_cast<uint32_t>(IPCProxyMsg::CALLUPDATESTYLE));
         //instacneID args[0]
-        getArgumentAsCString(serializer, state, 0);
-        //instacneID args[1]
-        getArgumentAsCString(serializer, state, 1);
-        //task args[2]
-        getArgumentAsJByteArray(serializer, state, 2);
-        //callback args[3]
-        getArgumentAsCString(serializer, state, 3);
+        addStringArgsToIPC(serializer, instanceId);
+        //ref args[1]
+        addStringArgsToIPC(serializer, ref);
+        //dom node styles args[2]
+        addObjectArgsToIPC(serializer, domStyles);
 
         std::unique_ptr<IPCBuffer> buffer = serializer->finish();
         std::unique_ptr<IPCResult> result = sender->send(buffer.get());
         if (result->getType() != IPCType::INT32) {
             LOGE("functionCallUpdateStyle: unexpected result: %d", result->getType());
-            return JSValue::encode(jsNumber(0));
+            val = jsNumber(0);
+        }else{
+            val = jsNumber(result->get<int32_t>());
         }
-        return JSValue::encode(jsNumber(result->get<int32_t>()));
     }
+    return JSValue::encode(val);
 }
 
 EncodedJSValue JSC_HOST_CALL functionCallRemoveElement(ExecState *state) {

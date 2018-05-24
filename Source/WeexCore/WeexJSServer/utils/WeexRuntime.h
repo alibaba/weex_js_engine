@@ -49,10 +49,10 @@ public:
     int
     exeJS(const String &instanceId, const String &nameSpace, const String &func, std::vector<VALUE_WITH_TYPE *> params);
 
-    char *exeJSWithResult(const String &instanceId, const String &nameSpace, const String &func,
+    WeexJSResult exeJSWithResult(const String &instanceId, const String &nameSpace, const String &func,
                           IPCArguments *arguments);
 
-    char *exeJSWithResult(const String &instanceId, const String &nameSpace, const String &func,
+    WeexJSResult exeJSWithResult(const String &instanceId, const String &nameSpace, const String &func,
                           std::vector<VALUE_WITH_TYPE *> params);
 
     int createInstance(const String &instanceId, const String &func, const String &script, const String &opts,

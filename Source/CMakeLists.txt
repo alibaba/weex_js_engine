@@ -29,10 +29,13 @@ set(WEEXJSSERVER_NAME weexjss${SERVERSUFFIX})
 set(${WEEXJSSERVER_NAME}_SOURCES
         ./base/base64/base64.cpp
         ./base/base64/modp_base64/modp_b64.cc
+        wson/wson.c
+        wson/wsonjsc.cpp
         WeexCore/WeexJSServer/utils/Utils.cpp
         WeexCore/WeexJSServer/utils/LogUtils.cpp
         WeexCore/WeexJSServer/utils/Compatible.cpp
         WeexCore/WeexJSServer/utils/WeexRuntime.cpp
+        WeexCore/WeexJSServer/object/Args.cpp
         WeexCore/WeexJSServer/object/SimpleObject.cpp
         WeexCore/WeexJSServer/object/WeexGlobalObject.cpp
         WeexCore/WeexJSServer/object/WeexObjectHolder.cpp

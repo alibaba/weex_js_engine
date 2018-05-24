@@ -53,7 +53,7 @@ int exeJS(const char *instanceId, const char *nameSpace, const char *func, std::
     return g_weexRuntime->exeJS(char2String(instanceId), char2String(nameSpace), char2String(func), params);
 }
 
-char *exeJSWithResult(const char *instanceId, const char *nameSpace, const char *func,
+WeexJSResult exeJSWithResult(const char *instanceId, const char *nameSpace, const char *func,
                       std::vector<VALUE_WITH_TYPE *> params) {
     return g_weexRuntime->exeJSWithResult(char2String(instanceId), char2String(nameSpace), char2String(func), params);
 }

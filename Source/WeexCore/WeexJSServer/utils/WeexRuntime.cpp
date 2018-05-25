@@ -48,7 +48,7 @@ int WeexRuntime::initAppFrameworkMultiProcess(const String &instanceId, const St
         holder->initFromIPCArguments(arguments, 2, true);
         weexLiteAppObjectHolderMap[k] = holder;
     }
-    LOGE("initAppFrameworkMultiProcess is running and id is %s", k);
+//    LOGE("initAppFrameworkMultiProcess is running and id is %s", k);
     return _initAppFramework(instanceId, appFramework);
     // LOGE("Weex jsserver IPCJSMsg::INITAPPFRAMEWORK end");
 }
@@ -248,21 +248,21 @@ int WeexRuntime::callJSOnAppContext(IPCArguments *arguments) {
         std::map<std::string, WeexGlobalObject *>::iterator it_find;
         auto weexLiteAppObjectHolder = getLightAppObjectHolder(instanceId);
         if (weexLiteAppObjectHolder == nullptr) {
-            LOGE("callJSOnAppContext is running and id is %s and weexLiteAppObjectHolder is null", instanceId.utf8().data());
+//            LOGE("callJSOnAppContext is running and id is %s and weexLiteAppObjectHolder is null", instanceId.utf8().data());
             return static_cast<int32_t>(false);
         }
         auto objectMap = weexLiteAppObjectHolder->m_jsAppGlobalObjectMap;
         it_find = objectMap.find(instanceId.utf8().data());
         if (it_find == objectMap.end()) {
-            LOGE("Weex jsserver IPCJSMsg::CALLJSONAPPCONTEXT mAppGlobalObjectMap donot contain globalObject");
+//            LOGE("Weex jsserver IPCJSMsg::CALLJSONAPPCONTEXT mAppGlobalObjectMap donot contain globalObject");
             return static_cast<int32_t>(false);
         }
         JSGlobalObject *globalObject = objectMap[instanceId.utf8().data()];
         if (globalObject == NULL) {
-            LOGE("Weex jsserver IPCJSMsg::CALLJSONAPPCONTEXT globalObject is null");
+//            LOGE("Weex jsserver IPCJSMsg::CALLJSONAPPCONTEXT globalObject is null");
             return static_cast<int32_t>(false);
         }
-        LOGE("Weex jsserver IPCJSMsg::CALLJSONAPPCONTEXT1");
+//        LOGE("Weex jsserver IPCJSMsg::CALLJSONAPPCONTEXT1");
         VM & vm_global = *weexObjectHolder->m_globalVM.get();
         JSLockHolder locker_global(&vm_global);
 

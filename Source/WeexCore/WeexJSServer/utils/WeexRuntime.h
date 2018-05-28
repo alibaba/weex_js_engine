@@ -13,7 +13,7 @@ class WeexRuntime {
 public:
     WeexJSServer *m_server{nullptr};
     std::unique_ptr<WeexObjectHolder> weexObjectHolder;
-    std::unique_ptr<WeexObjectHolder> weexLiteAppObjectHolder;
+    std::map<std::string, WeexObjectHolder *> weexLiteAppObjectHolderMap;
 
     explicit WeexRuntime(bool isMultiProgress = true);
 
@@ -64,6 +64,7 @@ public:
 
     int updateGlobalConfig(const String &config);
 
+    WeexObjectHolder * getLightAppObjectHolder(const String &instanceId);
 
 private:
     int _initFramework(const String &source);

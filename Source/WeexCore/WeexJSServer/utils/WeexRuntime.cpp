@@ -10,7 +10,7 @@ using namespace WEEXICU;
 
 WeexRuntime::WeexRuntime(bool isMultiProgress) {
     weexObjectHolder.reset(new WeexObjectHolder(isMultiProgress));
-    LOGE("WeexRuntime is running and mode is %s", isMultiProgress ? "multiProcess" : "singleProcess");
+    LOGE("WeexRuntime is running and mode is on %s", isMultiProgress ? "multiProcess" : "singleProcess");
 }
 
 WeexRuntime::WeexRuntime(WeexJSServer *server, bool isMultiProgress) : WeexRuntime(isMultiProgress) {

@@ -10,7 +10,7 @@ using namespace WEEXICU;
 
 WeexRuntime::WeexRuntime(bool isMultiProgress) {
     weexObjectHolder.reset(new WeexObjectHolder(isMultiProgress));
-    LOGE("WeexRuntime is running and mode is on %s", isMultiProgress ? "multiProcess" : "singleProcess");
+    LOGE("WeexRuntime is running and mode is %s", isMultiProgress ? "multiProcess" : "singleProcess");
 }
 
 WeexRuntime::WeexRuntime(WeexJSServer *server, bool isMultiProgress) : WeexRuntime(isMultiProgress) {
@@ -87,15 +87,15 @@ int WeexRuntime::createAppContext(const String &instanceId, const String &jsBund
             return static_cast<int32_t>(false);
         }
 
-        VM & vm_global = *weexObjectHolder->m_globalVM.get();
+        VM &vm_global = *weexObjectHolder->m_globalVM.get();
         JSLockHolder locker_global(&vm_global);
 
         WeexGlobalObject *globalObject = weexLiteAppObjectHolder->cloneWeexObject(true, true);
 
-        VM & vm = globalObject_local->vm();
+        VM &vm = globalObject_local->vm();
         JSLockHolder locker_1(&vm);
 
-        VM & thisVm = globalObject->vm();
+        VM &thisVm = globalObject->vm();
         JSLockHolder locker_2(&thisVm);
 
         globalObject->m_server = m_server;
@@ -103,7 +103,7 @@ int WeexRuntime::createAppContext(const String &instanceId, const String &jsBund
         // --------------------------------------------------
         // LOGE("start call __get_app_context_");
         PropertyName createInstanceContextProperty(Identifier::fromString(&vm, "__get_app_context__"));
-        ExecState * state = globalObject_local->globalExec();
+        ExecState *state = globalObject_local->globalExec();
         // LOGE("start call __get_app_context_ 11");
         JSValue createInstanceContextFunction = globalObject_local->get(state, createInstanceContextProperty);
         // LOGE("start call __get_app_context_ 22");
@@ -152,9 +152,9 @@ char *WeexRuntime::exeJSOnAppWithResult(const String &instanceId, const String &
             return nullptr;
         }
 
-        VM & vm_global = *weexObjectHolder->m_globalVM.get();
+        VM &vm_global = *weexObjectHolder->m_globalVM.get();
         JSLockHolder locker_global(&vm_global);
-        VM & vm = globalObject->vm();
+        VM &vm = globalObject->vm();
         JSLockHolder locker(&vm);
 
         SourceOrigin sourceOrigin(String::fromUTF8("(weex)"));
@@ -202,14 +202,14 @@ WeexRuntime::callJSOnAppContext(const String &instanceId, const String &func, st
             return static_cast<int32_t>(false);
         }
         // LOGE("Weex jsserver IPCJSMsg::CALLJSONAPPCONTEXT1");
-        VM & vm_global = *weexObjectHolder->m_globalVM.get();
+        VM &vm_global = *weexObjectHolder->m_globalVM.get();
         JSLockHolder locker_global(&vm_global);
 
-        VM & vm = globalObject->vm();
+        VM &vm = globalObject->vm();
         JSLockHolder locker(&vm);
         // LOGE("Weex jsserver IPCJSMsg::CALLJSONAPPCONTEXT2");
         MarkedArgumentBuffer obj;
-        ExecState * state = globalObject->globalExec();
+        ExecState *state = globalObject->globalExec();
         _getArgListFromJSParams(&obj, state, params);
         // LOGE("Weex jsserver IPCJSMsg::CALLJSONAPPCONTEXT3");
         Identifier funcIdentifier = Identifier::fromString(&vm, func);
@@ -263,14 +263,14 @@ int WeexRuntime::callJSOnAppContext(IPCArguments *arguments) {
             return static_cast<int32_t>(false);
         }
 //        LOGE("Weex jsserver IPCJSMsg::CALLJSONAPPCONTEXT1");
-        VM & vm_global = *weexObjectHolder->m_globalVM.get();
+        VM &vm_global = *weexObjectHolder->m_globalVM.get();
         JSLockHolder locker_global(&vm_global);
 
-        VM & vm = globalObject->vm();
+        VM &vm = globalObject->vm();
         JSLockHolder locker(&vm);
         // LOGE("Weex jsserver IPCJSMsg::CALLJSONAPPCONTEXT2");
         MarkedArgumentBuffer obj;
-        ExecState * state = globalObject->globalExec();
+        ExecState *state = globalObject->globalExec();
         _getArgListFromIPCArguments(&obj, state, arguments, 2);
         // LOGE("Weex jsserver IPCJSMsg::CALLJSONAPPCONTEXT3");
         Identifier funcIdentifier = Identifier::fromString(&vm, func);
@@ -352,7 +352,7 @@ int WeexRuntime::exeJsService(const String &source) {
 //        JSLockHolder locker_global(&vm_global);
 //    }
     JSGlobalObject *globalObject = weexObjectHolder->m_globalObject.get();
-    VM & vm = globalObject->vm();
+    VM &vm = globalObject->vm();
     JSLockHolder locker(&vm);
     if (!ExecuteJavaScript(globalObject, source, ("weex service"), true, "execjsservice")) {
         LOGE("jsLog JNI_Error >>> scriptStr :%s", source.utf8().data());
@@ -365,7 +365,7 @@ int WeexRuntime::exeCTimeCallback(const String &source) {
     base::debug::TraceScope traceScope("weex", "EXECTIMERCALLBACK");
     LOGE("IPC EXECTIMERCALLBACK and ExecuteJavaScript");
     JSGlobalObject *globalObject = weexObjectHolder->m_globalObject.get();
-    VM & vm = globalObject->vm();
+    VM &vm = globalObject->vm();
     JSLockHolder locker(&vm);
     if (!ExecuteJavaScript(globalObject, source, ("weex service"), false, "timercallback")) {
         LOGE("jsLog EXECTIMERCALLBACK >>> scriptStr :%s", source.utf8().data());
@@ -395,7 +395,7 @@ int WeexRuntime::exeJS(const String &instanceId, const String &nameSpace, const 
     } else {
         globalObject = weexObjectHolder->m_globalObject.get();
     }
-    VM & vm = globalObject->vm();
+    VM &vm = globalObject->vm();
     JSLockHolder locker(&vm);
 //    if (weexLiteAppObjectHolder.get() != nullptr) {
 //        VM & vm_global = *weexLiteAppObjectHolder->m_globalVM.get();
@@ -404,7 +404,7 @@ int WeexRuntime::exeJS(const String &instanceId, const String &nameSpace, const 
 
     MarkedArgumentBuffer obj;
     base::debug::TraceScope traceScope("weex", "exeJS", "function", runFunc.utf8().data());
-    ExecState * state = globalObject->globalExec();
+    ExecState *state = globalObject->globalExec();
     _getArgListFromJSParams(&obj, state, params);
 
     Identifier funcIdentifier = Identifier::fromString(&vm, runFunc);
@@ -455,7 +455,7 @@ int WeexRuntime::exeJS(const String &instanceId, const String &nameSpace, const 
     } else {
         globalObject = weexObjectHolder->m_globalObject.get();
     }
-    VM & vm = globalObject->vm();
+    VM &vm = globalObject->vm();
     JSLockHolder locker(&vm);
 //    if (weexLiteAppObjectHolder.get() != nullptr) {
 //        VM & vm_global = *weexLiteAppObjectHolder->m_globalVM.get();
@@ -464,7 +464,7 @@ int WeexRuntime::exeJS(const String &instanceId, const String &nameSpace, const 
 
     MarkedArgumentBuffer obj;
     base::debug::TraceScope traceScope("weex", "exeJS", "function", runFunc.utf8().data());
-    ExecState * state = globalObject->globalExec();
+    ExecState *state = globalObject->globalExec();
     _getArgListFromIPCArguments(&obj, state, arguments, 3);
 
     Identifier funcIdentifier = Identifier::fromString(&vm, runFunc);
@@ -496,7 +496,7 @@ int WeexRuntime::exeJS(const String &instanceId, const String &nameSpace, const 
     return static_cast<int32_t>(true);
 }
 
-inline void convertJSArrayToWeexJSResult(ExecState * state, JSValue& ret, WeexJSResult &jsResult){
+inline void convertJSArrayToWeexJSResult(ExecState *state, JSValue &ret, WeexJSResult &jsResult) {
     if (ret.isUndefined() || ret.isNull() || !isJSArray(ret)) {
         // createInstance return whole source object, which is big, only accept array result
         return;
@@ -516,18 +516,18 @@ inline void convertJSArrayToWeexJSResult(ExecState * state, JSValue& ret, WeexJS
     if (isAllNull) {
         return;
     }
-    if(config_use_wson){
-        wson_buffer* buffer =  wson::toWson(state, ret);
-        jsResult.data = (char*)buffer->data;
+    if (config_use_wson) {
+        wson_buffer *buffer = wson::toWson(state, ret);
+        jsResult.data = (char *) buffer->data;
         jsResult.length = buffer->position;
         jsResult.fromMalloc = true;
         buffer->data = nullptr;
         wson_buffer_free(buffer);
-    }else{
+    } else {
         String string = JSONStringify(state, ret, 0);
         CString cstring = string.utf8();
         char *buf = new char[cstring.length() + 1];
-        memcpy(buf, cstring.data(),  cstring.length());
+        memcpy(buf, cstring.data(), cstring.length());
         buf[cstring.length()] = '\0';
         jsResult.data = buf;
         jsResult.length = cstring.length();
@@ -536,7 +536,7 @@ inline void convertJSArrayToWeexJSResult(ExecState * state, JSValue& ret, WeexJS
 }
 
 WeexJSResult WeexRuntime::exeJSWithResult(const String &instanceId, const String &nameSpace, const String &func,
-                                   std::vector<VALUE_WITH_TYPE *> params) {
+                                          std::vector<VALUE_WITH_TYPE *> params) {
     WeexJSResult jsResult;
     JSGlobalObject *globalObject;
     String runFunc = func;
@@ -553,7 +553,7 @@ WeexJSResult WeexRuntime::exeJSWithResult(const String &instanceId, const String
     } else {
         globalObject = weexObjectHolder->m_globalObject.get();
     }
-    VM & vm = globalObject->vm();
+    VM &vm = globalObject->vm();
     JSLockHolder locker(&vm);
 //    if (weexLiteAppObjectHolder.get() != nullptr) {
 //        VM & vm_global = *weexLiteAppObjectHolder->m_globalVM.get();
@@ -563,7 +563,7 @@ WeexJSResult WeexRuntime::exeJSWithResult(const String &instanceId, const String
     base::debug::TraceScope traceScope("weex", "exeJSWithResult", "function", runFunc.utf8().data());
 
     MarkedArgumentBuffer obj;
-    ExecState * state = globalObject->globalExec();
+    ExecState *state = globalObject->globalExec();
 
     _getArgListFromJSParams(&obj, state, params);
 
@@ -595,10 +595,8 @@ WeexJSResult WeexRuntime::exeJSWithResult(const String &instanceId, const String
 }
 
 
-
-
 WeexJSResult WeexRuntime::exeJSWithResult(const String &instanceId, const String &nameSpace, const String &func,
-                                   IPCArguments *arguments) {
+                                          IPCArguments *arguments) {
     WeexJSResult jsResult;
 
     JSGlobalObject *globalObject;
@@ -616,17 +614,17 @@ WeexJSResult WeexRuntime::exeJSWithResult(const String &instanceId, const String
     } else {
         globalObject = weexObjectHolder->m_globalObject.get();
     }
-    VM & vm = globalObject->vm();
+    VM &vm = globalObject->vm();
     JSLockHolder locker(&vm);
 
     base::debug::TraceScope traceScope("weex", "exeJSWithResult", "function", runFunc.utf8().data());
 
     MarkedArgumentBuffer obj;
-    ExecState * state = globalObject->globalExec();
+    ExecState *state = globalObject->globalExec();
 
     _getArgListFromIPCArguments(&obj, state, arguments, 3);
 
-    
+
     Identifier funcIdentifier = Identifier::fromString(&vm, runFunc);
     JSValue function;
     JSValue result;
@@ -655,13 +653,12 @@ WeexJSResult WeexRuntime::exeJSWithResult(const String &instanceId, const String
 }
 
 
-
 char *WeexRuntime::exeJSOnInstance(const String &instanceId, const String &script) {
     JSGlobalObject *globalObject = weexObjectHolder->m_jsInstanceGlobalObjectMap[instanceId.utf8().data()];
     if (globalObject == NULL) {
         globalObject = weexObjectHolder->m_globalObject.get();
     }
-    VM & vm = globalObject->vm();
+    VM &vm = globalObject->vm();
     JSLockHolder locker(&vm);
 //    if (weexLiteAppObjectHolder.get() != nullptr) {
 //        VM & vm_global = *weexLiteAppObjectHolder->m_globalVM.get();
@@ -713,9 +710,9 @@ int WeexRuntime::destroyInstance(const String &instanceId) {
 //            VM & vm_global = *weexLiteAppObjectHolder->m_globalVM.get();
 //            JSLockHolder locker_global(&vm_global);
 //        }
-        ExecState * exec = globalObject->globalExec();
+        ExecState *exec = globalObject->globalExec();
         JSLockHolder locker(exec);
-        VM & vm = exec->vm();
+        VM &vm = exec->vm();
         vm.heap.collectAllGarbage();
     }
 
@@ -727,7 +724,7 @@ int WeexRuntime::destroyInstance(const String &instanceId) {
 
 int WeexRuntime::updateGlobalConfig(const String &config) {
     JSGlobalObject *globalObject = weexObjectHolder->m_globalObject.get();
-    VM & vm = globalObject->vm();
+    VM &vm = globalObject->vm();
     JSLockHolder locker(&vm);
 
 //    if (weexLiteAppObjectHolder.get() != nullptr) {
@@ -760,7 +757,7 @@ int WeexRuntime::createInstance(const String &instanceId, const String &func, co
 //            }
 
             temp_object = weexObjectHolder->cloneWeexObject(true, false);
-            VM & vm = temp_object->vm();
+            VM &vm = temp_object->vm();
             JSLockHolder locker(&vm);
 
             // --------------------------------------------------
@@ -770,7 +767,7 @@ int WeexRuntime::createInstance(const String &instanceId, const String &func, co
             // RAx or vue
             JSGlobalObject *globalObject_local = impl_globalObject;
             PropertyName createInstanceContextProperty(Identifier::fromString(&vm, "createInstanceContext"));
-            ExecState * state = globalObject_local->globalExec();
+            ExecState *state = globalObject_local->globalExec();
             JSValue createInstanceContextFunction = globalObject_local->get(state, createInstanceContextProperty);
             MarkedArgumentBuffer args;
             args.append(String2JSValue(state, instanceId));
@@ -795,7 +792,7 @@ int WeexRuntime::createInstance(const String &instanceId, const String &func, co
             //(ret.toWTFString(state));
 
             // use it to set Vue prototype to instance context
-            JSObject * object = ret.toObject(state, temp_object);
+            JSObject *object = ret.toObject(state, temp_object);
             JSObjectRef ref = toRef(object);
             JSGlobalContextRef contextRef = toGlobalRef(state);
             JSValueRef vueRef = JSObjectGetProperty(contextRef, ref, JSStringCreateWithUTF8CString("Vue"), nullptr);
@@ -829,7 +826,7 @@ int WeexRuntime::createInstance(const String &instanceId, const String &func, co
 //        JSLockHolder locker_global(&vm_global);
 //    }
 
-    VM & vm = globalObject->vm();
+    VM &vm = globalObject->vm();
     JSLockHolder locker(&vm);
 
     // if extend api is not null should exec befor createInstanceContext, such as rax-api
@@ -849,7 +846,7 @@ int WeexRuntime::createInstance(const String &instanceId, const String &func, co
 }
 
 int WeexRuntime::_initFramework(const String &source) {
-    VM & vm = *weexObjectHolder->m_globalVM.get();
+    VM &vm = *weexObjectHolder->m_globalVM.get();
     JSLockHolder locker(&vm);
 
     auto globalObject = weexObjectHolder->m_globalObject.get();
@@ -864,7 +861,7 @@ int WeexRuntime::_initFramework(const String &source) {
 }
 
 int WeexRuntime::_initAppFramework(const String &instanceId, const String &appFramework) {
-    VM & vm = *weexObjectHolder->m_globalVM.get();
+    VM &vm = *weexObjectHolder->m_globalVM.get();
     JSLockHolder locker_global(&vm);
 
     auto weexLiteAppObjectHolder = getLightAppObjectHolder(instanceId);
@@ -913,9 +910,9 @@ WeexRuntime::_getArgListFromIPCArguments(MarkedArgumentBuffer *obj, ExecState *s
             }
                 break;
             case IPCType::BYTEARRAY: {
-                 const IPCByteArray* array = arguments->getByteArray(i);
-                 JSValue o = wson::toJSValue(state, (void*)array->content, array->length);
-                 obj->append(o);
+                const IPCByteArray *array = arguments->getByteArray(i);
+                JSValue o = wson::toJSValue(state, (void *) array->content, array->length);
+                obj->append(o);
             }
                 break;
             default:

@@ -221,7 +221,7 @@ namespace wson {
         cache = localIdentifiers[localIndex];
         if(cache.length == length
            && cache.key == key
-           && memcmp((void*)cache.utf16, (void*)utf16, length) == 0
+           && memcmp((void*)cache.utf16, (void*)utf16, length*sizeof(UChar)) == 0
            && !cache.identifer.isNull()){
             return cache.identifer;
         }

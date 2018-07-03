@@ -4,12 +4,13 @@
 
 #include "Utils.h"
 #include "WeexCore/WeexJSServer/object/WeexGlobalObject.h"
+#include "core/bridge/script_bridge.h"
 #include <iostream>
 #include <fstream>
 
 bool config_use_wson = true;
 
-extern WEEX_CORE_JS_API_FUNCTIONS *weex_core_js_api_functions;
+//extern WEEX_CORE_JS_API_FUNCTIONS *weex_core_js_api_functions;
 
 using namespace JSC;
  void printLogOnFileWithNameS(const char * name, const char *log) {
@@ -463,20 +464,7 @@ void setJSFVersion(WeexGlobalObject *globalObject) {
     String str = version.toWTFString(state);
     CString data = str.utf8();
 
-    if (weex_core_js_api_functions) {
-        weex_core_js_api_functions->funcSetJSVersion(data.data());
-    } else {
-        WeexJSServer *server = globalObject->m_server;
-        IPCSender *sender = server->getSender();
-        IPCSerializer *serializer = server->getSerializer();
-        serializer->setMsg(static_cast<uint32_t>(IPCProxyMsg::SETJSFVERSION));
-        serializer->add(data.data(), data.length());
-        std::unique_ptr<IPCBuffer> buffer = serializer->finish();
-        std::unique_ptr<IPCResult> result = sender->send(buffer.get());
-        if (result->getType() != IPCType::VOID) {
-            LOGE("setJSFVersion: unexpected result: %d", result->getType());
-        }
-    }
+    globalObject->js_bridge()->core_side()->SetJSVersion(data.data());
 }
 
 
@@ -484,24 +472,9 @@ void ReportException(JSGlobalObject *_globalObject, Exception *exception, const 
                      const char *func) {
     String exceptionInfo = exceptionToString(_globalObject, exception->value());
     CString data = exceptionInfo.utf8();
-    if (weex_core_js_api_functions) {
-        weex_core_js_api_functions->funcReportException(instanceid, func, data.data());
-    } else {
-        auto *globalObject = static_cast<WeexGlobalObject *>(_globalObject);
-        WeexJSServer *server = globalObject->m_server;
-        IPCSender *sender = server->getSender();
-        IPCSerializer *serializer = server->getSerializer();
-        serializer->setMsg(static_cast<uint32_t>(IPCProxyMsg::REPORTEXCEPTION));
-        serializer->add(instanceid, strlen(instanceid));
-        serializer->add(func, strlen(func));
-        serializer->add(data.data(), data.length());
 
-        std::unique_ptr<IPCBuffer> buffer = serializer->finish();
-        std::unique_ptr<IPCResult> result = sender->send(buffer.get());
-        if (result->getType() != IPCType::VOID) {
-            LOGE("REPORTEXCEPTION: unexpected result: %d", result->getType());
-        }
-    }
+    auto *globalObject = static_cast<WeexGlobalObject *>(_globalObject);
+    globalObject->js_bridge()->core_side()->ReportException(instanceid, func, data.data());
 }
 
 /**

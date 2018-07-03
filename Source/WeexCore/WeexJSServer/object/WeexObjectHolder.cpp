@@ -82,7 +82,7 @@ WeexGlobalObject *WeexObjectHolder::cloneWeexObject(bool initContext, bool forAp
     else
         temp_object->initFunction();
 
-    temp_object->m_server = m_globalObject.get()->m_server;
+//    temp_object->m_server = m_globalObject.get()->m_server;
     return temp_object;
 }
 

@@ -6,23 +6,28 @@
 #define WEEXV8_WEEXGLOBALOBJECT_H
 
 #include <map>
-#include "WeexJSServer.h"
+#include "WeexCore/WeexJSServer/ipc/ipc_server.h"
 #include "../utils/Utils.h"
-#include "WeexApiHeader.h"
+#include "include/WeexApiHeader.h"
 #include "APICast.h"
 #include "JSStringRef.h"
 #include "JSContextRef.h"
 
 using namespace JSC;
+namespace weex {
+    class GlobalObjectDelegate;
+}
+namespace WeexCore {
+    class ScriptBridge;
+}
 
 class WeexGlobalObject: public JSGlobalObject {
 private:
     WeexGlobalObject(VM&, Structure*);
+    std::unique_ptr<WeexCore::ScriptBridge> script_bridge_;
 
 public:
     typedef JSGlobalObject Base;
-    friend class WeexJSServer;
-    WeexJSServer* m_server{ nullptr };
     std::vector<INIT_FRAMEWORK_PARAMS *> m_initFrameworkParams;
     std::string id = "";
     static WeexGlobalObject* create(VM& vm, Structure* structure)
@@ -46,11 +51,13 @@ public:
 
 //    void initWXEnvironment(IPCArguments* arguments);
 
-    void initWXEnvironmentWithIPCArguments(IPCArguments *arguments, bool forAppContext, bool isSave);
     void initWxEnvironment(std::vector<INIT_FRAMEWORK_PARAMS *> params, bool forAppContext, bool isSave);
     void initFunctionForContext();
     void initFunctionForAppContext();
     void initFunction();
+
+    inline WeexCore::ScriptBridge* js_bridge() { return script_bridge_.get(); }
+    void SetScriptBridge(WeexCore::ScriptBridge *script_bridge);
 protected:
     void finishCreation(VM& vm)
     {

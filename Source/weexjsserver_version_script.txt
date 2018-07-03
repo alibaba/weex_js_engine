@@ -1,4 +1,4 @@
 {
-    global: serverMain;exchangeMethod;
+    global: serverMain;ExchangeJSBridgeFunctions;ExchangePlatformBridgeFunctions;
     local: *;
 };

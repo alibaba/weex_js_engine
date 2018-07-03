@@ -35,7 +35,7 @@ namespace WeexCore {
                 this->type = ARGS_TYPE_WSON;
             }
 
-            inline const char* getValue(){
+            inline const char* getValue() const {
                 if(type == ARGS_TYPE_WSON){
                     if(wson){
                        return (char*)(wson->data);
@@ -46,7 +46,7 @@ namespace WeexCore {
                 }
             }
 
-            inline int getLength(){
+            inline int getLength() const {
                 if(type == ARGS_TYPE_WSON){
                     if(wson){
                        return (wson->position);

@@ -3,22 +3,20 @@
 //
 
 #include "WeexRuntime.h"
+#include "WeexCore/WeexJSServer/bridge/script/script_bridge_in_multi_so.h"
+#include "WeexCore/WeexJSServer/bridge/script/core_side_in_multi_process.h"
 
 using namespace JSC;
 using namespace WTF;
 using namespace WEEXICU;
 
-WeexRuntime::WeexRuntime(bool isMultiProgress) {
+WeexRuntime::WeexRuntime(bool isMultiProgress) : is_multi_process_(isMultiProgress), script_bridge_(nullptr) {
     weexObjectHolder.reset(new WeexObjectHolder(isMultiProgress));
     LOGE("WeexRuntime is running and mode is %s", isMultiProgress ? "multiProcess" : "singleProcess");
 }
 
-WeexRuntime::WeexRuntime(WeexJSServer *server, bool isMultiProgress) : WeexRuntime(isMultiProgress) {
-    this->m_server = server;
-}
-
-void WeexRuntime::setWeexJSServer(WeexJSServer *server) {
-    this->m_server = server;
+WeexRuntime::WeexRuntime(WeexCore::ScriptBridge *script_bridge, bool isMultiProgress) : WeexRuntime(isMultiProgress) {
+    this->script_bridge_ = script_bridge;
 }
 
 int WeexRuntime::initFramework(IPCArguments *arguments) {
@@ -91,6 +89,8 @@ int WeexRuntime::createAppContext(const String &instanceId, const String &jsBund
         JSLockHolder locker_global(&vm_global);
 
         WeexGlobalObject *globalObject = weexLiteAppObjectHolder->cloneWeexObject(true, true);
+        weex::GlobalObjectDelegate* delegate = NULL;
+        globalObject->SetScriptBridge(script_bridge_);
 
         VM &vm = globalObject_local->vm();
         JSLockHolder locker_1(&vm);
@@ -98,7 +98,6 @@ int WeexRuntime::createAppContext(const String &instanceId, const String &jsBund
         VM &thisVm = globalObject->vm();
         JSLockHolder locker_2(&thisVm);
 
-        globalObject->m_server = m_server;
         // LOGE("Weex jsserver IPCJSMsg::CREATEAPPCONTEXT start00");
         // --------------------------------------------------
         // LOGE("start call __get_app_context_");
@@ -716,7 +715,7 @@ int WeexRuntime::destroyInstance(const String &instanceId) {
         vm.heap.collectAllGarbage();
     }
 
-    globalObject->m_server = nullptr;
+//    globalObject->m_server = nullptr;
     globalObject = NULL;
 
     return static_cast<int32_t>(true);
@@ -758,6 +757,7 @@ int WeexRuntime::createInstance(const String &instanceId, const String &func, co
 
             temp_object = weexObjectHolder->cloneWeexObject(true, false);
             VM &vm = temp_object->vm();
+            temp_object->SetScriptBridge(script_bridge_);
             JSLockHolder locker(&vm);
 
             // --------------------------------------------------
@@ -850,7 +850,7 @@ int WeexRuntime::_initFramework(const String &source) {
     JSLockHolder locker(&vm);
 
     auto globalObject = weexObjectHolder->m_globalObject.get();
-    globalObject->m_server = this->m_server;
+    globalObject->SetScriptBridge(script_bridge_);
 
     if (!ExecuteJavaScript(globalObject, source, "(weex framework)", true, "initFramework", "")) {
         return false;
@@ -870,7 +870,8 @@ int WeexRuntime::_initAppFramework(const String &instanceId, const String &appFr
     }
 
     auto globalObject = weexLiteAppObjectHolder->m_globalObject.get();
-    globalObject->m_server = m_server;
+    globalObject->SetScriptBridge(script_bridge_);
+
     const char *id = instanceId.utf8().data();
     globalObject->id = id;
     // LOGE("Weex jsserver IPCJSMsg::INITAPPFRAMEWORK 1");

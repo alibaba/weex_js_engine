@@ -7,19 +7,19 @@
 
 
 #include <WeexCore/WeexJSServer/object/WeexObjectHolder.h>
-
+namespace WeexCore {
+    class ScriptBridge;
+}
 class WeexRuntime {
 
 public:
-    WeexJSServer *m_server{nullptr};
+    WeexCore::ScriptBridge* script_bridge_;
     std::unique_ptr<WeexObjectHolder> weexObjectHolder;
     std::map<std::string, WeexObjectHolder *> weexLiteAppObjectHolderMap;
 
     explicit WeexRuntime(bool isMultiProgress = true);
 
-    explicit WeexRuntime(WeexJSServer *server, bool isMultiProgress = true);
-
-    void setWeexJSServer(WeexJSServer *server);
+    explicit WeexRuntime(WeexCore::ScriptBridge *script_bridge, bool isMultiProgress = true);
 
     int initFramework(IPCArguments *arguments);
 
@@ -75,6 +75,8 @@ private:
                                      size_t start);
 
     void _getArgListFromJSParams(MarkedArgumentBuffer *obj, ExecState *state, std::vector<VALUE_WITH_TYPE *> params);
+
+    bool is_multi_process_;
 };
 
 

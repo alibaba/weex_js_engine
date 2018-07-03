@@ -120,21 +120,21 @@
 #define PATH_MAX 4096
 #endif
 
-#include "Buffering/IPCBuffer.h"
+#include "IPC/Buffering/IPCBuffer.h"
 #include "CrashHandler.h"
-#include "IPCArguments.h"
-#include "IPCByteArray.h"
-#include "IPCHandler.h"
-#include "IPCListener.h"
-#include "include/IPCMessageJS.h"
-#include "IPCResult.h"
-#include "IPCSender.h"
-#include "IPCString.h"
-#include "IPCType.h"
-#include "IPCFutexPageQueue.h"
-#include "IPCException.h"
+#include "IPC/IPCArguments.h"
+#include "IPC/IPCByteArray.h"
+#include "IPC/IPCHandler.h"
+#include "IPC/IPCListener.h"
+#include "IPC/IPCMessageJS.h"
+#include "IPC/IPCResult.h"
+#include "IPC/IPCSender.h"
+#include "IPC/IPCString.h"
+#include "IPC/IPCType.h"
+#include "IPC/IPCFutexPageQueue.h"
+#include "IPC/IPCException.h"
 #include "LogUtils.h"
-#include "Serializing/IPCSerializer.h"
+#include "IPC/Serializing/IPCSerializer.h"
 #include "Trace.h"
 #include "./base/base64/base64.h"
 #include "Base64.h"
@@ -145,11 +145,11 @@
 #include <unistd.h>
 #include <dlfcn.h>
 #include <cstring>
-#include <WeexApiHeader.h>
+#include "include/WeexApiHeader.h"
 
 #include "WeexCore/WeexJSServer/object/SimpleObject.h"
 #include "WeexCore/WeexJSServer/object/Args.h"
-#include "wson/wsonjsc.h"
+#include "WeexCore/WeexJSServer/wson/wsonjsc.h"
 
 using namespace JSC;
 using namespace WeexCore;

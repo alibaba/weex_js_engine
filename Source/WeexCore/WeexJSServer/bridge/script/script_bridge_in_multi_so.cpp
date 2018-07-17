@@ -26,8 +26,8 @@ ScriptBridgeInMultiSo *ScriptBridgeInMultiSo::g_instance = NULL;
 
 ScriptBridgeInMultiSo::ScriptBridgeInMultiSo() {
   set_script_side(new ScriptSideInSimple());
-  set_core_side(new CoreSideInSimple());
-  //  set_core_side(new CoreSideInMultiSo(g_functions_exposed_by_core));
+//  set_core_side(new CoreSideInSimple());
+    set_core_side(new CoreSideInMultiSo(g_functions_exposed_by_core));
   //  set_core_side(new MultiProcessCoreSide());
 }
 

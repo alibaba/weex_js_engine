@@ -34,8 +34,8 @@ class ScriptBridgeInMultiProcess : public WeexCore::ScriptBridge {
   IPC_METHOD(InitFramework)
   IPC_METHOD(InitAppFramework)
   IPC_METHOD(CreateAppContext)
-  IPC_METHOD(ExecJSONAppWithResult)
-  IPC_METHOD(CallJSONAppContext)
+  IPC_METHOD(ExecJSOnAppWithResult)
+  IPC_METHOD(CallJSOnAppContext)
   IPC_METHOD(DestroyAppContext)
   IPC_METHOD(ExecTimerCallback)
   IPC_METHOD(ExecJSService)
@@ -44,7 +44,7 @@ class ScriptBridgeInMultiProcess : public WeexCore::ScriptBridge {
   IPC_METHOD(ExecJSWithResult)
   IPC_METHOD(CreateInstance)
   IPC_METHOD(DestroyInstance)
-  IPC_METHOD(ExecJSONInstance)
+  IPC_METHOD(ExecJSOnInstance)
   IPC_METHOD(UpdateGlobalConfig)
 
  private:

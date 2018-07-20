@@ -154,7 +154,8 @@
 using namespace JSC;
 using namespace WeexCore;
 
-
+#define TIMESPCE 1000
+#define MICROSEC  ((uint64_t) 1e6)
 extern bool config_use_wson;
 
 String jString2String(const uint16_t *str, size_t length);
@@ -169,7 +170,7 @@ void addString(IPCSerializer *serializer, const String &s);
 void getArgumentAsJString(IPCSerializer *serializer, ExecState *state, int argument);
 
 WeexByteArray *getArgumentAsWeexByteArrayJSON(ExecState *state, int argument);
-
+WeexString *genWeexStringSS(const uint16_t *str, size_t length);
 WeexByteArray *genWeexByteArraySS(const char *str, size_t strLen);
 
 JSValue jString2JSValue(ExecState *state, const uint16_t *str, size_t length);
@@ -245,7 +246,7 @@ bool ExecuteJavaScript(JSGlobalObject *globalObject,
                        const char *func,
                        const char *instanceId = "");
 
-
+uint64_t microTime();
 WeexByteArray *IPCByteArrayToWeexByteArray(const IPCByteArray *byteArray);
 
 

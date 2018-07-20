@@ -89,7 +89,7 @@ int WeexRuntime::createAppContext(const String &instanceId, const String &jsBund
         JSLockHolder locker_global(&vm_global);
 
         WeexGlobalObject *globalObject = weexLiteAppObjectHolder->cloneWeexObject(true, true);
-        weex::GlobalObjectDelegate* delegate = NULL;
+        weex::GlobalObjectDelegate *delegate = NULL;
         globalObject->SetScriptBridge(script_bridge_);
 
         VM &vm = globalObject_local->vm();
@@ -966,6 +966,45 @@ WeexObjectHolder *WeexRuntime::getLightAppObjectHolder(const String &instanceId)
     }
 
     return weexLiteAppObjectHolderMap[k];
+}
+
+int WeexRuntime::exeTimerFunction(const String &instanceId, JSC::JSValue timerFunction) {
+    uint64_t begin = microTime();
+
+    JSGlobalObject *globalObject;
+    globalObject = weexObjectHolder->m_jsInstanceGlobalObjectMap[instanceId.utf8().data()];
+    if (globalObject == NULL) {
+        // instance is not exist
+        globalObject = weexObjectHolder->m_globalObject.get();
+    }
+    VM &vm = globalObject->vm();
+    JSLockHolder locker(&vm);
+    const JSValue &value = timerFunction;
+    JSValue result;
+    CallData callData;
+    CallType callType = getCallData(value, callData);
+    NakedPtr<Exception> returnedException;
+    // LOGE("Weex jsserver IPCJSMsg::CALLJSONAPPCONTEXT start call js runtime funtion");
+    if (value.isEmpty()) {
+        LOGE("Weex jsserver IPCJSMsg::CALLJSONAPPCONTEXT js funtion is empty");
+    }
+
+    ArgList a;
+
+    JSValue ret = call(globalObject->globalExec(), value, callType, callData, globalObject, a, returnedException);
+    uint64_t end = microTime();
+
+    LOGE("exeTimerFunction cost %lld", end - begin);
+
+    return 0;
+}
+
+void WeexRuntime::setWeexJSServer(WeexJSServer *server) {
+    m_server = server;
+}
+
+void WeexRuntime::setWeexIPCClient(WeexIPCClient *ipcClient) {
+    m_client = ipcClient;
 }
 
 

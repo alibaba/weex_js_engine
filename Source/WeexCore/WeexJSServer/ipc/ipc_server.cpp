@@ -40,10 +40,10 @@ WeexJSServer::WeexJSServerImpl::WeexJSServerImpl(int _fd, bool _enableTrace)
     weexRuntime.reset(new WeexRuntime(true));
 }
 
-WeexJSServer::WeexJSServer(int fd, bool enableTrace)
-        : m_impl(new WeexJSServerImpl(fd, enableTrace)) {
+WeexJSServer::WeexJSServer(int fd_server, int fd_client,  bool enableTrace)
+        : m_impl(new WeexJSServerImpl(fd_server, enableTrace)) {
     IPCHandler *handler = m_impl->handler.get();
-
+    this->m_ClientFd = fd_client;
     // TODO
     static_cast<weex::PlatformSideInMultiProcess*>(weex::PlatformBridgeInMultiProcess::Instance()->platform_side())->set_server(this);
     weex::PlatformBridgeInMultiProcess::Instance()->RegisterIPCCallback(handler);

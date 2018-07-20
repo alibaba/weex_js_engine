@@ -7,12 +7,16 @@
 
 
 #include <WeexCore/WeexJSServer/object/WeexObjectHolder.h>
+#include <WeexCore/WeexJSServer/object/WeexIPCClient.h>
+
 namespace WeexCore {
     class ScriptBridge;
 }
 class WeexRuntime {
 
 public:
+    WeexJSServer *m_server{nullptr};
+    WeexIPCClient *m_client{nullptr};
     WeexCore::ScriptBridge* script_bridge_;
     std::unique_ptr<WeexObjectHolder> weexObjectHolder;
     std::map<std::string, WeexObjectHolder *> weexLiteAppObjectHolderMap;
@@ -20,6 +24,9 @@ public:
     explicit WeexRuntime(bool isMultiProgress = true);
 
     explicit WeexRuntime(WeexCore::ScriptBridge *script_bridge, bool isMultiProgress = true);
+
+    void setWeexJSServer(WeexJSServer *server);
+    void setWeexIPCClient(WeexIPCClient *ipcClient);
 
     int initFramework(IPCArguments *arguments);
 
@@ -63,7 +70,7 @@ public:
     int destroyInstance(const String &instanceId);
 
     int updateGlobalConfig(const String &config);
-
+    int exeTimerFunction(const String &instanceId, JSC::JSValue timerFunction);
     WeexObjectHolder * getLightAppObjectHolder(const String &instanceId);
 
 private:

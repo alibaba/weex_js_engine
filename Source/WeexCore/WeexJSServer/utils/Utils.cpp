@@ -299,7 +299,17 @@ WeexByteArray *getArgumentAsWeexByteArrayJSON(ExecState *state, int argument) {
     return nullptr;
 }
 
+WeexString *genWeexStringSS(const uint16_t *str, size_t length) {
+    size_t byteSize = length * sizeof(uint16_t);
+    auto *string = (WeexString *) malloc(byteSize + sizeof(WeexString));
+    if (string == nullptr)
+        return nullptr;
 
+    memset(string, 0, byteSize + sizeof(WeexString));
+    string->length = length;
+    memcpy(string->content, str, byteSize);
+    return string;
+}
 WeexByteArray *genWeexByteArraySS(const char *str, size_t strLen) {
     auto *ret = (WeexByteArray *) malloc(strLen + sizeof(WeexByteArray));
 
@@ -475,6 +485,15 @@ void ReportException(JSGlobalObject *_globalObject, Exception *exception, const 
 
     auto *globalObject = static_cast<WeexGlobalObject *>(_globalObject);
     globalObject->js_bridge()->core_side()->ReportException(instanceid, func, data.data());
+}
+
+
+uint64_t microTime() {
+    struct timeval tv;
+
+    gettimeofday(&tv, nullptr);
+
+    return (((uint64_t) tv.tv_sec) * MICROSEC + tv.tv_usec);
 }
 
 /**

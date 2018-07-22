@@ -53,7 +53,7 @@ class ScriptSideInSimple : public WeexCore::ScriptBridge::ScriptSide {
 
   inline void set_runtime(WeexRuntime *runtime) { runtime_ = runtime; }
 
-  ScriptSideInSimple() : runtime_(NULL) {}
+  ScriptSideInSimple() : runtime_(nullptr) {}
   ScriptSideInSimple(WeexRuntime *runtime) : runtime_(runtime) {}
 
   virtual ~ScriptSideInSimple() {}

@@ -41,8 +41,7 @@ static void* threadEntry(void* _td) {
   server = new WeexJSServer(static_cast<int>(td->fd),1,
                             static_cast<bool>(td->enableTrace));
   // Register handler for bridge
-  weex::bridge::js::ScriptBridgeInMultiProcess::RegisterIPCCallback(
-      server->getHandler());
+  weex::bridge::js::ScriptBridgeInMultiProcess::RegisterIPCCallback(server->getHandler());
   nice(6);
   try {
     server->loop();

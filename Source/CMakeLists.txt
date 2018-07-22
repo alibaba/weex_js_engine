@@ -10,8 +10,8 @@ add_subdirectory(WTF)
 add_subdirectory(JavaScriptCore)
 add_subdirectory(CrashHandler)
 #include_directories(/Users/darin/Library/Android/sdk/ndk-bundle/platforms/android-24/arch-arm/usr/include)
-include_directories(/Volumes/MacData/macEnv/Android/ndk/android-ndk-r13b/platforms/android-24/arch-arm/usr/include)
-include_directories(/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include/c++/v1)
+#include_directories(/Volumes/MacData/macEnv/Android/ndk/android-ndk-r13b/platforms/android-24/arch-arm/usr/include)
+#include_directories(/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include/c++/v1)
 
 #add_executable(TestWeexServerPolicy
 #TestWeexServerPolicy.cpp
@@ -97,6 +97,8 @@ set(${WEEXJSSERVER_NAME}_SOURCES
 
         WeexCore/WeexJSServer/task/WeexTask.cpp
         WeexCore/WeexJSServer/task/WeexTaskQueue.cpp
+        WeexCore/WeexJSServer/task/TimerTask.cpp
+        WeexCore/WeexJSServer/task/TimerQueue.cpp
 
 
         ${RENDER_PATH}/base/time_point.cc

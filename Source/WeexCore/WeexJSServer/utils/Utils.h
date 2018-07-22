@@ -247,6 +247,8 @@ bool ExecuteJavaScript(JSGlobalObject *globalObject,
                        const char *instanceId = "");
 
 uint64_t microTime();
+int __atomic_inc(volatile int *ptr);
+
 WeexByteArray *IPCByteArrayToWeexByteArray(const IPCByteArray *byteArray);
 
 

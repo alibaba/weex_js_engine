@@ -4,11 +4,11 @@
 
 #include "ExeJsOnInstanceTask.h"
 
-ExeJsOnInstanceTaskWeexTask::ExeJsOnInstanceTaskWeexTask(const String &instanceId, const String &script) : WeexTask(
+ExeJsOnInstanceTask::ExeJsOnInstanceTask(const String &instanceId, const String &script) : WeexTask(
         instanceId) {
     this->script = script;
 }
 
-void ExeJsOnInstanceTaskWeexTask::run(WeexRuntime *runtime) {
+void ExeJsOnInstanceTask::run(WeexRuntime *runtime) {
     runtime->exeJSOnInstance(instanceId, script);
 }

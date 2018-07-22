@@ -17,6 +17,8 @@ public:
 
     explicit WeexTaskQueue(WeexJSServer *server);
 
+    explicit WeexTaskQueue(WeexCore::ScriptBridge *script_bridge, WeexJSServer *server);
+
     ~WeexTaskQueue();
 
     void run(WeexTask *task);
@@ -27,7 +29,7 @@ public:
 
     void removeTimer(int id);
 
-    int addTimerTask(String id,  JSC::JSValue function);
+    int addTimerTask(String id, JSC::JSValue function);
 
     void start();
 
@@ -41,9 +43,10 @@ public:
 
 private:
     int _addTask(WeexTask *task, bool front);
+
     std::deque<WeexTask *> taskQueue_;
     ThreadLocker threadLocker;
-
+    WeexCore::ScriptBridge* script_bridge_;
     WeexJSServer *server;
 };
 

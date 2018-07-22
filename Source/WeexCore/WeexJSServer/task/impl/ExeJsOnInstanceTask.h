@@ -8,9 +8,9 @@
 
 #include <WeexCore/WeexJSServer/task/WeexTask.h>
 
-class ExeJsOnInstanceTaskWeexTask: public WeexTask {
+class ExeJsOnInstanceTask: public WeexTask {
 public:
-    explicit ExeJsOnInstanceTaskWeexTask(const String &instanceId, const String &script);
+    explicit ExeJsOnInstanceTask(const String &instanceId, const String &script);
 
     void run(WeexRuntime *runtime) override;
 private:

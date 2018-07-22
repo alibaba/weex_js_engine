@@ -13,7 +13,6 @@ struct WeexJSServer::WeexJSServerImpl {
     WeexJSServerImpl(int fd, bool enableTrace);
 
     bool enableTrace;
-    std::unique_ptr<WeexRuntime> weexRuntime;
     std::unique_ptr<IPCFutexPageQueue> futexPageQueue;
     std::unique_ptr<IPCSender> sender;
     std::unique_ptr<IPCHandler> handler;
@@ -37,7 +36,6 @@ WeexJSServer::WeexJSServerImpl::WeexJSServerImpl(int _fd, bool _enableTrace)
     sender = std::move(createIPCSender(futexPageQueue.get(), handler.get()));
     listener = std::move(createIPCListener(futexPageQueue.get(), handler.get()));
     serializer = std::move(createIPCSerializer());
-    weexRuntime.reset(new WeexRuntime(true));
 }
 
 WeexJSServer::WeexJSServer(int fd_server, int fd_client,  bool enableTrace)

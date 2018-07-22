@@ -115,3 +115,8 @@ WeexTaskQueue::WeexTaskQueue(WeexJSServer *server) {
 
     this->server = server;
 }
+
+WeexTaskQueue::WeexTaskQueue(WeexCore::ScriptBridge *script_bridge, WeexJSServer *server) {
+    this->server =  server;
+    this->script_bridge_ = script_bridge;
+}

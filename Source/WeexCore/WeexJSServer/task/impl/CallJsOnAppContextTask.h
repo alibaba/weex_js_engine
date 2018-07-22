@@ -11,6 +11,7 @@
 
 class CallJsOnAppContextTask : public WeexTask {
 
+public:
     CallJsOnAppContextTask(const String &instanceId, const String &func, std::vector<VALUE_WITH_TYPE *> param);
 
     CallJsOnAppContextTask(const String &instanceId, const String &func, IPCArguments *arguments, size_t startCount);

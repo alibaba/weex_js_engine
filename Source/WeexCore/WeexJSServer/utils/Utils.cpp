@@ -496,6 +496,11 @@ uint64_t microTime() {
     return (((uint64_t) tv.tv_sec) * MICROSEC + tv.tv_usec);
 }
 
+
+int __atomic_inc(volatile int *ptr) {
+    return __sync_fetch_and_add(ptr,1);
+}
+
 /**
  * this function is to execute a section of JavaScript content.
  */

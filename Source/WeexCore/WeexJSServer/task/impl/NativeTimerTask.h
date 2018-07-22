@@ -8,9 +8,9 @@
 
 #include <WeexCore/WeexJSServer/task/WeexTask.h>
 
-class TimerTask : public WeexTask {
+class NativeTimerTask : public WeexTask {
 public:
-    explicit TimerTask(const String &instanceId, JSC::JSValue function);
+    explicit NativeTimerTask(const String &instanceId, JSC::JSValue function);
 
     void run(WeexRuntime *runtime) override;
 

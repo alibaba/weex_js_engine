@@ -9,6 +9,9 @@ endif ()
 add_subdirectory(WTF)
 add_subdirectory(JavaScriptCore)
 add_subdirectory(CrashHandler)
+#include_directories(/Users/darin/Library/Android/sdk/ndk-bundle/platforms/android-24/arch-arm/usr/include)
+include_directories(/Volumes/MacData/macEnv/Android/ndk/android-ndk-r13b/platforms/android-24/arch-arm/usr/include)
+include_directories(/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include/c++/v1)
 
 #add_executable(TestWeexServerPolicy
 #TestWeexServerPolicy.cpp
@@ -26,7 +29,7 @@ include_directories(include)
 include(WebKitCommon)
 
 set(WEEXJSSERVER_NAME weexjss${SERVERSUFFIX})
-set(RENDER_PATH ../../incubator-weex/weex_core/Source)
+set(RENDER_PATH /Users/darin/Data/code/work/weex/sdk/gitlab/weex_core/Source)
 include_directories(${RENDER_PATH})
 # IPC
 set(IPC_SOURCE_PATH ${RENDER_PATH}/IPC)
@@ -90,7 +93,7 @@ set(${WEEXJSSERVER_NAME}_SOURCES
         WeexCore/WeexJSServer/task/impl/ExeJsOnInstanceTask.cpp
         WeexCore/WeexJSServer/task/impl/ExeJsTask.cpp
         WeexCore/WeexJSServer/task/impl/TakeHeapSnapShot.cpp
-        WeexCore/WeexJSServer/task/impl/TimerTask.cpp
+        WeexCore/WeexJSServer/task/impl/NativeTimerTask.cpp
 
         WeexCore/WeexJSServer/task/WeexTask.cpp
         WeexCore/WeexJSServer/task/WeexTaskQueue.cpp

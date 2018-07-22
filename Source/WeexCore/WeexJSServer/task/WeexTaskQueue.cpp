@@ -2,7 +2,7 @@
 // Created by Darin on 23/05/2018.
 //
 
-#include <WeexCore/WeexJSServer/task/impl/TimerTask.h>
+#include <WeexCore/WeexJSServer/task/impl/NativeTimerTask.h>
 #include "WeexTaskQueue.h"
 
 void WeexTaskQueue::run(WeexTask *task) {
@@ -57,7 +57,7 @@ WeexTask *WeexTaskQueue::getTask() {
 }
 
 int WeexTaskQueue::addTimerTask(String id, JSC::JSValue function) {
-    WeexTask *task = new TimerTask(std::move(id), function);
+    WeexTask *task = new NativeTimerTask(std::move(id), function);
     return _addTask(
             task,
             true);

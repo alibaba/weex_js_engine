@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 2.8.12)
 
 add_definitions(-DPRINT_LOG_CACHEFILE=0)
+add_definitions(-DOS_ANDROID)
 
 if (NOT USE_SYSTEM_MALLOC)
     add_subdirectory(bmalloc)
@@ -71,7 +72,36 @@ set(${WEEXJSSERVER_NAME}_SOURCES
         WeexCore/WeexJSServer/bridge/script/script_side_in_simple.cpp
         WeexCore/WeexJSServer/ipc/ipc_server.cpp
 
+        WeexCore/WeexJSServer/object/WeexIPCClient.cpp
+        WeexCore/WeexJSServer/utils/ThreadLocker.cpp
+        WeexCore/WeexJSServer/object/args/ExeJsArgs.cpp
+        WeexCore/WeexJSServer/object/args/InitFrameworkArgs.cpp
 
+        WeexCore/WeexJSServer/task/impl/InitFrameworkTask.cpp
+        WeexCore/WeexJSServer/task/impl/CreateAppContextTask.cpp
+        WeexCore/WeexJSServer/task/impl/CreateInstanceTask.cpp
+        WeexCore/WeexJSServer/task/impl/CallJsOnAppContextTask.cpp
+        WeexCore/WeexJSServer/task/impl/DestoryAppContextTask.cpp
+        WeexCore/WeexJSServer/task/impl/DestoryInstanceTask.cpp
+        WeexCore/WeexJSServer/task/impl/ExeJsOnAppWithResultTask.cpp
+        WeexCore/WeexJSServer/task/impl/UpdateGlobalConfigTask.cpp
+        WeexCore/WeexJSServer/task/impl/CTimeCallBackask.cpp
+        WeexCore/WeexJSServer/task/impl/ExeJsServicesTask.cpp
+        WeexCore/WeexJSServer/task/impl/ExeJsOnInstanceTask.cpp
+        WeexCore/WeexJSServer/task/impl/ExeJsTask.cpp
+        WeexCore/WeexJSServer/task/impl/TakeHeapSnapShot.cpp
+        WeexCore/WeexJSServer/task/impl/TimerTask.cpp
+
+        WeexCore/WeexJSServer/task/WeexTask.cpp
+        WeexCore/WeexJSServer/task/WeexTaskQueue.cpp
+
+
+        ${RENDER_PATH}/base/time_point.cc
+        ${RENDER_PATH}/base/thread/thread_impl_posix.cc
+        ${RENDER_PATH}/base/thread/thread_impl_android.cc
+        ${RENDER_PATH}/base/message_loop/message_loop.cc
+        ${RENDER_PATH}/base/message_loop/message_pump_posix.cc
+        ${RENDER_PATH}/base/message_loop/message_pump_android.cc
         ${RENDER_PATH}/core/render/manager/render_manager.cpp
         ${RENDER_PATH}/core/render/page/render_page.cpp
         ${RENDER_PATH}/core/render/node/render_object.cpp

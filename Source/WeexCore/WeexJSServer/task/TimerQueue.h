@@ -10,8 +10,9 @@
 #include <deque>
 #include "TimerTask.h"
 
-class TimerQueue {
+class TimerTask;
 
+class TimerQueue {
 
 public:
     void init();

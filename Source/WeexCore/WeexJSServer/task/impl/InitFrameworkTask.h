@@ -12,6 +12,7 @@
 class InitFrameworkTask : public WeexTask {
 public:
 
+
     explicit InitFrameworkTask(const String &instanceId, const String &script,
                                std::vector<INIT_FRAMEWORK_PARAMS *> params);
 

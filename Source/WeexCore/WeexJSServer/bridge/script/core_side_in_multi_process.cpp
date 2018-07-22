@@ -17,16 +17,16 @@
 namespace weex {
 namespace bridge {
 namespace js {
-CoreSideInMultiProcess::CoreSideInMultiProcess(WeexJSServer *server)
-    : server_(server) {}
-CoreSideInMultiProcess::CoreSideInMultiProcess() : server_(NULL) {}
+CoreSideInMultiProcess::CoreSideInMultiProcess(WeexIPCClient *client)
+    : client_(client) {}
+CoreSideInMultiProcess::CoreSideInMultiProcess() : client_(NULL) {}
 CoreSideInMultiProcess::~CoreSideInMultiProcess() {}
 
 void CoreSideInMultiProcess::CallNative(const char *page_id, const char *task,
                                         const char *callback) {
   LOGE("CoreSideInMultiProcess::CallNative");
-  IPCSender *sender = server_->getSender();
-  IPCSerializer *serializer = server_->getSerializer();
+  IPCSender *sender = client_->getSender();
+  IPCSerializer *serializer = client_->getSerializer();
   serializer->setMsg(static_cast<uint32_t>(IPCProxyMsg::CALLNATIVE));
   // instacneID args[0]
   serializer->add(page_id, strlen(page_id));
@@ -43,8 +43,8 @@ std::unique_ptr<IPCResult> CoreSideInMultiProcess::CallNativeModule(
     const char *arguments, int arguments_length, const char *options,
     int options_length) {
   LOGE("CoreSideInMultiProcess::CallNativeModule");
-  IPCSender *sender = server_->getSender();
-  IPCSerializer *serializer = server_->getSerializer();
+  IPCSender *sender = client_->getSender();
+  IPCSerializer *serializer = client_->getSerializer();
   serializer->setMsg(static_cast<uint32_t>(IPCProxyMsg::CALLNATIVEMODULE));
 
   // instacneID args[0]
@@ -67,8 +67,8 @@ void CoreSideInMultiProcess::CallNativeComponent(
     const char *arguments, int arguments_length, const char *options,
     int options_length) {
   LOGE("CoreSideInMultiProcess::CallNativeComponent");
-  IPCSender *sender = server_->getSender();
-  IPCSerializer *serializer = server_->getSerializer();
+  IPCSender *sender = client_->getSender();
+  IPCSerializer *serializer = client_->getSerializer();
   serializer->setMsg(static_cast<uint32_t>(IPCProxyMsg::CALLNATIVECOMPONENT));
 
   // instacneID args[0]
@@ -95,8 +95,8 @@ void CoreSideInMultiProcess::AddElement(const char *page_id,
                                         const char *dom_str, int dom_str_length,
                                         const char *index_str) {
   LOGE("CoreSideInMultiProcess::AddElement");
-  IPCSender *sender = server_->getSender();
-  IPCSerializer *serializer = server_->getSerializer();
+  IPCSender *sender = client_->getSender();
+  IPCSerializer *serializer = client_->getSerializer();
   serializer->setMsg(static_cast<uint32_t>(IPCProxyMsg::CALLADDELEMENT) |
                      MSG_FLAG_ASYNC);
 
@@ -116,8 +116,8 @@ void CoreSideInMultiProcess::AddElement(const char *page_id,
 void CoreSideInMultiProcess::SetTimeout(const char *callback_id,
                                         const char *time) {
   LOGE("CoreSideInMultiProcess::SetTimeout");
-  IPCSender *sender = server_->getSender();
-  IPCSerializer *serializer = server_->getSerializer();
+  IPCSender *sender = client_->getSender();
+  IPCSerializer *serializer = client_->getSerializer();
   serializer->setMsg(static_cast<uint32_t>(IPCProxyMsg::SETTIMEOUT));
   // callbackId
   serializer->add(callback_id, strlen(callback_id));
@@ -134,8 +134,8 @@ void CoreSideInMultiProcess::SetTimeout(const char *callback_id,
 
 void CoreSideInMultiProcess::NativeLog(const char *str_array) {
   LOGE("CoreSideInMultiProcess::NativeLog");
-  IPCSender *sender = server_->getSender();
-  IPCSerializer *serializer = server_->getSerializer();
+  IPCSender *sender = client_->getSender();
+  IPCSerializer *serializer = client_->getSerializer();
 
   serializer->setMsg(static_cast<uint32_t>(IPCProxyMsg::NATIVELOG) |
                      MSG_FLAG_ASYNC);
@@ -148,8 +148,8 @@ void CoreSideInMultiProcess::CreateBody(const char *page_id,
                                         const char *dom_str,
                                         int dom_str_length) {
   LOGE("CoreSideInMultiProcess::CreateBody");
-  IPCSender *sender = server_->getSender();
-  IPCSerializer *serializer = server_->getSerializer();
+  IPCSender *sender = client_->getSender();
+  IPCSerializer *serializer = client_->getSerializer();
   serializer->setMsg(static_cast<uint32_t>(IPCProxyMsg::CALLCREATEBODY));
 
   // page id
@@ -168,8 +168,8 @@ int CoreSideInMultiProcess::UpdateFinish(const char *page_id, const char *task,
                                          int task_length, const char *callback,
                                          int callback_length) {
   LOGE("CoreSideInMultiProcess::UpdateFinish");
-  IPCSender *sender = server_->getSender();
-  IPCSerializer *serializer = server_->getSerializer();
+  IPCSender *sender = client_->getSender();
+  IPCSerializer *serializer = client_->getSerializer();
   serializer->setMsg(static_cast<uint32_t>(IPCProxyMsg::CALLUPDATEFINISH));
   serializer->add(page_id, strlen(page_id));
   serializer->add(task, task_length);
@@ -186,8 +186,8 @@ int CoreSideInMultiProcess::UpdateFinish(const char *page_id, const char *task,
 
 void CoreSideInMultiProcess::CreateFinish(const char *page_id) {
   LOGE("CoreSideInMultiProcess::CreateFinish");
-  IPCSender *sender = server_->getSender();
-  IPCSerializer *serializer = server_->getSerializer();
+  IPCSender *sender = client_->getSender();
+  IPCSerializer *serializer = client_->getSerializer();
   serializer->setMsg(static_cast<uint32_t>(IPCProxyMsg::CALLCREATEFINISH));
 
   serializer->add(page_id, strlen(page_id));
@@ -202,8 +202,8 @@ void CoreSideInMultiProcess::CreateFinish(const char *page_id) {
 int CoreSideInMultiProcess::RefreshFinish(const char *page_id, const char *task,
                                           const char *callback) {
   LOGE("CoreSideInMultiProcess::RefreshFinish");
-  IPCSender *sender = server_->getSender();
-  IPCSerializer *serializer = server_->getSerializer();
+  IPCSender *sender = client_->getSender();
+  IPCSerializer *serializer = client_->getSerializer();
   serializer->setMsg(static_cast<uint32_t>(IPCProxyMsg::CALLREFRESHFINISH));
   // instacneID args[0]
   serializer->add(page_id, strlen(page_id));
@@ -223,8 +223,8 @@ int CoreSideInMultiProcess::RefreshFinish(const char *page_id, const char *task,
 void CoreSideInMultiProcess::UpdateAttrs(const char *page_id, const char *ref,
                                          const char *data, int data_length) {
   LOGE("CoreSideInMultiProcess::UpdateAttrs");
-  IPCSender *sender = server_->getSender();
-  IPCSerializer *serializer = server_->getSerializer();
+  IPCSender *sender = client_->getSender();
+  IPCSerializer *serializer = client_->getSerializer();
   serializer->setMsg(static_cast<uint32_t>(IPCProxyMsg::CALLUPDATEATTRS));
   // instacneID args[0]
   serializer->add(page_id, strlen(page_id));
@@ -243,8 +243,8 @@ void CoreSideInMultiProcess::UpdateAttrs(const char *page_id, const char *ref,
 void CoreSideInMultiProcess::UpdateStyle(const char *page_id, const char *ref,
                                          const char *data, int data_length) {
   LOGE("CoreSideInMultiProcess::UpdateStyle");
-  IPCSender *sender = server_->getSender();
-  IPCSerializer *serializer = server_->getSerializer();
+  IPCSender *sender = client_->getSender();
+  IPCSerializer *serializer = client_->getSerializer();
   serializer->setMsg(static_cast<uint32_t>(IPCProxyMsg::CALLUPDATESTYLE));
   // instacneID args[0]
   serializer->add(page_id, strlen(page_id));
@@ -263,8 +263,8 @@ void CoreSideInMultiProcess::UpdateStyle(const char *page_id, const char *ref,
 void CoreSideInMultiProcess::RemoveElement(const char *page_id,
                                            const char *ref) {
   LOGE("CoreSideInMultiProcess::RemoveElement");
-  IPCSender *sender = server_->getSender();
-  IPCSerializer *serializer = server_->getSerializer();
+  IPCSender *sender = client_->getSender();
+  IPCSerializer *serializer = client_->getSerializer();
   serializer->setMsg(static_cast<uint32_t>(IPCProxyMsg::CALLREMOVEELEMENT));
   serializer->add(page_id, strlen(page_id));
   serializer->add(ref, strlen(ref));
@@ -279,8 +279,8 @@ void CoreSideInMultiProcess::RemoveElement(const char *page_id,
 void CoreSideInMultiProcess::MoveElement(const char *page_id, const char *ref,
                                          const char *parent_ref, int index) {
   LOGE("CoreSideInMultiProcess::MoveElement");
-  IPCSender *sender = server_->getSender();
-  IPCSerializer *serializer = server_->getSerializer();
+  IPCSender *sender = client_->getSender();
+  IPCSerializer *serializer = client_->getSerializer();
   serializer->setMsg(static_cast<uint32_t>(IPCProxyMsg::CALLMOVEELEMENT));
   serializer->add(page_id, strlen(page_id));
   serializer->add(ref, strlen(ref));
@@ -299,8 +299,8 @@ void CoreSideInMultiProcess::MoveElement(const char *page_id, const char *ref,
 void CoreSideInMultiProcess::AddEvent(const char *page_id, const char *ref,
                                       const char *event) {
   LOGE("CoreSideInMultiProcess::AddEvent");
-  IPCSender *sender = server_->getSender();
-  IPCSerializer *serializer = server_->getSerializer();
+  IPCSender *sender = client_->getSender();
+  IPCSerializer *serializer = client_->getSerializer();
   serializer->setMsg(static_cast<uint32_t>(IPCProxyMsg::CALLADDEVENT));
   serializer->add(page_id, strlen(page_id));
   serializer->add(ref, strlen(ref));
@@ -316,8 +316,8 @@ void CoreSideInMultiProcess::AddEvent(const char *page_id, const char *ref,
 void CoreSideInMultiProcess::RemoveEvent(const char *page_id, const char *ref,
                                          const char *event) {
   LOGE("CoreSideInMultiProcess::RemoveEvent");
-  IPCSender *sender = server_->getSender();
-  IPCSerializer *serializer = server_->getSerializer();
+  IPCSender *sender = client_->getSender();
+  IPCSerializer *serializer = client_->getSerializer();
   serializer->setMsg(static_cast<uint32_t>(IPCProxyMsg::CALLREMOVEEVENT));
   serializer->add(page_id, strlen(page_id));
   serializer->add(ref, strlen(ref));
@@ -333,8 +333,8 @@ void CoreSideInMultiProcess::RemoveEvent(const char *page_id, const char *ref,
 const char *CoreSideInMultiProcess::CallGCanvasLinkNative(
     const char *context_id, int type, const char *arg) {
   LOGE("CoreSideInMultiProcess::CallGCanvasLinkNative");
-  IPCSender *sender = server_->getSender();
-  IPCSerializer *serializer = server_->getSerializer();
+  IPCSender *sender = client_->getSender();
+  IPCSerializer *serializer = client_->getSerializer();
   serializer->setMsg(static_cast<uint32_t>(IPCProxyMsg::CALLGCANVASLINK));
 
   // contextId args[0]
@@ -376,8 +376,8 @@ int CoreSideInMultiProcess::SetInterval(const char *page_id,
                                         const char *callback_id,
                                         const char *time) {
   LOGE("CoreSideInMultiProcess::SetInterval");
-  IPCSender *sender = server_->getSender();
-  IPCSerializer *serializer = server_->getSerializer();
+  IPCSender *sender = client_->getSender();
+  IPCSerializer *serializer = client_->getSerializer();
   serializer->setMsg(static_cast<uint32_t>(IPCProxyMsg::SETINTERVAL));
   // instacneID args[0]
   serializer->add(page_id, strlen(page_id));
@@ -402,8 +402,8 @@ int CoreSideInMultiProcess::SetInterval(const char *page_id,
 void CoreSideInMultiProcess::ClearInterval(const char *page_id,
                                            const char *callback_id) {
   LOGE("CoreSideInMultiProcess::ClearInterval");
-  IPCSender *sender = server_->getSender();
-  IPCSerializer *serializer = server_->getSerializer();
+  IPCSender *sender = client_->getSender();
+  IPCSerializer *serializer = client_->getSerializer();
   serializer->setMsg(static_cast<uint32_t>(IPCProxyMsg::CLEARINTERVAL));
   // instacneID args[0]
   serializer->add(page_id, strlen(page_id));
@@ -420,8 +420,8 @@ void CoreSideInMultiProcess::ClearInterval(const char *page_id,
 const char *CoreSideInMultiProcess::CallT3DLinkNative(int type,
                                                       const char *arg) {
   LOGE("CoreSideInMultiProcess::CallT3DLinkNative");
-  IPCSender *sender = server_->getSender();
-  IPCSerializer *serializer = server_->getSerializer();
+  IPCSender *sender = client_->getSender();
+  IPCSerializer *serializer = client_->getSerializer();
   serializer->setMsg(static_cast<uint32_t>(IPCProxyMsg::CALLT3DLINK));
   // type args[1]
   serializer->add(type);
@@ -457,8 +457,8 @@ const char *CoreSideInMultiProcess::CallT3DLinkNative(int type,
 
 void CoreSideInMultiProcess::PostMessage(const char *vim_id, const char *data) {
   LOGE("CoreSideInMultiProcess::PostMessage");
-  IPCSender *sender = server_->getSender();
-  IPCSerializer *serializer = server_->getSerializer();
+  IPCSender *sender = client_->getSender();
+  IPCSerializer *serializer = client_->getSerializer();
   serializer->setMsg(static_cast<uint32_t>(IPCProxyMsg::POSTMESSAGE));
   serializer->add(data, strlen(data));
   serializer->add(vim_id, strlen(vim_id));
@@ -471,8 +471,8 @@ void CoreSideInMultiProcess::DispatchMessage(const char *client_id,
                                              const char *callback,
                                              const char *vm_id) {
   LOGE("CoreSideInMultiProcess::DispatchMessage");
-  IPCSender *sender = server_->getSender();
-  IPCSerializer *serializer = server_->getSerializer();
+  IPCSender *sender = client_->getSender();
+  IPCSerializer *serializer = client_->getSerializer();
   serializer->setMsg(static_cast<uint32_t>(IPCProxyMsg::DISPATCHMESSAGE));
   // clientid
   serializer->add(client_id, strlen(client_id));
@@ -490,8 +490,8 @@ void CoreSideInMultiProcess::ReportException(const char *page_id,
                                              const char *func,
                                              const char *exception_string) {
   LOGE("CoreSideInMultiProcess::ReportException");
-  IPCSender *sender = server_->getSender();
-  IPCSerializer *serializer = server_->getSerializer();
+  IPCSender *sender = client_->getSender();
+  IPCSerializer *serializer = client_->getSerializer();
   serializer->setMsg(static_cast<uint32_t>(IPCProxyMsg::REPORTEXCEPTION));
   serializer->add(page_id, strlen(page_id));
   serializer->add(func, strlen(func));
@@ -505,8 +505,8 @@ void CoreSideInMultiProcess::ReportException(const char *page_id,
 }
 void CoreSideInMultiProcess::SetJSVersion(const char *js_version) {
   LOGE("CoreSideInMultiProcess::SetJSVersion");
-  IPCSender *sender = server_->getSender();
-  IPCSerializer *serializer = server_->getSerializer();
+  IPCSender *sender = client_->getSender();
+  IPCSerializer *serializer = client_->getSerializer();
   serializer->setMsg(static_cast<uint32_t>(IPCProxyMsg::SETJSFVERSION));
   serializer->add(js_version, strlen(js_version));
   std::unique_ptr<IPCBuffer> buffer = serializer->finish();

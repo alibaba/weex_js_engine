@@ -26,3 +26,4 @@ WeexIPCClient::WeexIPCClient(int fd) {
     sender = std::move(createIPCSender(futexPageQueue.get(), handler.get()));
     serializer = std::move(createIPCSerializer());
 }
+

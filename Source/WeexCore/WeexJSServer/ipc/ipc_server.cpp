@@ -2,6 +2,7 @@
 #include <core/manager/weex_core_manager.h>
 #include <WeexCore/WeexJSServer/bridge/platform/platform_side_multi_process.h>
 #include <WeexCore/WeexJSServer/bridge/platform/platform_bridge_in_multi_process.h>
+#include <WeexCore/WeexJSServer/object/WeexEnv.h>
 
 using namespace JSC;
 using namespace WTF;
@@ -10,9 +11,8 @@ using namespace WEEXICU;
 extern bool config_use_wson;
 
 struct WeexJSServer::WeexJSServerImpl {
-    WeexJSServerImpl(int fd, bool enableTrace);
+    WeexJSServerImpl(int serverFd, int clientFd, bool enableTrace);
 
-    bool enableTrace;
     std::unique_ptr<IPCFutexPageQueue> futexPageQueue;
     std::unique_ptr<IPCSender> sender;
     std::unique_ptr<IPCHandler> handler;
@@ -22,8 +22,12 @@ struct WeexJSServer::WeexJSServerImpl {
     std::map<std::string, std::string> mInitAppContextPrams;
 };
 
-WeexJSServer::WeexJSServerImpl::WeexJSServerImpl(int _fd, bool _enableTrace)
-        : enableTrace(_enableTrace) {
+WeexJSServer::WeexJSServerImpl::WeexJSServerImpl(int serverFd, int clientFd, bool enableTrace) {
+    WeexEnv::env()->setIpcServerFd(serverFd);
+    WeexEnv::env()->setIpcClientFd(clientFd);
+    WeexEnv::env()->setEnableTrace(enableTrace);
+
+    int _fd = WeexEnv::env()->getIpcServerFd();
     void *base = mmap(nullptr, IPCFutexPageQueue::ipc_size, PROT_READ | PROT_WRITE, MAP_SHARED, _fd, 0);
     if (base == MAP_FAILED) {
         int _errno = errno;
@@ -38,12 +42,14 @@ WeexJSServer::WeexJSServerImpl::WeexJSServerImpl(int _fd, bool _enableTrace)
     serializer = std::move(createIPCSerializer());
 }
 
-WeexJSServer::WeexJSServer(int fd_server, int fd_client,  bool enableTrace)
-        : m_impl(new WeexJSServerImpl(fd_server, enableTrace)) {
+WeexJSServer::WeexJSServer(int serverFd, int clientFd, bool enableTrace)
+        : m_impl(new WeexJSServerImpl(serverFd, clientFd, enableTrace)) {
+
+
     IPCHandler *handler = m_impl->handler.get();
-    this->m_ClientFd = fd_client;
     // TODO
-    static_cast<weex::PlatformSideInMultiProcess*>(weex::PlatformBridgeInMultiProcess::Instance()->platform_side())->set_server(this);
+    static_cast<weex::PlatformSideInMultiProcess *>(weex::PlatformBridgeInMultiProcess::Instance()->platform_side())->set_server(
+            this);
     weex::PlatformBridgeInMultiProcess::Instance()->RegisterIPCCallback(handler);
     WeexCore::WeexCoreManager::getInstance()->setPlatformBridge(weex::PlatformBridgeInMultiProcess::Instance());
 }

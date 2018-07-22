@@ -12,13 +12,6 @@
 class WeexTaskQueue {
 
 public:
-
-    explicit WeexTaskQueue();
-
-    explicit WeexTaskQueue(WeexJSServer *server);
-
-    explicit WeexTaskQueue(WeexCore::ScriptBridge *script_bridge, WeexJSServer *server);
-
     ~WeexTaskQueue();
 
     void run(WeexTask *task);
@@ -46,8 +39,6 @@ private:
 
     std::deque<WeexTask *> taskQueue_;
     ThreadLocker threadLocker;
-    WeexCore::ScriptBridge* script_bridge_;
-    WeexJSServer *server;
 };
 
 

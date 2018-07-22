@@ -4,14 +4,16 @@
 
 #include <WeexCore/WeexJSServer/task/impl/NativeTimerTask.h>
 #include "WeexTaskQueue.h"
+#include <WeexCore/WeexJSServer/object/WeexEnv.h>
 
 void WeexTaskQueue::run(WeexTask *task) {
-
     if (this->weexRuntime == nullptr) {
-        this->weexRuntime = new WeexRuntime(true);
-        this->weexRuntime->setWeexJSServer(this->server);
-        this->weexRuntime->setWeexIPCClient(new WeexIPCClient(this->server->m_ClientFd));
-        close(this->server->m_ClientFd);
+        this->weexRuntime = new WeexRuntime(WeexEnv::env()->scriptBridge(), true);
+
+        WeexIPCClient *client = new WeexIPCClient(WeexEnv::env()->getIpcClientFd());
+        this->weexRuntime->setWeexIPCClient(client);
+        close(WeexEnv::env()->getIpcClientFd());
+
     }
     task->run(weexRuntime);
 }
@@ -109,14 +111,3 @@ int WeexTaskQueue::_addTask(WeexTask *task, bool front) {
     return size;
 }
 
-WeexTaskQueue::WeexTaskQueue() = default;
-
-WeexTaskQueue::WeexTaskQueue(WeexJSServer *server) {
-
-    this->server = server;
-}
-
-WeexTaskQueue::WeexTaskQueue(WeexCore::ScriptBridge *script_bridge, WeexJSServer *server) {
-    this->server =  server;
-    this->script_bridge_ = script_bridge;
-}

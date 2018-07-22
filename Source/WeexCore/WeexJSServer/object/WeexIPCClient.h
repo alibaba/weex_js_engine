@@ -15,9 +15,15 @@ class WeexIPCClient {
 
 public:
     explicit WeexIPCClient(int fd);
-    IPCSerializer *getSerializer() {
+
+    inline IPCSerializer *getSerializer() {
         return serializer.get();;
     }
+
+    inline IPCSender *getSender() {
+        return sender.get();
+    };
+
 public:
     std::unique_ptr<IPCFutexPageQueue> futexPageQueue;
     std::unique_ptr<IPCSender> sender;

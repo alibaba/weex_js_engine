@@ -73,12 +73,14 @@ set(${WEEXJSSERVER_NAME}_SOURCES
         WeexCore/WeexJSServer/bridge/script/core_side_in_multi_so.cpp
         WeexCore/WeexJSServer/bridge/script/core_side_in_multi_process.cpp
         WeexCore/WeexJSServer/bridge/script/script_side_in_simple.cpp
+        WeexCore/WeexJSServer/bridge/script/script_side_in_queue.cpp
         WeexCore/WeexJSServer/ipc/ipc_server.cpp
 
         WeexCore/WeexJSServer/object/WeexIPCClient.cpp
         WeexCore/WeexJSServer/utils/ThreadLocker.cpp
         WeexCore/WeexJSServer/object/args/ExeJsArgs.cpp
         WeexCore/WeexJSServer/object/args/InitFrameworkArgs.cpp
+        WeexCore/WeexJSServer/object/WeexEnv.cpp
 
         WeexCore/WeexJSServer/task/impl/InitFrameworkTask.cpp
         WeexCore/WeexJSServer/task/impl/CreateAppContextTask.cpp

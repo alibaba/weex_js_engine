@@ -8,7 +8,6 @@ using namespace JSC;
 using namespace WTF;
 using namespace WEEXICU;
 
-extern bool config_use_wson;
 
 struct WeexJSServer::WeexJSServerImpl {
     WeexJSServerImpl(int serverFd, int clientFd, bool enableTrace);
@@ -46,8 +45,7 @@ WeexJSServer::WeexJSServer(int serverFd, int clientFd, bool enableTrace)
 
     IPCHandler *handler = m_impl->handler.get();
     // TODO
-    static_cast<weex::PlatformSideInMultiProcess *>(weex::PlatformBridgeInMultiProcess::Instance()->platform_side())->set_server(
-            this);
+    static_cast<weex::PlatformSideInMultiProcess *>(weex::PlatformBridgeInMultiProcess::Instance()->platform_side())->set_server(this);
     weex::PlatformBridgeInMultiProcess::Instance()->RegisterIPCCallback(handler);
     WeexCore::WeexCoreManager::getInstance()->setPlatformBridge(weex::PlatformBridgeInMultiProcess::Instance());
 }

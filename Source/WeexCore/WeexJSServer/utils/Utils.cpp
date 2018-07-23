@@ -7,8 +7,8 @@
 #include "core/bridge/script_bridge.h"
 #include <iostream>
 #include <fstream>
+#include <WeexCore/WeexJSServer/object/WeexEnv.h>
 
-bool config_use_wson = true;
 
 //extern WEEX_CORE_JS_API_FUNCTIONS *weex_core_js_api_functions;
 
@@ -110,7 +110,7 @@ std::unique_ptr<char[]> getCharOrJSONStringFromState(ExecState *state, int argum
 }
 
 void getWsonOrJsonArgsFromState(ExecState *state, int argument, Args& args){
-    if(config_use_wson){
+    if(WeexEnv::env()->useWson()){
         if (argument >= state->argumentCount()) {
              args.setWson((wson_buffer*)nullptr);
              return;
@@ -402,9 +402,9 @@ void doUpdateGlobalSwitchConfig(const char *config) {
     }
     LOGE("doUpdateGlobalSwitchConfig %s", config);
     if (strstr(config, "wson_off") != NULL) {
-        config_use_wson = false;
+        WeexEnv::env()->setUseWson(false);
     } else {
-        config_use_wson = true;
+        WeexEnv::env()->setUseWson(true);
     }
 }
 

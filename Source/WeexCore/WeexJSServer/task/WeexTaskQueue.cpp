@@ -13,6 +13,8 @@ void WeexTaskQueue::run(WeexTask *task) {
         auto *client = new WeexIPCClient(WeexEnv::env()->getIpcClientFd());
         WeexEnv::env()->setIpcClient(client);
     }
+    WeexEnv::env()->setTimerQueue(new TimerQueue(this));
+    LOGE("WeexCore run task");
     task->run(weexRuntime);
 }
 

@@ -519,7 +519,7 @@ inline void convertJSArrayToWeexJSResult(ExecState *state, JSValue &ret, WeexJSR
     if (isAllNull) {
         return;
     }
-    if (config_use_wson) {
+    if (WeexEnv::env()->useWson()) {
         wson_buffer *buffer = wson::toWson(state, ret);
         jsResult.data = (char *) buffer->data;
         jsResult.length = buffer->position;

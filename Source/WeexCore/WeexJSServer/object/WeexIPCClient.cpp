@@ -14,10 +14,11 @@
 
 WeexIPCClient::WeexIPCClient(int fd) {
     void *base = mmap(nullptr, 4 * 1024 * 1024, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+    LOGE("ipc client and fd is %d", fd);
     if (base == MAP_FAILED) {
         int _errno = errno;
         close(fd);
-        LOGE("failed to map ashmem region: %s %d", strerror(_errno),fd);
+        LOGE("failed to map ashmem region: %s %d", strerror(_errno), fd);
         throw IPCException("failed to map ashmem region: %s", strerror(_errno));
     }
 

@@ -5,6 +5,9 @@
 #include "InitFrameworkTask.h"
 
 void InitFrameworkTask::run(WeexRuntime *runtime) {
+
+    LOGE("InitFrameworkTask is running");
+
     if (instanceId.isEmpty())
         runtime->initFramework(script, args->params);
     else

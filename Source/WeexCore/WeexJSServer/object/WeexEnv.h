@@ -16,6 +16,8 @@ public:
     static WeexEnv *env() {
         if (env_ == nullptr) {
             env_ = new WeexEnv();
+            env_->setUseWson(true);
+            env_->setMultiProcess(true);
         }
         return env_;
     }
@@ -27,26 +29,26 @@ public:
 
     WeexJSServer *ipcServer();
 
-    void setIpcServer(WeexJSServer * ipcServer);
+    void setIpcServer(WeexJSServer *ipcServer);
 
-    bool multiProcess() ;
+    bool multiProcess();
 
-    void setMultiProcess(bool multiProcess) ;
-
-
-    bool useWson() ;
-
-    void setUseWson(bool useWson) ;
+    void setMultiProcess(bool multiProcess);
 
 
-    TimerQueue *timerQueue() ;
+    bool useWson();
 
-    void setTimerQueue(TimerQueue *timerQueue) ;
+    void setUseWson(bool useWson);
 
 
-    WeexCore::ScriptBridge *scriptBridge() ;
+    TimerQueue *timerQueue();
 
-    void setScriptBridge(WeexCore::ScriptBridge *scriptBridge) ;
+    void setTimerQueue(TimerQueue *timerQueue);
+
+
+    WeexCore::ScriptBridge *scriptBridge();
+
+    void setScriptBridge(WeexCore::ScriptBridge *scriptBridge);
 
     int getIpcClientFd() const {
         return ipcClientFd_;
@@ -77,7 +79,7 @@ private:
     static WeexEnv *env_;
 
     bool isMultiProcess = true;
-    bool isUsingWson = false;
+    bool isUsingWson = true;
     // add for multiProcess;
     std::unique_ptr<WeexIPCClient> ipcClient_;
     std::unique_ptr<WeexJSServer> ipcServer_;

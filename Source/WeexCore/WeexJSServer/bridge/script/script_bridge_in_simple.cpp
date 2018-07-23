@@ -6,6 +6,7 @@
 #include "WeexCore/WeexJSServer/bridge/script/script_bridge_in_simple.h"
 #include "WeexCore/WeexJSServer/bridge/script/core_side_in_simple.h"
 #include "WeexCore/WeexJSServer/bridge/script/script_side_in_simple.h"
+#include "WeexCore/WeexJSServer/bridge/script/script_side_in_queue.h"
 #include "WeexCore/WeexJSServer/utils/WeexRuntime.h"
 namespace weex {
 namespace bridge {

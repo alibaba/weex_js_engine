@@ -17,6 +17,7 @@
 #include "WeexCore/WeexJSServer/utils/WeexRuntime.h"
 
 #include "WeexCore/WeexJSServer/object/WeexEnv.h"
+#include "WeexCore/WeexJSServer/bridge/script/script_side_in_queue.h"
 
 
 static WeexJSServer *server = nullptr;
@@ -60,13 +61,13 @@ extern "C" int serverMain(int argc, char **argv) {
     unsigned long fd;
     unsigned long fd_client = 0;
     unsigned long enableTrace;
-    if (argc != 3) {
+    if (argc != 4) {
         LOGE("argc is not correct");
         _exit(1);
     }
     fd = parseUL(argv[1]);
-    enableTrace = parseUL(argv[2]);
-//    fd_client = parseUL(argv[3]);
+    fd_client = parseUL(argv[2]);
+    enableTrace = parseUL(argv[3]);
     pthread_attr_t threadAttr;
     pthread_attr_init(&threadAttr);
     pthread_attr_setstacksize(&threadAttr, 10 * 1024 * 1024);
@@ -85,7 +86,7 @@ namespace weex {
             ScriptBridgeInMultiProcess *ScriptBridgeInMultiProcess::g_instance = NULL;
 
             ScriptBridgeInMultiProcess::ScriptBridgeInMultiProcess() {
-                set_script_side(new ScriptSideInSimple());
+                set_script_side(new ScriptSideInQueue());
                 set_core_side(new CoreSideInMultiProcess());
                 //  set_core_side(new CoreSideInSimple());
             }
@@ -199,9 +200,8 @@ namespace weex {
                     IPCArguments *arguments) {
                 //TODO change ScriptSide
                 LOGE("ScriptBridgeInMultiProcess::InitFramework");
-                static_cast<ScriptSideInSimple *>(Instance()->script_side())
-                        ->set_runtime(new WeexRuntime(Instance()));
-
+                static_cast<ScriptSideInQueue *>(Instance()->script_side())
+                        ->setTaskQueue(new WeexTaskQueue());
                 WeexEnv::env()->setScriptBridge(Instance());
 
                 // Source

@@ -10,6 +10,7 @@
 #include <IPCMessageJS.h>
 #include "WeexCore/WeexJSServer/ipc/ipc_server.h"
 #include <wson/wson.h>
+#include <WeexCore/WeexJSServer/object/WeexEnv.h>
 #include "core/layout/layout.h"
 
 namespace weex {
@@ -22,8 +23,10 @@ inline static void wson_push_type_char_array(wson_buffer *buffer,
 WXCoreSize PlatformSideInMultiProcess::InvokeMeasureFunction(
     const char *page_id, long render_ptr, float width, int width_measure_mode,
     float height, int height_measure_mode) {
-  IPCSender *sender = server_->getSender();
-  IPCSerializer *serializer = server_->getSerializer();
+  WeexIPCClient *pClient = WeexEnv::env()->ipcClient();
+  
+  IPCSender *sender = pClient->getSender();
+  IPCSerializer *serializer = pClient->getSerializer();
   serializer->setMsg(
       static_cast<uint32_t>(IPCMsgFromCoreToPlatform::INVOKE_MEASURE_FUNCTION));
   serializer->add(page_id, strlen(page_id));
@@ -43,8 +46,10 @@ WXCoreSize PlatformSideInMultiProcess::InvokeMeasureFunction(
 }
 void PlatformSideInMultiProcess::InvokeLayoutBefore(const char *page_id,
                                                     long render_ptr) {
-  IPCSender *sender = server_->getSender();
-  IPCSerializer *serializer = server_->getSerializer();
+  WeexIPCClient *pClient = WeexEnv::env()->ipcClient();
+  
+  IPCSender *sender = pClient->getSender();
+  IPCSerializer *serializer = pClient->getSerializer();
   serializer->setMsg(
       static_cast<uint32_t>(IPCMsgFromCoreToPlatform::INVOKE_LAYOUT_BEFORE));
   serializer->add(page_id, strlen(page_id));
@@ -55,8 +60,10 @@ void PlatformSideInMultiProcess::InvokeLayoutBefore(const char *page_id,
 void PlatformSideInMultiProcess::InvokeLayoutAfter(const char *page_id,
                                                    long render_ptr, float width,
                                                    float height) {
-  IPCSender *sender = server_->getSender();
-  IPCSerializer *serializer = server_->getSerializer();
+  WeexIPCClient *pClient = WeexEnv::env()->ipcClient();
+  
+  IPCSender *sender = pClient->getSender();
+  IPCSerializer *serializer = pClient->getSerializer();
   serializer->setMsg(
       static_cast<uint32_t>(IPCMsgFromCoreToPlatform::INVOKE_LAYOUT_AFTER));
   serializer->add(page_id, strlen(page_id));
@@ -68,8 +75,10 @@ void PlatformSideInMultiProcess::InvokeLayoutAfter(const char *page_id,
 }
 
 void PlatformSideInMultiProcess::SetJSVersion(const char *version) {
-  IPCSender *sender = server_->getSender();
-  IPCSerializer *serializer = server_->getSerializer();
+  WeexIPCClient *pClient = WeexEnv::env()->ipcClient();
+  
+  IPCSender *sender = pClient->getSender();
+  IPCSerializer *serializer = pClient->getSerializer();
   serializer->setMsg(
       static_cast<uint32_t>(IPCMsgFromCoreToPlatform::SET_JS_VERSION));
   serializer->add(version, strlen(version));
@@ -80,8 +89,10 @@ void PlatformSideInMultiProcess::SetJSVersion(const char *version) {
 void PlatformSideInMultiProcess::ReportException(const char *page_id,
                                                  const char *func,
                                                  const char *exception_string) {
-  IPCSender *sender = server_->getSender();
-  IPCSerializer *serializer = server_->getSerializer();
+  WeexIPCClient *pClient = WeexEnv::env()->ipcClient();
+  
+  IPCSender *sender = pClient->getSender();
+  IPCSerializer *serializer = pClient->getSerializer();
   serializer->setMsg(
       static_cast<uint32_t>(IPCMsgFromCoreToPlatform::REPORT_EXCEPTION));
   serializer->add(page_id, strlen(page_id));
@@ -103,8 +114,10 @@ void PlatformSideInMultiProcess::ReportNativeInitStatus(const char *status_code,
 int PlatformSideInMultiProcess::CallNative(const char *page_id,
                                            const char *task,
                                            const char *callback) {
-  IPCSender *sender = server_->getSender();
-  IPCSerializer *serializer = server_->getSerializer();
+  WeexIPCClient *pClient = WeexEnv::env()->ipcClient();
+  
+  IPCSender *sender = pClient->getSender();
+  IPCSerializer *serializer = pClient->getSerializer();
   serializer->setMsg(
       static_cast<uint32_t>(IPCMsgFromCoreToPlatform::CALL_NATIVE));
   serializer->add(page_id, strlen(page_id));
@@ -120,8 +133,10 @@ std::unique_ptr<IPCResult> PlatformSideInMultiProcess::CallNativeModule(
     const char *arguments, int arguments_length, const char *options,
     int options_length) {
   LOGE("CallNativeModule ipc");
-  IPCSender *sender = server_->getSender();
-  IPCSerializer *serializer = server_->getSerializer();
+  WeexIPCClient *pClient = WeexEnv::env()->ipcClient();
+  
+  IPCSender *sender = pClient->getSender();
+  IPCSerializer *serializer = pClient->getSerializer();
   serializer->setMsg(
       static_cast<uint32_t>(IPCMsgFromCoreToPlatform::CALL_NATIVE_MODULE));
   serializer->add(page_id, strlen(page_id));
@@ -142,8 +157,10 @@ void PlatformSideInMultiProcess::CallNativeComponent(
     const char *page_id, const char *ref, const char *method,
     const char *arguments, int arguments_length, const char *options,
     int options_length) {
-  IPCSender *sender = server_->getSender();
-  IPCSerializer *serializer = server_->getSerializer();
+  WeexIPCClient *pClient = WeexEnv::env()->ipcClient();
+  
+  IPCSender *sender = pClient->getSender();
+  IPCSerializer *serializer = pClient->getSerializer();
   serializer->setMsg(
       static_cast<uint32_t>(IPCMsgFromCoreToPlatform::CALL_NATIVE_COMPONENT));
   serializer->add(page_id, strlen(page_id));
@@ -159,8 +176,10 @@ void PlatformSideInMultiProcess::CallNativeComponent(
 
 void PlatformSideInMultiProcess::SetTimeout(const char *callback_id,
                                             const char *time) {
-  IPCSender *sender = server_->getSender();
-  IPCSerializer *serializer = server_->getSerializer();
+  WeexIPCClient *pClient = WeexEnv::env()->ipcClient();
+  
+  IPCSender *sender = pClient->getSender();
+  IPCSerializer *serializer = pClient->getSerializer();
   serializer->setMsg(
       static_cast<uint32_t>(IPCMsgFromCoreToPlatform::SET_TIMEOUT));
   serializer->add(callback_id, strlen(callback_id));
@@ -170,8 +189,10 @@ void PlatformSideInMultiProcess::SetTimeout(const char *callback_id,
 }
 
 void PlatformSideInMultiProcess::NativeLog(const char *str_array) {
-  IPCSender *sender = server_->getSender();
-  IPCSerializer *serializer = server_->getSerializer();
+  WeexIPCClient *pClient = WeexEnv::env()->ipcClient();
+  
+  IPCSender *sender = pClient->getSender();
+  IPCSerializer *serializer = pClient->getSerializer();
   serializer->setMsg(
       static_cast<uint32_t>(IPCMsgFromCoreToPlatform::NATIVE_LOG));
   serializer->add(str_array, strlen(str_array));
@@ -182,8 +203,10 @@ void PlatformSideInMultiProcess::NativeLog(const char *str_array) {
 int PlatformSideInMultiProcess::UpdateFinish(const char *page_id,
                                              const char *task,
                                              const char *callback) {
-  IPCSender *sender = server_->getSender();
-  IPCSerializer *serializer = server_->getSerializer();
+  WeexIPCClient *pClient = WeexEnv::env()->ipcClient();
+  
+  IPCSender *sender = pClient->getSender();
+  IPCSerializer *serializer = pClient->getSerializer();
   serializer->setMsg(
       static_cast<uint32_t>(IPCMsgFromCoreToPlatform::UPDATE_FINISH));
   serializer->add(page_id, strlen(page_id));
@@ -197,8 +220,10 @@ int PlatformSideInMultiProcess::UpdateFinish(const char *page_id,
 int PlatformSideInMultiProcess::RefreshFinish(const char *page_id,
                                               const char *task,
                                               const char *callback) {
-  IPCSender *sender = server_->getSender();
-  IPCSerializer *serializer = server_->getSerializer();
+  WeexIPCClient *pClient = WeexEnv::env()->ipcClient();
+  
+  IPCSender *sender = pClient->getSender();
+  IPCSerializer *serializer = pClient->getSerializer();
   serializer->setMsg(
       static_cast<uint32_t>(IPCMsgFromCoreToPlatform::REFRESH_FINISH));
   serializer->add(page_id, strlen(page_id));
@@ -211,8 +236,10 @@ int PlatformSideInMultiProcess::RefreshFinish(const char *page_id,
 
 int PlatformSideInMultiProcess::AddEvent(const char *page_id, const char *ref,
                                          const char *event) {
-  IPCSender *sender = server_->getSender();
-  IPCSerializer *serializer = server_->getSerializer();
+  WeexIPCClient *pClient = WeexEnv::env()->ipcClient();
+  
+  IPCSender *sender = pClient->getSender();
+  IPCSerializer *serializer = pClient->getSerializer();
   serializer->setMsg(
       static_cast<uint32_t>(IPCMsgFromCoreToPlatform::ADD_EVENT));
   serializer->add(page_id, strlen(page_id));
@@ -226,8 +253,10 @@ int PlatformSideInMultiProcess::AddEvent(const char *page_id, const char *ref,
 int PlatformSideInMultiProcess::RemoveEvent(const char *page_id,
                                             const char *ref,
                                             const char *event) {
-  IPCSender *sender = server_->getSender();
-  IPCSerializer *serializer = server_->getSerializer();
+  WeexIPCClient *pClient = WeexEnv::env()->ipcClient();
+  
+  IPCSender *sender = pClient->getSender();
+  IPCSerializer *serializer = pClient->getSerializer();
   serializer->setMsg(
       static_cast<uint32_t>(IPCMsgFromCoreToPlatform::REMOVE_EVENT));
   serializer->add(page_id, strlen(page_id));
@@ -244,8 +273,10 @@ int PlatformSideInMultiProcess::CreateBody(
     std::map<std::string, std::string> *attributes,
     std::set<std::string> *events, const WXCoreMargin &margins,
     const WXCorePadding &paddings, const WXCoreBorderWidth &borders) {
-  IPCSender *sender = server_->getSender();
-  IPCSerializer *serializer = server_->getSerializer();
+  WeexIPCClient *pClient = WeexEnv::env()->ipcClient();
+  
+  IPCSender *sender = pClient->getSender();
+  IPCSerializer *serializer = pClient->getSerializer();
   serializer->setMsg(
       static_cast<uint32_t>(IPCMsgFromCoreToPlatform::CREATE_BODY));
   serializer->add(page_id, strlen(page_id));
@@ -328,8 +359,11 @@ int PlatformSideInMultiProcess::AddElement(
     std::set<std::string> *events, const WXCoreMargin &margins,
     const WXCorePadding &paddings, const WXCoreBorderWidth &borders,
     bool willLayout) {
-  IPCSender *sender = server_->getSender();
-  IPCSerializer *serializer = server_->getSerializer();
+
+  WeexIPCClient *pClient = WeexEnv::env()->ipcClient();
+  
+  IPCSender *sender = pClient->getSender();
+  IPCSerializer *serializer = pClient->getSerializer();
   serializer->setMsg(
       static_cast<uint32_t>(IPCMsgFromCoreToPlatform::ADD_ELEMENT));
   serializer->add(page_id, strlen(page_id));
@@ -410,8 +444,10 @@ int PlatformSideInMultiProcess::AddElement(
 int PlatformSideInMultiProcess::Layout(const char *page_id, const char *ref,
                                        int top, int bottom, int left, int right,
                                        int height, int width, int index) {
-  IPCSender *sender = server_->getSender();
-  IPCSerializer *serializer = server_->getSerializer();
+  WeexIPCClient *pClient = WeexEnv::env()->ipcClient();
+  
+  IPCSender *sender = pClient->getSender();
+  IPCSerializer *serializer = pClient->getSerializer();
   serializer->setMsg(static_cast<uint32_t>(IPCMsgFromCoreToPlatform::LAYOUT));
   serializer->add(page_id, strlen(page_id));
   serializer->add(ref, strlen(ref));
@@ -433,8 +469,10 @@ int PlatformSideInMultiProcess::UpdateStyle(
     std::vector<std::pair<std::string, std::string>> *margin,
     std::vector<std::pair<std::string, std::string>> *padding,
     std::vector<std::pair<std::string, std::string>> *border) {
-  IPCSender *sender = server_->getSender();
-  IPCSerializer *serializer = server_->getSerializer();
+  WeexIPCClient *pClient = WeexEnv::env()->ipcClient();
+  
+  IPCSender *sender = pClient->getSender();
+  IPCSerializer *serializer = pClient->getSerializer();
   serializer->setMsg(
       static_cast<uint32_t>(IPCMsgFromCoreToPlatform::UPDATE_STYLE));
   serializer->add(page_id, strlen(page_id));
@@ -513,8 +551,10 @@ int PlatformSideInMultiProcess::UpdateStyle(
 int PlatformSideInMultiProcess::UpdateAttr(
     const char *page_id, const char *ref,
     std::vector<std::pair<std::string, std::string>> *attrs) {
-  IPCSender *sender = server_->getSender();
-  IPCSerializer *serializer = server_->getSerializer();
+  WeexIPCClient *pClient = WeexEnv::env()->ipcClient();
+  
+  IPCSender *sender = pClient->getSender();
+  IPCSerializer *serializer = pClient->getSerializer();
   serializer->setMsg(
       static_cast<uint32_t>(IPCMsgFromCoreToPlatform::UPDATE_ATTR));
   serializer->add(page_id, strlen(page_id));
@@ -543,8 +583,10 @@ int PlatformSideInMultiProcess::UpdateAttr(
 }
 
 int PlatformSideInMultiProcess::CreateFinish(const char *page_id) {
-  IPCSender *sender = server_->getSender();
-  IPCSerializer *serializer = server_->getSerializer();
+  WeexIPCClient *pClient = WeexEnv::env()->ipcClient();
+  
+  IPCSender *sender = pClient->getSender();
+  IPCSerializer *serializer = pClient->getSerializer();
   serializer->setMsg(
       static_cast<uint32_t>(IPCMsgFromCoreToPlatform::CREATE_FINISH));
   serializer->add(page_id, strlen(page_id));
@@ -555,8 +597,10 @@ int PlatformSideInMultiProcess::CreateFinish(const char *page_id) {
 
 int PlatformSideInMultiProcess::RemoveElement(const char *page_id,
                                               const char *ref) {
-  IPCSender *sender = server_->getSender();
-  IPCSerializer *serializer = server_->getSerializer();
+  WeexIPCClient *pClient = WeexEnv::env()->ipcClient();
+  
+  IPCSender *sender = pClient->getSender();
+  IPCSerializer *serializer = pClient->getSerializer();
   serializer->setMsg(
       static_cast<uint32_t>(IPCMsgFromCoreToPlatform::REMOVE_ELEMENT));
   serializer->add(page_id, strlen(page_id));
@@ -569,8 +613,10 @@ int PlatformSideInMultiProcess::RemoveElement(const char *page_id,
 int PlatformSideInMultiProcess::MoveElement(const char *page_id,
                                             const char *ref,
                                             const char *parent_ref, int index) {
-  IPCSender *sender = server_->getSender();
-  IPCSerializer *serializer = server_->getSerializer();
+  WeexIPCClient *pClient = WeexEnv::env()->ipcClient();
+  
+  IPCSender *sender = pClient->getSender();
+  IPCSerializer *serializer = pClient->getSerializer();
   serializer->setMsg(
       static_cast<uint32_t>(IPCMsgFromCoreToPlatform::MOVE_ELEMENT));
   serializer->add(page_id, strlen(page_id));
@@ -584,8 +630,10 @@ int PlatformSideInMultiProcess::MoveElement(const char *page_id,
 
 int PlatformSideInMultiProcess::AppendTreeCreateFinish(const char *page_id,
                                                        const char *ref) {
-  IPCSender *sender = server_->getSender();
-  IPCSerializer *serializer = server_->getSerializer();
+  WeexIPCClient *pClient = WeexEnv::env()->ipcClient();
+  
+  IPCSender *sender = pClient->getSender();
+  IPCSerializer *serializer = pClient->getSerializer();
   serializer->setMsg(static_cast<uint32_t>(
       IPCMsgFromCoreToPlatform::APPEND_TREE_CREATE_FINISH));
   serializer->add(page_id, strlen(page_id));
@@ -598,8 +646,10 @@ int PlatformSideInMultiProcess::AppendTreeCreateFinish(const char *page_id,
 int PlatformSideInMultiProcess::HasTransitionPros(
     const char *page_id, const char *ref,
     std::vector<std::pair<std::string, std::string>> *style) {
-  IPCSender *sender = server_->getSender();
-  IPCSerializer *serializer = server_->getSerializer();
+  WeexIPCClient *pClient = WeexEnv::env()->ipcClient();
+  
+  IPCSender *sender = pClient->getSender();
+  IPCSerializer *serializer = pClient->getSerializer();
   serializer->setMsg(
       static_cast<uint32_t>(IPCMsgFromCoreToPlatform::HAS_TRANSITION_PROS));
   serializer->add(page_id, strlen(page_id));
@@ -630,8 +680,10 @@ int PlatformSideInMultiProcess::HasTransitionPros(
 
 void PlatformSideInMultiProcess::PostMessage(const char *vm_id,
                                              const char *data) {
-  IPCSender *sender = server_->getSender();
-  IPCSerializer *serializer = server_->getSerializer();
+  WeexIPCClient *pClient = WeexEnv::env()->ipcClient();
+  
+  IPCSender *sender = pClient->getSender();
+  IPCSerializer *serializer = pClient->getSerializer();
   serializer->setMsg(
       static_cast<uint32_t>(IPCMsgFromCoreToPlatform::POST_MESSAGE));
   serializer->add(vm_id, strlen(vm_id));
@@ -644,8 +696,10 @@ void PlatformSideInMultiProcess::DispatchMessage(const char *client_id,
                                                  const char *vm_id,
                                                  const char *data,
                                                  const char *callback) {
-  IPCSender *sender = server_->getSender();
-  IPCSerializer *serializer = server_->getSerializer();
+  WeexIPCClient *pClient = WeexEnv::env()->ipcClient();
+  
+  IPCSender *sender = pClient->getSender();
+  IPCSerializer *serializer = pClient->getSerializer();
   serializer->setMsg(
       static_cast<uint32_t>(IPCMsgFromCoreToPlatform::DISPATCH_MESSAGE));
   serializer->add(client_id, strlen(client_id));

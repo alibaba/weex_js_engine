@@ -5,13 +5,17 @@
 #include "WeexRuntime.h"
 #include "WeexCore/WeexJSServer/bridge/script/script_bridge_in_multi_so.h"
 #include "WeexCore/WeexJSServer/bridge/script/core_side_in_multi_process.h"
+#include "WeexCore/WeexJSServer/object/WeexEnv.h"
 
 using namespace JSC;
 using namespace WTF;
 using namespace WEEXICU;
 
 WeexRuntime::WeexRuntime(bool isMultiProgress) : is_multi_process_(isMultiProgress), script_bridge_(nullptr) {
-    weexObjectHolder.reset(new WeexObjectHolder(isMultiProgress));
+
+    WeexEnv::env()->setMultiProcess(isMultiProgress);
+
+    weexObjectHolder.reset(new WeexObjectHolder());
     LOGE("WeexRuntime is running and mode is %s", isMultiProgress ? "multiProcess" : "singleProcess");
 }
 
@@ -42,7 +46,7 @@ int WeexRuntime::initAppFrameworkMultiProcess(const String &instanceId, const St
     auto k = instanceId.utf8().data();
     auto pHolder = getLightAppObjectHolder(instanceId);
     if (pHolder == nullptr) {
-        auto holder = new WeexObjectHolder(true);
+        auto holder = new WeexObjectHolder();
         holder->initFromIPCArguments(arguments, 2, true);
         weexLiteAppObjectHolderMap[k] = holder;
     }
@@ -56,7 +60,7 @@ int WeexRuntime::initAppFramework(const String &instanceId, const String &appFra
     auto k = instanceId.utf8().data();
     auto pHolder = getLightAppObjectHolder(instanceId);
     if (pHolder == nullptr) {
-        auto holder = new WeexObjectHolder(true);
+        auto holder = new WeexObjectHolder();
         holder->initFromParams(params, true);
         weexLiteAppObjectHolderMap[k] = holder;
     }
@@ -999,13 +1003,6 @@ int WeexRuntime::exeTimerFunction(const String &instanceId, JSC::JSValue timerFu
     return 0;
 }
 
-void WeexRuntime::setWeexJSServer(WeexJSServer *server) {
-    m_server = server;
-}
-
-void WeexRuntime::setWeexIPCClient(WeexIPCClient *ipcClient) {
-    m_client = ipcClient;
-}
 
 
 

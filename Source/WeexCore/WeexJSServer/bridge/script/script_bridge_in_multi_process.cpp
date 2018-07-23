@@ -16,6 +16,9 @@
 #include "WeexCore/WeexJSServer/utils/Utils.h"
 #include "WeexCore/WeexJSServer/utils/WeexRuntime.h"
 
+#include "WeexCore/WeexJSServer/object/WeexEnv.h"
+
+
 static WeexJSServer *server = nullptr;
 
 static unsigned long parseUL(const char *s) {
@@ -39,7 +42,8 @@ static void *threadEntry(void *_td) {
     ThreadData *td = static_cast<ThreadData *>(_td);
     //  server = new weex::IPCServer(static_cast<int>(td->fd),
     //  static_cast<bool>(td->enableTrace));
-    server = new WeexJSServer(static_cast<int>(td->fd), static_cast<int>(td->fd_client), static_cast<bool>(td->enableTrace));
+    server = new WeexJSServer(static_cast<int>(td->fd), static_cast<int>(td->fd_client),
+                              static_cast<bool>(td->enableTrace));
     // Register handler for bridge
     weex::bridge::js::ScriptBridgeInMultiProcess::RegisterIPCCallback(server->getHandler());
     nice(6);
@@ -193,9 +197,13 @@ namespace weex {
 
             std::unique_ptr<IPCResult> ScriptBridgeInMultiProcess::InitFramework(
                     IPCArguments *arguments) {
+                //TODO change ScriptSide
                 LOGE("ScriptBridgeInMultiProcess::InitFramework");
                 static_cast<ScriptSideInSimple *>(Instance()->script_side())
                         ->set_runtime(new WeexRuntime(Instance()));
+
+                WeexEnv::env()->setScriptBridge(Instance());
+
                 // Source
                 const char *source = arguments->getByteArray(0)->content;
                 // Params

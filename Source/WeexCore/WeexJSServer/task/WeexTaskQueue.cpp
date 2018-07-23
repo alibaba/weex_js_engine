@@ -9,11 +9,9 @@
 void WeexTaskQueue::run(WeexTask *task) {
     if (this->weexRuntime == nullptr) {
         this->weexRuntime = new WeexRuntime(WeexEnv::env()->scriptBridge(), true);
-
-        WeexIPCClient *client = new WeexIPCClient(WeexEnv::env()->getIpcClientFd());
-        this->weexRuntime->setWeexIPCClient(client);
-        close(WeexEnv::env()->getIpcClientFd());
-
+        // init IpcClient in Js Thread
+        auto *client = new WeexIPCClient(WeexEnv::env()->getIpcClientFd());
+        WeexEnv::env()->setIpcClient(client);
     }
     task->run(weexRuntime);
 }

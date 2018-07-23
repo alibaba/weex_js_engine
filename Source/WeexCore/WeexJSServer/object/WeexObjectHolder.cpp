@@ -3,6 +3,7 @@
 //
 
 #include "WeexObjectHolder.h"
+#include "WeexCore/WeexJSServer/object/WeexEnv.h"
 
 void WeexObjectHolder::initFromIPCArguments(IPCArguments *arguments, size_t startCount, bool forAppContext) {
     size_t count = arguments->getCount();
@@ -37,7 +38,7 @@ void WeexObjectHolder::initFromIPCArguments(IPCArguments *arguments, size_t star
 }
 
 void WeexObjectHolder::initFromParams(std::vector<INIT_FRAMEWORK_PARAMS *> params, bool forAppContext) {
-    if (!WEEXICU::initICUEnv(m_isMultiProgress)) {
+    if (!WEEXICU::initICUEnv(WeexEnv::env()->multiProcess())) {
         LOGE("failed to init ICUEnv single process");
         // return false;
     }
@@ -51,7 +52,7 @@ void WeexObjectHolder::initFromParams(std::vector<INIT_FRAMEWORK_PARAMS *> param
     JSC::Wasm::enableFastMemory();
 #endif
     m_globalVM = std::move(VM::create(LargeHeap));
-    VM & vm = *m_globalVM.get();
+    VM &vm = *m_globalVM.get();
     JSLockHolder locker(&vm);
     WeexGlobalObject *globalObject = WeexGlobalObject::create(vm, WeexGlobalObject::createStructure(vm, jsNull()));
     globalObject->initWxEnvironment(params, forAppContext, true);
@@ -64,12 +65,11 @@ void WeexObjectHolder::initFromParams(std::vector<INIT_FRAMEWORK_PARAMS *> param
     wson::init(&vm);
 }
 
-WeexObjectHolder::WeexObjectHolder(bool isMultiProgress) {
-    this->m_isMultiProgress = isMultiProgress;
+WeexObjectHolder::WeexObjectHolder() {
 }
 
 WeexGlobalObject *WeexObjectHolder::cloneWeexObject(bool initContext, bool forAppContext) {
-    VM & vm = *(m_globalVM.get());
+    VM &vm = *(m_globalVM.get());
     JSLockHolder locker(&vm);
     auto *temp_object = WeexGlobalObject::create(vm,
                                                  WeexGlobalObject::createStructure(vm, jsNull()));
@@ -87,7 +87,7 @@ WeexGlobalObject *WeexObjectHolder::cloneWeexObject(bool initContext, bool forAp
 }
 
 WeexObjectHolder::~WeexObjectHolder() {
-    VM & vm = *(m_globalVM.get());
+    VM &vm = *(m_globalVM.get());
     wson::destory();
     JSLockHolder locker(&vm);
     vm.heap.collectAllGarbage();

@@ -18,8 +18,6 @@ struct WeexJSServer::WeexJSServerImpl {
     std::unique_ptr<IPCHandler> handler;
     std::unique_ptr<IPCListener> listener;
     std::unique_ptr<IPCSerializer> serializer;
-
-    std::map<std::string, std::string> mInitAppContextPrams;
 };
 
 WeexJSServer::WeexJSServerImpl::WeexJSServerImpl(int serverFd, int clientFd, bool enableTrace) {
@@ -27,7 +25,7 @@ WeexJSServer::WeexJSServerImpl::WeexJSServerImpl(int serverFd, int clientFd, boo
     WeexEnv::env()->setIpcClientFd(clientFd);
     WeexEnv::env()->setEnableTrace(enableTrace);
 
-    int _fd = WeexEnv::env()->getIpcServerFd();
+    int _fd = serverFd;
     void *base = mmap(nullptr, IPCFutexPageQueue::ipc_size, PROT_READ | PROT_WRITE, MAP_SHARED, _fd, 0);
     if (base == MAP_FAILED) {
         int _errno = errno;

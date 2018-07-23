@@ -2,6 +2,7 @@
 // Created by yxp on 2018/6/15.
 //
 
+#include <WeexCore/WeexJSServer/object/WeexEnv.h>
 #include "WeexCore/WeexJSServer/bridge/script/script_bridge_in_multi_so.h"
 #include "WeexCore/WeexJSServer/bridge/platform/platform_bridge_in_multi_so.h"
 #include "WeexCore/WeexJSServer/bridge/script/core_side_in_multi_process.h"
@@ -52,6 +53,9 @@ int ScriptBridgeInMultiSo::InitFramework(
       PlatformBridgeInMultiSo::Instance());
   static_cast<ScriptSideInSimple *>(Instance()->script_side())
       ->set_runtime(new WeexRuntime(Instance(), false));
+
+  WeexEnv::env()->setScriptBridge(Instance());
+
   return Instance()->script_side()->InitFramework(script, params);
 }
 

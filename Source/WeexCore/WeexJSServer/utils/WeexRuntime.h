@@ -15,8 +15,6 @@ namespace WeexCore {
 class WeexRuntime {
 
 public:
-    WeexJSServer *m_server{nullptr};
-    WeexIPCClient *m_client{nullptr};
     WeexCore::ScriptBridge* script_bridge_;
     std::unique_ptr<WeexObjectHolder> weexObjectHolder;
     std::map<std::string, WeexObjectHolder *> weexLiteAppObjectHolderMap;
@@ -25,11 +23,7 @@ public:
 
     explicit WeexRuntime(WeexCore::ScriptBridge *script_bridge, bool isMultiProgress = true);
 
-    void setWeexJSServer(WeexJSServer *server);
-    void setWeexIPCClient(WeexIPCClient *ipcClient);
-
     int initFramework(IPCArguments *arguments);
-
     int initFramework(const String &script, std::vector<INIT_FRAMEWORK_PARAMS *> params);
 
     int initAppFrameworkMultiProcess(const String &instanceId, const String &appFramework, IPCArguments *arguments);

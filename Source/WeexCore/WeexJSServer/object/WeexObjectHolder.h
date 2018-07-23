@@ -18,9 +18,8 @@ public:
 
     ~WeexObjectHolder();
 
-    bool m_isMultiProgress;
 
-    explicit WeexObjectHolder(bool isMultiProgress);
+    explicit WeexObjectHolder();
 
     void initFromIPCArguments(IPCArguments *arguments, size_t startCount, bool forAppContext);
 

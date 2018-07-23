@@ -20,28 +20,33 @@ public:
         return env_;
     }
 
-    WeexIPCClient *ipcClient() { return ipcClient_.get(); }
+    WeexIPCClient *ipcClient();
 
-    WeexJSServer *ipcServer() { return ipcServer_.get(); }
-
-    bool multiProcess() { return isMultiProcess; };
-
-    void setMultiProcess(bool multiProcess) { isMultiProcess = multiProcess; }
+    void setIpcClient(WeexIPCClient *ipcClient);
 
 
-    bool useWson() { return isUsingWson; }
+    WeexJSServer *ipcServer();
 
-    void setUseWson(bool useWson) { isUsingWson = useWson; }
+    void setIpcServer(WeexJSServer * ipcServer);
+
+    bool multiProcess() ;
+
+    void setMultiProcess(bool multiProcess) ;
 
 
-    TimerQueue *timerQueue() { return weexTimerQueue_.get(); }
+    bool useWson() ;
 
-    void setTimerQueue(TimerQueue *timerQueue) { weexTimerQueue_.reset(timerQueue); };
+    void setUseWson(bool useWson) ;
 
 
-    WeexCore::ScriptBridge *scriptBridge() { return scriptBridge_; }
+    TimerQueue *timerQueue() ;
 
-    void setScriptBridge(WeexCore::ScriptBridge *scriptBridge) { scriptBridge_ = scriptBridge; }
+    void setTimerQueue(TimerQueue *timerQueue) ;
+
+
+    WeexCore::ScriptBridge *scriptBridge() ;
+
+    void setScriptBridge(WeexCore::ScriptBridge *scriptBridge) ;
 
     int getIpcClientFd() const {
         return ipcClientFd_;

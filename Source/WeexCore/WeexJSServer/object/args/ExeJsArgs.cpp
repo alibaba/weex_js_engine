@@ -6,12 +6,9 @@
 #include "../../utils/Utils.h"
 
 ExeJsArgs::ExeJsArgs(std::vector<VALUE_WITH_TYPE *> param) {
-    LOGE("dyy   ExeJsArgs is running  value size is %d", param.size());
     for (auto paramsObject : param) {
         auto pType = copyValueToSelf(paramsObject);
-        LOGE("dyy   ExeJsArgs is copying value");
         if (pType != nullptr) {
-            LOGE("dyy  ExeJsArgs is copying push and address is %x", &(this->param));
             this->param.push_back(pType);
         }
 

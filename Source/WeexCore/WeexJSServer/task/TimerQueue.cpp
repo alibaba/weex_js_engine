@@ -6,7 +6,6 @@
 
 static void *startThread(void *td) {
     auto *self = static_cast<TimerQueue *>(td);
-    LOGE("TimerQueue startThread");
     self->start();
 }
 
@@ -91,7 +90,6 @@ TimerTask *TimerQueue::getTask() {
             threadLocker.unlock();
             continue;
         }
-        LOGE("task is going to be throw %lu", nextTaskWhen / MICROSEC);
         assert(!taskQueue_.empty());
         TimerTask *header = timerQueue_.front();
         nextTaskWhen = header->when;

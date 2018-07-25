@@ -14,6 +14,7 @@
 #include "WeexCore/WeexJSServer/utils/LogUtils.h"
 #include "WeexCore/WeexJSServer/utils/Utils.h"
 #include "WeexCore/WeexJSServer/object/WeexEnv.h"
+#include <unistd.h>
 
 namespace weex {
 namespace bridge {
@@ -134,15 +135,18 @@ void CoreSideInMultiProcess::SetTimeout(const char *callback_id,
 }
 
 void CoreSideInMultiProcess::NativeLog(const char *str_array) {
-  LOGE("CoreSideInMultiProcess::NativeLog");
+  LOGE("WeexCore CoreSideInMultiProcess::NativeLog1 %d",gettid());
   IPCSender *sender = WeexEnv::env()->ipcClient()->getSender();
+    LOGE("WeexCore CoreSideInMultiProcess::NativeLog2");
   IPCSerializer *serializer = WeexEnv::env()->ipcClient()->getSerializer();
-
+    LOGE("WeexCore CoreSideInMultiProcess::NativeLog3");
   serializer->setMsg(static_cast<uint32_t>(IPCProxyMsg::NATIVELOG) |
                      MSG_FLAG_ASYNC);
   serializer->add(str_array, strlen(str_array));
   std::unique_ptr<IPCBuffer> buffer = serializer->finish();
+  LOGE("WeexCore CoreSideInMultiProcess::NativeLog begin send");
   sender->send(buffer.get());
+  LOGE("WeexCore CoreSideInMultiProcess::NativeLog Finish");
 }
 
 void CoreSideInMultiProcess::CreateBody(const char *page_id,

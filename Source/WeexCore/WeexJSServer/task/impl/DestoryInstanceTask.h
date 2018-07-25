@@ -10,7 +10,7 @@
 
 class DestoryInstanceTask :public  WeexTask {
 public:
-    DestoryInstanceTask(const String &instanceId);
+    explicit DestoryInstanceTask(const String &instanceId);
 
 
     void run(WeexRuntime *runtime) override;

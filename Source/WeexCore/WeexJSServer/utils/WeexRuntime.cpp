@@ -288,7 +288,6 @@ int WeexRuntime::callJSOnAppContext(IPCArguments *arguments) {
         if (function.isEmpty()) {
             LOGE("Weex jsserver IPCJSMsg::CALLJSONAPPCONTEXT js funtion is empty");
         }
-        LOGE("callJSOnAppContext is running and id is %s will call js", instanceId.utf8().data());
         JSValue ret = call(state, function, callType, callData, globalObject, obj, returnedException);
         // LOGE("Weex jsserver IPCJSMsg::CALLJSONAPPCONTEXT end");
         if (returnedException) {

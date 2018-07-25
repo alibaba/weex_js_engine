@@ -38,7 +38,7 @@ void CoreSideInMultiSo::CallNativeComponent(const char *page_id,
 void CoreSideInMultiSo::AddElement(const char *page_id, const char *parent_ref,
                                    const char *dom_str, int dom_str_length,
                                    const char *index_str) {
-  functions_exposed_by_core_->funcCallAddElement(page_id, parent_ref, dom_str,
+  functions_exposed_by_core_->funcCallAddElement(page_id, parent_ref, dom_str, dom_str_length,
                                                  index_str);
 }
 
@@ -52,14 +52,14 @@ void CoreSideInMultiSo::NativeLog(const char *str_array) {
 
 void CoreSideInMultiSo::CreateBody(const char *page_id, const char *dom_str,
                                    int dom_str_length) {
-  functions_exposed_by_core_->funcCallCreateBody(page_id, dom_str);
+  functions_exposed_by_core_->funcCallCreateBody(page_id, dom_str, dom_str_length);
 }
 
 int CoreSideInMultiSo::UpdateFinish(const char *page_id, const char *task,
                                     int task_length, const char *callback,
                                     int callback_length) {
-  return functions_exposed_by_core_->funcCallUpdateFinish(page_id, task,
-                                                          callback);
+  return functions_exposed_by_core_->funcCallUpdateFinish(page_id, task, task_length,
+                                                          callback, callback_length);
 }
 
 void CoreSideInMultiSo::CreateFinish(const char *page_id) {
@@ -74,12 +74,12 @@ int CoreSideInMultiSo::RefreshFinish(const char *page_id, const char *task,
 
 void CoreSideInMultiSo::UpdateAttrs(const char *page_id, const char *ref,
                                     const char *data, int data_length) {
-  functions_exposed_by_core_->funcCallUpdateAttrs(page_id, ref, data);
+  functions_exposed_by_core_->funcCallUpdateAttrs(page_id, ref, data, data_length);
 }
 
 void CoreSideInMultiSo::UpdateStyle(const char *page_id, const char *ref,
                                     const char *data, int data_length) {
-  functions_exposed_by_core_->funcCallUpdateStyle(page_id, ref, data);
+  functions_exposed_by_core_->funcCallUpdateStyle(page_id, ref, data, data_length);
 }
 
 void CoreSideInMultiSo::RemoveElement(const char *page_id, const char *ref) {

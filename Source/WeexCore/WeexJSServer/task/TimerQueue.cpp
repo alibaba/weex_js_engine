@@ -36,6 +36,7 @@ void TimerQueue::start() {
 TimerQueue::TimerQueue(WeexTaskQueue *taskQueue) {
     nextTaskWhen = 0;
     this->weexTaskQueue = taskQueue;
+    init();
 }
 
 

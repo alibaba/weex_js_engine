@@ -12,9 +12,6 @@ using namespace WTF;
 using namespace WEEXICU;
 
 WeexRuntime::WeexRuntime(bool isMultiProgress) : is_multi_process_(isMultiProgress), script_bridge_(nullptr) {
-
-    WeexEnv::env()->setMultiProcess(isMultiProgress);
-
     weexObjectHolder.reset(new WeexObjectHolder());
     LOGE("WeexRuntime is running and mode is %s", isMultiProgress ? "multiProcess" : "singleProcess");
 }

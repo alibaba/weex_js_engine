@@ -201,8 +201,8 @@ void PlatformSideInMultiProcess::NativeLog(const char *str_array) {
 }
 
 int PlatformSideInMultiProcess::UpdateFinish(const char *page_id,
-                                             const char *task,
-                                             const char *callback) {
+                                             const char *task, int taskLen,
+                                             const char *callback, int callbackLen) {
   WeexIPCClient *pClient = WeexEnv::env()->ipcClient();
   
   IPCSender *sender = pClient->getSender();

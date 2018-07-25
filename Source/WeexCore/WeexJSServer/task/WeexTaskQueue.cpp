@@ -9,14 +9,15 @@
 void WeexTaskQueue::run(WeexTask *task) {
     if (this->weexRuntime == nullptr) {
         LOGE("WeexCore init runtime %d fd1 = %d, fd2 = %d",gettid(),WeexEnv::env()->getIpcServerFd(),WeexEnv::env()->getIpcClientFd());
-        this->weexRuntime = new WeexRuntime(WeexEnv::env()->scriptBridge(), true);
+        this->weexRuntime = new WeexRuntime(WeexEnv::env()->scriptBridge(), WeexEnv::env()->multiProcess());
         // init IpcClient in Js Thread
-        auto *client = new WeexIPCClient(WeexEnv::env()->getIpcClientFd());
-        WeexEnv::env()->setIpcClient(client);
+        if(WeexEnv::env()->multiProcess()) {
+            auto *client = new WeexIPCClient(WeexEnv::env()->getIpcClientFd());
+            WeexEnv::env()->setIpcClient(client);
+        }
+
     }
-    TimerQueue *queue = new TimerQueue(this);
-    queue->init();
-    WeexEnv::env()->setTimerQueue(queue);
+    WeexEnv::env()->setTimerQueue(new TimerQueue(this));
     task->run(weexRuntime);
 }
 
@@ -33,15 +34,12 @@ int WeexTaskQueue::addTask(WeexTask *task) {
 WeexTask *WeexTaskQueue::getTask() {
     WeexTask *task = nullptr;
     while (task == nullptr) {
-//        pthread_mutex_lock(&mutex_);
         threadLocker.lock();
         while (taskQueue_.empty() || !isInitOk) {
-//            pthread_cond_wait(&condition_, &mutex_);
             threadLocker.wait();
         }
 
         if (taskQueue_.empty()) {
-//            pthread_mutex_unlock(&mutex_);
             threadLocker.unlock();
             continue;
         }
@@ -49,7 +47,6 @@ WeexTask *WeexTaskQueue::getTask() {
         assert(!taskQueue_.empty());
         task = taskQueue_.front();
         taskQueue_.pop_front();
-//        pthread_mutex_unlock(&mutex_);
         threadLocker.unlock();
     }
 

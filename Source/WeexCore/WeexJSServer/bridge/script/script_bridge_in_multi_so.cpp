@@ -11,6 +11,7 @@
 #include "WeexCore/WeexJSServer/bridge/script/script_side_in_simple.h"
 #include "WeexCore/WeexJSServer/utils/WeexRuntime.h"
 #include "core/manager/weex_core_manager.h"
+#include "WeexCore/WeexJSServer/bridge/script/script_side_in_queue.h"
 
 static FunctionsExposedByCore *g_functions_exposed_by_core = nullptr;
 
@@ -26,7 +27,7 @@ namespace js {
 ScriptBridgeInMultiSo *ScriptBridgeInMultiSo::g_instance = NULL;
 
 ScriptBridgeInMultiSo::ScriptBridgeInMultiSo() {
-  set_script_side(new ScriptSideInSimple());
+  set_script_side(new ScriptSideInQueue());
 //  set_core_side(new CoreSideInSimple());
     set_core_side(new CoreSideInMultiSo(g_functions_exposed_by_core));
   //  set_core_side(new MultiProcessCoreSide());
@@ -51,8 +52,11 @@ int ScriptBridgeInMultiSo::InitFramework(
     const char *script, std::vector<INIT_FRAMEWORK_PARAMS *> params) {
   WeexCore::WeexCoreManager::getInstance()->setPlatformBridge(
       PlatformBridgeInMultiSo::Instance());
-  static_cast<ScriptSideInSimple *>(Instance()->script_side())
-      ->set_runtime(new WeexRuntime(Instance(), false));
+
+    WeexEnv::env()->setMultiProcess(false);
+
+  static_cast<ScriptSideInQueue *>(Instance()->script_side())
+          ->setTaskQueue(new WeexTaskQueue());
 
   WeexEnv::env()->setScriptBridge(Instance());
 

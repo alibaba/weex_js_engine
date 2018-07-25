@@ -115,7 +115,7 @@ int CoreSideInSimple::UpdateFinish(const char *page_id, const char *task,
   return WeexCoreManager::getInstance()
       ->getPlatformBridge()
       ->platform_side()
-      ->UpdateFinish(page_id, task, callback);
+      ->UpdateFinish(page_id, task,task_length, callback,callback_length);
 }
 
 void CoreSideInSimple::CreateFinish(const char *page_id) {

@@ -78,8 +78,8 @@ public:
 private:
     static WeexEnv *env_;
 
-    bool isMultiProcess = true;
-    bool isUsingWson = true;
+    volatile bool isMultiProcess = true;
+    volatile bool isUsingWson = true;
     // add for multiProcess;
     std::unique_ptr<WeexIPCClient> ipcClient_;
     std::unique_ptr<WeexJSServer> ipcServer_;
@@ -89,9 +89,9 @@ private:
     WeexCore::ScriptBridge *scriptBridge_;
 
 
-    int ipcClientFd_;
-    int ipcServerFd_;
-    bool enableTrace_;
+    volatile int ipcClientFd_;
+    volatile int ipcServerFd_;
+    volatile bool enableTrace_;
 };
 
 

@@ -76,9 +76,9 @@ void PlatformSideInMultiSo::NativeLog(const char *str_array) {
   platform_expose_functions_->native_log(str_array);
 }
 
-int PlatformSideInMultiSo::UpdateFinish(const char *page_id, const char *task,
-                                        const char *callback) {
-  return platform_expose_functions_->update_finish(page_id, task, callback);
+int PlatformSideInMultiSo::UpdateFinish(const char *page_id, const char *task, int taskLen,
+                                        const char* callback, int callbackLen) {
+  return platform_expose_functions_->update_finish(page_id, task,taskLen, callback,callbackLen);
 }
 
 int PlatformSideInMultiSo::RefreshFinish(const char *page_id, const char *task,

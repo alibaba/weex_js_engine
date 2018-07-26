@@ -5,6 +5,7 @@
 #ifndef WEEXV8_MULTI_PROCESS_PLATFORM_SIDE_H
 #define WEEXV8_MULTI_PROCESS_PLATFORM_SIDE_H
 
+#include <WeexCore/WeexJSServer/object/WeexIPCClient.h>
 #include "core/bridge/platform_bridge.h"
 using namespace WeexCore;
 class WeexJSServer;
@@ -14,6 +15,7 @@ class PlatformSideInMultiProcess : public WeexCore::PlatformBridge::PlatformSide
   PlatformSideInMultiProcess() {}
   virtual ~PlatformSideInMultiProcess() {}
   inline void set_server(WeexJSServer* server) { server_ = server; }
+  inline void set_client(WeexIPCClient* client) {client_ = client; }
   WXCoreSize InvokeMeasureFunction(const char* page_id, long render_ptr,
                                    float width, int width_measure_mode,
                                    float height,
@@ -92,6 +94,7 @@ class PlatformSideInMultiProcess : public WeexCore::PlatformBridge::PlatformSide
 
  private:
   WeexJSServer* server_;
+  WeexIPCClient* client_;
   DISALLOW_COPY_AND_ASSIGN(PlatformSideInMultiProcess);
 };
 

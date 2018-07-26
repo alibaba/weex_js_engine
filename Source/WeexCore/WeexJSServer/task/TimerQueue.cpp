@@ -75,7 +75,6 @@ TimerTask *TimerQueue::getTask() {
     while (task == nullptr) {
         threadLocker.lock();
         while (timerQueue_.empty() || microTime() < nextTaskWhen) {
-            //TODO 休眠超时
             if (timerQueue_.empty()) {
                 threadLocker.wait();
             } else {

@@ -6,6 +6,11 @@
 #include "WeexTaskQueue.h"
 #include <WeexCore/WeexJSServer/object/WeexEnv.h>
 #include <unistd.h>
+#include <WeexCore/WeexJSServer/bridge/script/script_bridge_in_multi_process.h>
+#include <WeexCore/WeexJSServer/bridge/script/core_side_in_multi_process.h>
+#include <WeexCore/WeexJSServer/bridge/platform/platform_bridge_in_multi_process.h>
+#include <WeexCore/WeexJSServer/bridge/platform/platform_side_multi_process.h>
+
 void WeexTaskQueue::run(WeexTask *task) {
     if (this->weexRuntime == nullptr) {
         LOGE("WeexCore init runtime %d fd1 = %d, fd2 = %d",gettid(),WeexEnv::env()->getIpcServerFd(),WeexEnv::env()->getIpcClientFd());
@@ -14,6 +19,9 @@ void WeexTaskQueue::run(WeexTask *task) {
         if(WeexEnv::env()->multiProcess()) {
             auto *client = new WeexIPCClient(WeexEnv::env()->getIpcClientFd());
             WeexEnv::env()->setIpcClient(client);
+
+            static_cast<weex::bridge::js::CoreSideInMultiProcess *>(weex::bridge::js::ScriptBridgeInMultiProcess::Instance()->core_side())->set_ipc_client(client);;
+            static_cast<weex::PlatformSideInMultiProcess *>(weex::PlatformBridgeInMultiProcess::Instance()->platform_side())->set_client(client);
         }
 
     }

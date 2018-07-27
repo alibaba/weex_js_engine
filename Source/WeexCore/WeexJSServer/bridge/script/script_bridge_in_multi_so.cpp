@@ -53,12 +53,10 @@ int ScriptBridgeInMultiSo::InitFramework(
   WeexCore::WeexCoreManager::getInstance()->setPlatformBridge(
       PlatformBridgeInMultiSo::Instance());
 
-    WeexEnv::env()->setMultiProcess(false);
-
   static_cast<ScriptSideInQueue *>(Instance()->script_side())
-          ->setTaskQueue(new WeexTaskQueue());
+          ->setTaskQueue(new WeexTaskQueue(false));
 
-  WeexEnv::env()->setScriptBridge(Instance());
+  WeexEnv::getEnv()->setScriptBridge(Instance());
 
   return Instance()->script_side()->InitFramework(script, params);
 }

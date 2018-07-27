@@ -38,7 +38,7 @@ void WeexObjectHolder::initFromIPCArguments(IPCArguments *arguments, size_t star
 }
 
 void WeexObjectHolder::initFromParams(std::vector<INIT_FRAMEWORK_PARAMS *> params, bool forAppContext) {
-    if (!WEEXICU::initICUEnv(WeexEnv::env()->multiProcess())) {
+    if (!WEEXICU::initICUEnv(isMultiProgress)) {
         LOGE("failed to init ICUEnv single process");
         // return false;
     }
@@ -65,7 +65,8 @@ void WeexObjectHolder::initFromParams(std::vector<INIT_FRAMEWORK_PARAMS *> param
     wson::init(&vm);
 }
 
-WeexObjectHolder::WeexObjectHolder() {
+WeexObjectHolder::WeexObjectHolder(bool isMultiProgress) {
+    this->isMultiProgress = isMultiProgress;
 }
 
 WeexGlobalObject *WeexObjectHolder::cloneWeexObject(bool initContext, bool forAppContext) {

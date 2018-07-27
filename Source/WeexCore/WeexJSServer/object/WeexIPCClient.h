@@ -10,6 +10,13 @@
 #include <IPC/IPCSender.h>
 #include <IPC/IPCListener.h>
 #include <IPC/Serializing/IPCSerializer.h>
+#include <IPC/IPCException.h>
+#include <IPC/IPCHandler.h>
+
+class IPCSender;
+class IPCSerializer;
+class IPCHandler;
+class IPCFutexPageQueue;
 
 class WeexIPCClient {
 

@@ -20,9 +20,9 @@ struct WeexJSServer::WeexJSServerImpl {
 };
 
 WeexJSServer::WeexJSServerImpl::WeexJSServerImpl(int serverFd, int clientFd, bool enableTrace) {
-    WeexEnv::env()->setIpcServerFd(serverFd);
-    WeexEnv::env()->setIpcClientFd(clientFd);
-    WeexEnv::env()->setEnableTrace(enableTrace);
+    WeexEnv::getEnv()->setIpcServerFd(serverFd);
+    WeexEnv::getEnv()->setIpcClientFd(clientFd);
+    WeexEnv::getEnv()->setEnableTrace(enableTrace);
 
     int _fd = serverFd;
     void *base = mmap(nullptr, IPCFutexPageQueue::ipc_size, PROT_READ | PROT_WRITE, MAP_SHARED, _fd, 0);

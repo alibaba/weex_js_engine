@@ -19,13 +19,17 @@ public:
     ~WeexObjectHolder();
 
 
-    explicit WeexObjectHolder();
+    explicit WeexObjectHolder(bool isMultiProgress);
 
     void initFromIPCArguments(IPCArguments *arguments, size_t startCount, bool forAppContext);
 
     void initFromParams(std::vector<INIT_FRAMEWORK_PARAMS *> params, bool forAppContext);
 
     WeexGlobalObject *cloneWeexObject(bool initContext, bool forAppContext);
+
+
+private:
+    bool isMultiProgress;
 
 };
 

@@ -12,7 +12,7 @@ using namespace WTF;
 using namespace WEEXICU;
 
 WeexRuntime::WeexRuntime(bool isMultiProgress) : is_multi_process_(isMultiProgress), script_bridge_(nullptr) {
-    weexObjectHolder.reset(new WeexObjectHolder());
+    weexObjectHolder.reset(new WeexObjectHolder(isMultiProgress));
     LOGE("WeexRuntime is running and mode is %s", isMultiProgress ? "multiProcess" : "singleProcess");
 }
 
@@ -43,7 +43,7 @@ int WeexRuntime::initAppFrameworkMultiProcess(const String &instanceId, const St
     auto k = instanceId.utf8().data();
     auto pHolder = getLightAppObjectHolder(instanceId);
     if (pHolder == nullptr) {
-        auto holder = new WeexObjectHolder();
+        auto holder = new WeexObjectHolder(true);
         holder->initFromIPCArguments(arguments, 2, true);
         weexLiteAppObjectHolderMap[k] = holder;
     }
@@ -57,7 +57,7 @@ int WeexRuntime::initAppFramework(const String &instanceId, const String &appFra
     auto k = instanceId.utf8().data();
     auto pHolder = getLightAppObjectHolder(instanceId);
     if (pHolder == nullptr) {
-        auto holder = new WeexObjectHolder();
+        auto holder = new WeexObjectHolder(is_multi_process_);
         holder->initFromParams(params, true);
         weexLiteAppObjectHolderMap[k] = holder;
     }
@@ -515,7 +515,7 @@ inline void convertJSArrayToWeexJSResult(ExecState *state, JSValue &ret, WeexJSR
     if (isAllNull) {
         return;
     }
-    if (WeexEnv::env()->useWson()) {
+    if (WeexEnv::getEnv()->useWson()) {
         wson_buffer *buffer = wson::toWson(state, ret);
         jsResult.data = (char *) buffer->data;
         jsResult.length = buffer->position;

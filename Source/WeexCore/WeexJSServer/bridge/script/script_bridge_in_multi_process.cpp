@@ -202,7 +202,7 @@ namespace weex {
                 LOGE("ScriptBridgeInMultiProcess::InitFramework");
                 static_cast<ScriptSideInQueue *>(Instance()->script_side())
                         ->setTaskQueue(new WeexTaskQueue());
-                WeexEnv::env()->setScriptBridge(Instance());
+                WeexEnv::getEnv()->setScriptBridge(Instance());
 
                 // Source
                 const char *source = arguments->getByteArray(0)->content;

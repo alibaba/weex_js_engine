@@ -13,7 +13,7 @@ class WeexTaskQueue {
 
 public:
     ~WeexTaskQueue();
-
+    explicit WeexTaskQueue(bool isMultiProgress = true);
     void run(WeexTask *task);
 
     int addTask(WeexTask *task);
@@ -36,7 +36,7 @@ public:
 
 private:
     int _addTask(WeexTask *task, bool front);
-
+    bool isMultiProgress;
     std::deque<WeexTask *> taskQueue_;
     ThreadLocker threadLocker;
 };

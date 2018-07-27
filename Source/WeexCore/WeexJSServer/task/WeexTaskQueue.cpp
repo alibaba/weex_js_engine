@@ -13,19 +13,20 @@
 
 void WeexTaskQueue::run(WeexTask *task) {
     if (this->weexRuntime == nullptr) {
-        LOGE("WeexCore init runtime %d fd1 = %d, fd2 = %d",gettid(),WeexEnv::env()->getIpcServerFd(),WeexEnv::env()->getIpcClientFd());
-        this->weexRuntime = new WeexRuntime(WeexEnv::env()->scriptBridge(), WeexEnv::env()->multiProcess());
+        LOGE("WeexCore init runtime %d fd1 = %d, fd2 = %d", gettid(),WeexEnv::getEnv()->getIpcServerFd(),
+             WeexEnv::getEnv()->getIpcClientFd());
+        this->weexRuntime = new WeexRuntime(WeexEnv::getEnv()->scriptBridge(), this->isMultiProgress);
         // init IpcClient in Js Thread
-        if(WeexEnv::env()->multiProcess()) {
-            auto *client = new WeexIPCClient(WeexEnv::env()->getIpcClientFd());
-            WeexEnv::env()->setIpcClient(client);
-
-            static_cast<weex::bridge::js::CoreSideInMultiProcess *>(weex::bridge::js::ScriptBridgeInMultiProcess::Instance()->core_side())->set_ipc_client(client);;
-            static_cast<weex::PlatformSideInMultiProcess *>(weex::PlatformBridgeInMultiProcess::Instance()->platform_side())->set_client(client);
+        if (this->isMultiProgress) {
+            auto *client = new WeexIPCClient(WeexEnv::getEnv()->getIpcClientFd());
+            static_cast<weex::bridge::js::CoreSideInMultiProcess *>(weex::bridge::js::ScriptBridgeInMultiProcess::Instance()->core_side())->set_ipc_client(
+                    client);
+            static_cast<weex::PlatformSideInMultiProcess *>(weex::PlatformBridgeInMultiProcess::Instance()->platform_side())->set_client(
+                    client);
         }
 
     }
-    WeexEnv::env()->setTimerQueue(new TimerQueue(this));
+    WeexEnv::getEnv()->setTimerQueue(new TimerQueue(this));
     task->run(weexRuntime);
 }
 
@@ -107,5 +108,9 @@ int WeexTaskQueue::_addTask(WeexTask *task, bool front) {
     threadLocker.unlock();
     threadLocker.signal();
     return size;
+}
+
+WeexTaskQueue::WeexTaskQueue(bool isMultiProgress) {
+    this->isMultiProgress = isMultiProgress;
 }
 

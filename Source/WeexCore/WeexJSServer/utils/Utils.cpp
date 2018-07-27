@@ -110,7 +110,10 @@ std::unique_ptr<char[]> getCharOrJSONStringFromState(ExecState *state, int argum
 }
 
 void getWsonOrJsonArgsFromState(ExecState *state, int argument, Args& args){
-    if(WeexEnv::env()->useWson()){
+
+     bool useWson = WeexEnv::getEnv()->useWson();
+
+    if(useWson){
         if (argument >= state->argumentCount()) {
              args.setWson((wson_buffer*)nullptr);
              return;
@@ -402,9 +405,9 @@ void doUpdateGlobalSwitchConfig(const char *config) {
     }
     LOGE("doUpdateGlobalSwitchConfig %s", config);
     if (strstr(config, "wson_off") != NULL) {
-        WeexEnv::env()->setUseWson(false);
+        WeexEnv::getEnv()->setUseWson(false);
     } else {
-        WeexEnv::env()->setUseWson(true);
+        WeexEnv::getEnv()->setUseWson(true);
     }
 }
 

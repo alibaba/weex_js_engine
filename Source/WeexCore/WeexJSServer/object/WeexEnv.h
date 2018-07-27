@@ -13,27 +13,12 @@
 class WeexEnv {
 
 public:
-    static WeexEnv *env() {
+    static WeexEnv *getEnv() {
         if (env_ == nullptr) {
             env_ = new WeexEnv();
-            env_->setUseWson(true);
-            env_->setMultiProcess(true);
         }
         return env_;
     }
-
-    WeexIPCClient *ipcClient();
-
-    void setIpcClient(WeexIPCClient *ipcClient);
-
-
-    WeexJSServer *ipcServer();
-
-    void setIpcServer(WeexJSServer *ipcServer);
-
-    bool multiProcess();
-
-    void setMultiProcess(bool multiProcess);
 
 
     bool useWson();
@@ -80,9 +65,6 @@ private:
 
     volatile bool isMultiProcess = true;
     volatile bool isUsingWson = true;
-    // add for multiProcess;
-    std::unique_ptr<WeexIPCClient> ipcClient_;
-    std::unique_ptr<WeexJSServer> ipcServer_;
 
     std::unique_ptr<TimerQueue> weexTimerQueue_;
 

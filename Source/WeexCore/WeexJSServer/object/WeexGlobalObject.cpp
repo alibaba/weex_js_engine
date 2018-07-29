@@ -7,6 +7,7 @@
 #include "WeexGlobalObject.h"
 #include "core/bridge/script_bridge.h"
 #include "WeexEnv.h"
+#include "WeexCore/WeexJSServer/utils/LogUtils.h"
 
 #define WX_GLOBAL_CONFIG_KEY "global_switch_config"
 //#define GET_CHARFROM_UNIPTR(str) (str) == nullptr ? nullptr : (reinterpret_cast<const char*>((str).get()))
@@ -150,7 +151,6 @@ void WeexGlobalObject::initWxEnvironment(std::vector<INIT_FRAMEWORK_PARAMS *> pa
         addString(vm, WXEnvironment, param->type->content, WTFMove(value));
         //free(param);
     }
-    LOGE("Here the step Loop Die 2!");
 
     if (!hasInitCrashHandler) {
         const char *path = getenv("CRASH_FILE_PATH");
@@ -227,6 +227,7 @@ JSFUNCTION functionGCAndSweep(ExecState *exec) {
 
 JSFUNCTION functionSetIntervalWeex(ExecState *state) {
     base::debug::TraceScope traceScope("weex", "functionSetIntervalWeex");
+    LOGE("functionSetIntervalWeex");
     WeexGlobalObject *globalObject = static_cast<WeexGlobalObject *>(state->lexicalGlobalObject());
 
     JSValue id_js = state->argument(0);
@@ -243,6 +244,7 @@ JSFUNCTION functionSetIntervalWeex(ExecState *state) {
 
 JSFUNCTION functionClearIntervalWeex(ExecState *state) {
     base::debug::TraceScope traceScope("weex", "functionClearIntervalWeex");
+    LOGE("functionClearIntervalWeex");
     WeexGlobalObject *globalObject = static_cast<WeexGlobalObject *>(state->lexicalGlobalObject());
 
     JSValue id_js = state->argument(0);
@@ -257,6 +259,7 @@ JSFUNCTION functionClearIntervalWeex(ExecState *state) {
 
 JSFUNCTION functionCallNative(ExecState *state) {
     base::debug::TraceScope traceScope("weex", "callNative");
+    LOGE("functionCallNative");
 
     WeexGlobalObject *globalObject = static_cast<WeexGlobalObject *>(state->lexicalGlobalObject());
 
@@ -274,6 +277,7 @@ JSFUNCTION functionCallNative(ExecState *state) {
 
 JSFUNCTION functionGCanvasLinkNative(ExecState *state) {
     base::debug::TraceScope traceScope("weex", "callGCanvasLinkNative");
+    LOGE("functionGCanvasLinkNative");
 
     WeexGlobalObject *globalObject = static_cast<WeexGlobalObject *>(state->lexicalGlobalObject());
 
@@ -290,6 +294,7 @@ JSFUNCTION functionGCanvasLinkNative(ExecState *state) {
 
 JSFUNCTION functionT3DLinkNative(ExecState *state) {
     base::debug::TraceScope traceScope("weex", "functionT3DLinkNative");
+    LOGE("functionT3DLinkNative");
 
     WeexGlobalObject *globalObject = static_cast<WeexGlobalObject *>(state->lexicalGlobalObject());
 
@@ -303,6 +308,7 @@ JSFUNCTION functionT3DLinkNative(ExecState *state) {
 
 JSFUNCTION functionCallNativeModule(ExecState *state) {
     base::debug::TraceScope traceScope("weex", "callNativeModule");
+    LOGE("functionCallNativeModule");
 
 
     WeexGlobalObject *globalObject = static_cast<WeexGlobalObject *>(state->lexicalGlobalObject());
@@ -352,6 +358,7 @@ JSFUNCTION functionCallNativeModule(ExecState *state) {
 
 JSFUNCTION functionCallNativeComponent(ExecState *state) {
     base::debug::TraceScope traceScope("weex", "callNativeComponent");
+    LOGE("functionCallNativeComponent");
     Args instanceId;
     Args moduleChar;
     Args methodChar;
@@ -379,6 +386,7 @@ JSFUNCTION functionCallNativeComponent(ExecState *state) {
 
 JSFUNCTION functionCallAddElement(ExecState *state) {
     base::debug::TraceScope traceScope("weex", "callAddElement");
+    LOGE("functionCallAddElement");
     Args instanceId;
     Args parentRefChar;
     Args domStr;
@@ -402,6 +410,7 @@ JSFUNCTION functionCallAddElement(ExecState *state) {
 
 JSFUNCTION functionCallCreateBody(ExecState *state) {
     base::debug::TraceScope traceScope("weex", "callCreateBody");
+    LOGE("functionCallCreateBody");
     Args pageId;
     Args domStr;
     getStringArgsFromState(state, 0, pageId);
@@ -416,6 +425,7 @@ JSFUNCTION functionCallCreateBody(ExecState *state) {
 
 JSFUNCTION functionCallUpdateFinish(ExecState *state) {
     base::debug::TraceScope traceScope("weex", "functionCallUpdateFinish");
+    LOGE("functionCallUpdateFinish");
 
     Args idChar;
     Args taskChar;
@@ -432,6 +442,7 @@ JSFUNCTION functionCallUpdateFinish(ExecState *state) {
 
 JSFUNCTION functionCallCreateFinish(ExecState *state) {
     base::debug::TraceScope traceScope("weex", "functionCallCreateFinish");
+    LOGE("functionCallCreateFinish");
 
     Args idChar;
     getStringArgsFromState(state, 0, idChar);
@@ -442,6 +453,7 @@ JSFUNCTION functionCallCreateFinish(ExecState *state) {
 
 JSFUNCTION functionCallRefreshFinish(ExecState *state) {
     base::debug::TraceScope traceScope("weex", "functionCallRefreshFinish");
+    LOGE("functionCallRefreshFinish");
 
     Args idChar;
     Args taskChar;
@@ -459,6 +471,7 @@ JSFUNCTION functionCallRefreshFinish(ExecState *state) {
 
 JSFUNCTION functionCallUpdateAttrs(ExecState *state) {
     base::debug::TraceScope traceScope("weex", "functionCallUpdateAttrs");
+    LOGE("functionCallUpdateAttrs");
     Args instanceId;
     Args ref;
     Args domAttrs;
@@ -475,6 +488,7 @@ JSFUNCTION functionCallUpdateAttrs(ExecState *state) {
 
 JSFUNCTION functionCallUpdateStyle(ExecState *state) {
     base::debug::TraceScope traceScope("weex", "functionCallUpdateStyle");
+    LOGE("functionCallUpdateStyle");
     Args instanceId;
     Args ref;
     Args domStyles;
@@ -492,6 +506,7 @@ JSFUNCTION functionCallUpdateStyle(ExecState *state) {
 
 JSFUNCTION functionCallRemoveElement(ExecState *state) {
     base::debug::TraceScope traceScope("weex", "functionCallRemoveElement");
+    LOGE("functionCallRemoveElement");
 
     Args idChar;
     Args dataChar;
@@ -505,6 +520,7 @@ JSFUNCTION functionCallRemoveElement(ExecState *state) {
 
 JSFUNCTION functionCallMoveElement(ExecState *state) {
     base::debug::TraceScope traceScope("weex", "functionCallMoveElement");
+    LOGE("functionCallMoveElement");
 
     Args idChar;
     Args refChar;
@@ -525,6 +541,7 @@ JSFUNCTION functionCallMoveElement(ExecState *state) {
 
 JSFUNCTION functionCallAddEvent(ExecState *state) {
     base::debug::TraceScope traceScope("weex", "functionCallAddEvent");
+    LOGE("functionCallAddEvent");
 
 
     Args idChar;
@@ -543,6 +560,7 @@ JSFUNCTION functionCallAddEvent(ExecState *state) {
 
 JSFUNCTION functionCallRemoveEvent(ExecState *state) {
     base::debug::TraceScope traceScope("weex", "functionCallRemoveEvent");
+    LOGE("functionCallRemoveEvent");
 
     Args idChar;
     Args refChar;
@@ -560,6 +578,7 @@ JSFUNCTION functionCallRemoveEvent(ExecState *state) {
 
 JSFUNCTION functionSetTimeoutNative(ExecState *state) {
     base::debug::TraceScope traceScope("weex", "setTimeoutNative");
+    LOGE("functionSetTimeoutNative");
 
     Args callbackChar;
     Args timeChar;
@@ -572,6 +591,7 @@ JSFUNCTION functionSetTimeoutNative(ExecState *state) {
 }
 
 JSFUNCTION functionNativeLog(ExecState *state) {
+    LOGE("functionNativeLog");
     bool result = false;
     StringBuilder sb;
     for (int i = 0; i < state->argumentCount(); i++) {
@@ -587,6 +607,7 @@ JSFUNCTION functionNativeLog(ExecState *state) {
 }
 
 JSFUNCTION functionNativeLogContext(ExecState *state) {
+    LOGE("functionNativeLogContext");
     //bool result = false;
     StringBuilder sb;
     for (int i = 0; i < state->argumentCount(); i++) {
@@ -679,6 +700,7 @@ JSFUNCTION functionBtoa(ExecState *state) {
 }
 
 JSFUNCTION functionNativeSetTimeout(ExecState *state) {
+    LOGE("functionNativeSetTimeout");
     WeexGlobalObject *globalObject = static_cast<WeexGlobalObject *>(state->lexicalGlobalObject());
     size_t i = state->argumentCount();
     if (i < 2)

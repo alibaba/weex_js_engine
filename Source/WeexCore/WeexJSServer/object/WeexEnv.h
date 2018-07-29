@@ -9,14 +9,14 @@
 #include <WeexCore/WeexJSServer/ipc/ipc_server.h>
 #include <WeexCore/WeexJSServer/task/TimerQueue.h>
 #include "WeexIPCClient.h"
+#include <mutex>
 
 class WeexEnv {
 
 public:
     static WeexEnv *getEnv() {
-        if (env_ == nullptr) {
-            env_ = new WeexEnv();
-        }
+        static std::once_flag once_flag;
+        std::call_once(once_flag, [](){ env_ = new WeexEnv(); });
         return env_;
     }
 

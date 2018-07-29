@@ -18,6 +18,7 @@ void TimerQueue::init() {
 
     pthread_t thread;
     pthread_create(&thread, nullptr, startThread, this);
+    pthread_setname_np(thread, "TimerQueueThread");
 }
 
 void TimerQueue::start() {
@@ -83,7 +84,6 @@ TimerTask *TimerQueue::getTask() {
                     break;
                 }
             }
-
         }
 
         if (timerQueue_.empty()) {

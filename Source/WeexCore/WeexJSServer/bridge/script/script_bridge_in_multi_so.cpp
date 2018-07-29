@@ -50,9 +50,6 @@ FunctionsExposedByJS *ScriptBridgeInMultiSo::GetExposedFunctions() {
 
 int ScriptBridgeInMultiSo::InitFramework(
     const char *script, std::vector<INIT_FRAMEWORK_PARAMS *> params) {
-  WeexCore::WeexCoreManager::getInstance()->setPlatformBridge(
-      PlatformBridgeInMultiSo::Instance());
-
   static_cast<ScriptSideInQueue *>(Instance()->script_side())
           ->setTaskQueue(new WeexTaskQueue(false));
 

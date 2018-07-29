@@ -2,6 +2,7 @@
 // Created by yxp on 2018/6/15.
 //
 
+#include <android/base/log_utils.h>
 #include "core_side_in_multi_so.h"
 #include "WeexCore/WeexJSServer/object/Args.h"
 #include "include/WeexApiHeader.h"
@@ -12,6 +13,7 @@ namespace js {
 
 void CoreSideInMultiSo::CallNative(const char *page_id, const char *task,
                                    const char *callback) {
+  LOGE("CoreSideInMultiSo::CallNative");
   functions_exposed_by_core_->funcCallNative(page_id, task, callback);
 }
 
@@ -19,6 +21,7 @@ std::unique_ptr<IPCResult> CoreSideInMultiSo::CallNativeModule(
     const char *page_id, const char *module, const char *method,
     const char *arguments, int arguments_length, const char *options,
     int options_length) {
+  LOGE("CoreSideInMultiSo::CallNativeModule");
   return functions_exposed_by_core_->funcCallNativeModule(
       page_id, module, method, arguments, arguments_length, options,
       options_length);
@@ -30,6 +33,7 @@ void CoreSideInMultiSo::CallNativeComponent(const char *page_id,
                                             int arguments_length,
                                             const char *options,
                                             int options_length) {
+  LOGE("CoreSideInMultiSo::CallNativeComponent");
   functions_exposed_by_core_->funcCallNativeComponent(
       page_id, ref, method, arguments, arguments_length, options,
       options_length);
@@ -38,110 +42,131 @@ void CoreSideInMultiSo::CallNativeComponent(const char *page_id,
 void CoreSideInMultiSo::AddElement(const char *page_id, const char *parent_ref,
                                    const char *dom_str, int dom_str_length,
                                    const char *index_str) {
+  LOGE("CoreSideInMultiSo::AddElement");
   functions_exposed_by_core_->funcCallAddElement(page_id, parent_ref, dom_str, dom_str_length,
                                                  index_str);
 }
 
 void CoreSideInMultiSo::SetTimeout(const char *callback_id, const char *time) {
+  LOGE("CoreSideInMultiSo::SetTimeout");
   functions_exposed_by_core_->funcSetTimeout(callback_id, time);
 }
 
 void CoreSideInMultiSo::NativeLog(const char *str_array) {
+  LOGE("CoreSideInMultiSo::NativeLog");
   functions_exposed_by_core_->funcCallNativeLog(str_array);
 }
 
 void CoreSideInMultiSo::CreateBody(const char *page_id, const char *dom_str,
                                    int dom_str_length) {
+  LOGE("CoreSideInMultiSo::CreateBody");
   functions_exposed_by_core_->funcCallCreateBody(page_id, dom_str, dom_str_length);
 }
 
 int CoreSideInMultiSo::UpdateFinish(const char *page_id, const char *task,
                                     int task_length, const char *callback,
                                     int callback_length) {
+  LOGE("CoreSideInMultiSo::UpdateFinish");
   return functions_exposed_by_core_->funcCallUpdateFinish(page_id, task, task_length,
                                                           callback, callback_length);
 }
 
 void CoreSideInMultiSo::CreateFinish(const char *page_id) {
+  LOGE("CoreSideInMultiSo::CreateFinish");
   functions_exposed_by_core_->funcCallCreateFinish(page_id);
 }
 
 int CoreSideInMultiSo::RefreshFinish(const char *page_id, const char *task,
                                      const char *callback) {
+  LOGE("CoreSideInMultiSo::RefreshFinish");
   return functions_exposed_by_core_->funcCallRefreshFinish(page_id, task,
                                                            callback);
 }
 
 void CoreSideInMultiSo::UpdateAttrs(const char *page_id, const char *ref,
                                     const char *data, int data_length) {
+  LOGE("CoreSideInMultiSo::UpdateAttrs");
   functions_exposed_by_core_->funcCallUpdateAttrs(page_id, ref, data, data_length);
 }
 
 void CoreSideInMultiSo::UpdateStyle(const char *page_id, const char *ref,
                                     const char *data, int data_length) {
+  LOGE("CoreSideInMultiSo::UpdateStyle");
   functions_exposed_by_core_->funcCallUpdateStyle(page_id, ref, data, data_length);
 }
 
 void CoreSideInMultiSo::RemoveElement(const char *page_id, const char *ref) {
+  LOGE("CoreSideInMultiSo::RemoveElement");
   functions_exposed_by_core_->funcCallRemoveElement(page_id, ref);
 }
 
 void CoreSideInMultiSo::MoveElement(const char *page_id, const char *ref,
                                     const char *parent_ref, int index) {
+  LOGE("CoreSideInMultiSo::MoveElement");
   functions_exposed_by_core_->funcCallMoveElement(page_id, ref, parent_ref,
                                                   index);
 }
 
 void CoreSideInMultiSo::AddEvent(const char *page_id, const char *ref,
                                  const char *event) {
+  LOGE("CoreSideInMultiSo::AddEvent");
   functions_exposed_by_core_->funcCallAddEvent(page_id, ref, event);
 }
 
 void CoreSideInMultiSo::RemoveEvent(const char *page_id, const char *ref,
                                     const char *event) {
+  LOGE("CoreSideInMultiSo::RemoveEvent");
   functions_exposed_by_core_->funcCallRemoveEvent(page_id, ref, event);
 }
 
 const char *CoreSideInMultiSo::CallGCanvasLinkNative(const char *context_id,
                                                      int type,
                                                      const char *arg) {
+  LOGE("CoreSideInMultiSo::CallGCanvasLinkNative");
   return functions_exposed_by_core_->funcCallGCanvasLinkNative(context_id, type,
                                                                arg);
 }
 
 int CoreSideInMultiSo::SetInterval(const char *page_id, const char *callback_id,
                                    const char *time) {
+  LOGE("CoreSideInMultiSo::SetInterval");
   return functions_exposed_by_core_->funcSetInterval(page_id, callback_id,
                                                      time);
 }
 
 void CoreSideInMultiSo::ClearInterval(const char *page_id,
                                       const char *callback_id) {
+  LOGE("CoreSideInMultiSo::ClearInterval");
   functions_exposed_by_core_->funcClearInterval(page_id, callback_id);
 }
 
 const char *CoreSideInMultiSo::CallT3DLinkNative(int type, const char *arg) {
+  LOGE("CoreSideInMultiSo::CallT3DLinkNative");
   return functions_exposed_by_core_->funcT3dLinkNative(type, arg);
 }
 
 void CoreSideInMultiSo::PostMessage(const char *vim_id, const char *data) {
+  LOGE("CoreSideInMultiSo::PostMessage");
   functions_exposed_by_core_->funcCallHandlePostMessage(vim_id, data);
 }
 
 void CoreSideInMultiSo::DispatchMessage(const char *client_id, const char *data,
                                         const char *callback,
                                         const char *vm_id) {
+  LOGE("CoreSideInMultiSo::DispatchMessage");
   functions_exposed_by_core_->funcCallDIspatchMessage(client_id, data, callback,
                                                       vm_id);
 }
 
 void CoreSideInMultiSo::ReportException(const char *page_id, const char *func,
                                         const char *exception_string) {
+  LOGE("CoreSideInMultiSo::ReportException");
   functions_exposed_by_core_->funcReportException(page_id, func,
                                                   exception_string);
 }
 
 void CoreSideInMultiSo::SetJSVersion(const char *js_version) {
+  LOGE("CoreSideInMultiSo::SetJSVersion");
   functions_exposed_by_core_->funcSetJSVersion(js_version);
 }
 }  // namespace js

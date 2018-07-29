@@ -24,9 +24,8 @@ void WeexTaskQueue::run(WeexTask *task) {
             static_cast<weex::PlatformSideInMultiProcess *>(weex::PlatformBridgeInMultiProcess::Instance()->platform_side())->set_client(
                     client);
         }
-
+        WeexEnv::getEnv()->setTimerQueue(new TimerQueue(this));
     }
-    WeexEnv::getEnv()->setTimerQueue(new TimerQueue(this));
     task->run(weexRuntime);
     delete task;
 }
@@ -97,14 +96,15 @@ void WeexTaskQueue::init() {
     pthread_t thread;
     LOGE("start weex queue init");
     pthread_create(&thread, nullptr, startThread, this);
+    pthread_setname_np(thread, "WeexTaskQueueThread");
 }
 
 int WeexTaskQueue::_addTask(WeexTask *task, bool front) {
     threadLocker.lock();
     if (front) {
-        taskQueue_.push_front(std::move(task));
+        taskQueue_.push_front(task);
     } else {
-        taskQueue_.push_back(std::move(task));
+        taskQueue_.push_back(task);
     }
 
     int size = taskQueue_.size();
@@ -113,7 +113,7 @@ int WeexTaskQueue::_addTask(WeexTask *task, bool front) {
     return size;
 }
 
-WeexTaskQueue::WeexTaskQueue(bool isMultiProgress) {
+WeexTaskQueue::WeexTaskQueue(bool isMultiProgress) : weexRuntime(nullptr) {
     this->isMultiProgress = isMultiProgress;
     this->weexRuntime = nullptr;
 }

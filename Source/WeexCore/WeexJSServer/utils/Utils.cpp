@@ -377,6 +377,20 @@ void getArgumentAsJByteArray(IPCSerializer *serializer, ExecState *state, int ar
     }
 }
 
+
+void freeParams(std::vector<VALUE_WITH_TYPE *> &params) {
+    for (auto &param : params) {
+        if (param->type == ParamsType::STRING ||
+            param->type == ParamsType::JSONSTRING) {
+            free(param->value.string);
+        }
+        if (param->type == ParamsType::BYTEARRAY) {
+            free(param->value.byteArray);
+        }
+        free(param);
+    }
+}
+
 void initCrashHandler(const char *path) {
     // const char* path = getenv("CRASH_FILE_PATH");
     LOGD("CRASH_FILE_PATH: %s:", path);

@@ -34,5 +34,6 @@ ExeJsTask::ExeJsTask(const String &instanceId, IPCArguments *arguments, size_t s
 }
 
 ExeJsTask::~ExeJsTask() {
+    LOGE("del ExeJsTask");
     delete exeJsArgs;
 }

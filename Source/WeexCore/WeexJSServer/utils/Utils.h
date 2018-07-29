@@ -182,7 +182,7 @@ JSValue parseToObject(ExecState *state, const String &data);
 void getArgumentAsJByteArrayJSON(IPCSerializer *serializer, ExecState *state, int argument);
 
 void getArgumentAsJByteArray(IPCSerializer *serializer, ExecState *state, int argument);
-
+void freeParams(std::vector<VALUE_WITH_TYPE *> &params);
 std::unique_ptr<char[]> getCharJSONStringFromState(ExecState *state, int argument);
 
 std::unique_ptr<char[]> getCharOrJSONStringFromState(ExecState *state, int argument);

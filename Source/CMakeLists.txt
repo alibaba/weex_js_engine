@@ -38,7 +38,7 @@ set(IPC_SOURCE_PATH ${RENDER_PATH}/IPC)
 include_directories(${IPC_SOURCE_PATH})
 set(IPC_SOURCES
         ${IPC_SOURCE_PATH}/Serializing/IPCSerializer.cpp
-        ${IPC_SOURCE_PATH}/Android/IPCStringResult.cpp
+#        ${IPC_SOURCE_PATH}/Android/IPCStringResult.cpp
         ${IPC_SOURCE_PATH}/IPCResult.cpp
         ${IPC_SOURCE_PATH}/IPCSender.cpp
         ${IPC_SOURCE_PATH}/IPCException.cpp

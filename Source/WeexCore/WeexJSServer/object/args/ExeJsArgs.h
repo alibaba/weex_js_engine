@@ -8,6 +8,8 @@
 
 #include <IPC/IPCArguments.h>
 #include <include/WeexApiHeader.h>
+#include <WeexCore/WeexJSServer/utils/LogUtils.h>
+#include <WeexCore/WeexJSServer/utils/Utils.h>
 
 class ExeJsArgs {
 public:
@@ -20,6 +22,11 @@ public:
     VALUE_WITH_TYPE *copyValueToSelf(VALUE_WITH_TYPE *value_with_type);
 
     VALUE_WITH_TYPE *getValueWithTypePtr();
+
+    ~ExeJsArgs() {
+        LOGE("ExeJsArgs DEL is running");
+        freeParams(param);
+    }
 
 private:
 };

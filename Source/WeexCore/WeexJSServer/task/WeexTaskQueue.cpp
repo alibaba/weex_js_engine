@@ -28,6 +28,7 @@ void WeexTaskQueue::run(WeexTask *task) {
     }
     WeexEnv::getEnv()->setTimerQueue(new TimerQueue(this));
     task->run(weexRuntime);
+    delete task;
 }
 
 
@@ -87,12 +88,14 @@ static void *startThread(void *td) {
     auto *self = static_cast<WeexTaskQueue *>(td);
     self->isInitOk = true;
     auto pTask = self->getTask();
+    LOGE("start weex queue task thread");
     self->run(pTask);
     self->start();
 }
 
 void WeexTaskQueue::init() {
     pthread_t thread;
+    LOGE("start weex queue init");
     pthread_create(&thread, nullptr, startThread, this);
 }
 
@@ -112,5 +115,6 @@ int WeexTaskQueue::_addTask(WeexTask *task, bool front) {
 
 WeexTaskQueue::WeexTaskQueue(bool isMultiProgress) {
     this->isMultiProgress = isMultiProgress;
+    this->weexRuntime = nullptr;
 }
 

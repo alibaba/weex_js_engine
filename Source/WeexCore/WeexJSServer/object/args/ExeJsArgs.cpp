@@ -6,13 +6,15 @@
 #include "../../utils/Utils.h"
 
 ExeJsArgs::ExeJsArgs(std::vector<VALUE_WITH_TYPE *> param) {
-    for (auto paramsObject : param) {
-        auto pType = copyValueToSelf(paramsObject);
-        if (pType != nullptr) {
-            this->param.push_back(pType);
-        }
+//    for (auto paramsObject : param) {
+//        auto pType = copyValueToSelf(paramsObject);
+//        if (pType != nullptr) {
+//            this->param.push_back(pType);
+//        }
+//
+//    }
 
-    }
+    this->param = std::move(param);
 
 }
 

@@ -63,6 +63,7 @@ WeexTask *WeexTaskQueue::getTask() {
 }
 
 int WeexTaskQueue::addTimerTask(String id, JSC::JSValue function) {
+    LOGE("addTimerTask is running task");
     WeexTask *task = new NativeTimerTask(std::move(id), function);
     return _addTask(
             task,

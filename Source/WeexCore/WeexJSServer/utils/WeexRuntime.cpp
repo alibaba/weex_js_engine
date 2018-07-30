@@ -969,6 +969,7 @@ WeexObjectHolder *WeexRuntime::getLightAppObjectHolder(const String &instanceId)
 }
 
 int WeexRuntime::exeTimerFunction(const String &instanceId, JSC::JSValue timerFunction) {
+    LOGE("exeTimerFunction is running");
     uint64_t begin = microTime();
 
     JSGlobalObject *globalObject;

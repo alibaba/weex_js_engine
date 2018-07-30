@@ -24,6 +24,7 @@ void TimerQueue::init() {
 void TimerQueue::start() {
     while (true) {
         auto pTask = getTask();
+        LOGE("getTask return task");
         weexTaskQueue->addTimerTask(pTask->instanceID, pTask->function);
         if (pTask->repeat) {
             LOGE("repreat");
@@ -79,13 +80,16 @@ TimerTask *TimerQueue::getTask() {
             if (timerQueue_.empty()) {
                 threadLocker.wait();
             } else {
+                LOGE("begin wait");
                 auto i = threadLocker.waitTimeout(nextTaskWhen);
+                LOGE("after wait %d",i);
                 if (i == ETIMEDOUT) {
                     break;
                 }
             }
         }
 
+        LOGE("in getTask2");
         if (timerQueue_.empty()) {
             threadLocker.unlock();
             continue;

@@ -8,9 +8,9 @@ cp libweexjs*.so ${SDK_PATH}/sdk/libs/armeabi-v7a
 
 cd ${SDK_PATH}
 
-./gradlew assembleDebug
+#./gradlew assembleDebug
 
 
-adb uninstall com.alibaba.weex && adb install .//playground/app/build/outputs/apk/playground-debug.apk
+#adb uninstall com.alibaba.weex && adb install .//playground/app/build/outputs/apk/playground-debug.apk
 
 

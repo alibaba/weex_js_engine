@@ -31,7 +31,7 @@ int WeexRuntime::initFramework(IPCArguments *arguments) {
     return _initFramework(source);
 }
 
-int WeexRuntime::initFramework(const String &script, std::vector<INIT_FRAMEWORK_PARAMS *> params) {
+int WeexRuntime::initFramework(const String &script, std::vector<INIT_FRAMEWORK_PARAMS *> &params) {
     base::debug::TraceEvent::StartATrace(nullptr);
     base::debug::TraceScope traceScope("weex", "initFramework");
     weexObjectHolder->initFromParams(params, false);
@@ -53,7 +53,7 @@ int WeexRuntime::initAppFrameworkMultiProcess(const String &instanceId, const St
 }
 
 int WeexRuntime::initAppFramework(const String &instanceId, const String &appFramework,
-                                  std::vector<INIT_FRAMEWORK_PARAMS *> params) {
+                                  std::vector<INIT_FRAMEWORK_PARAMS *> &params) {
     auto k = instanceId.utf8().data();
     auto pHolder = getLightAppObjectHolder(instanceId);
     if (pHolder == nullptr) {
@@ -179,7 +179,7 @@ char *WeexRuntime::exeJSOnAppWithResult(const String &instanceId, const String &
 }
 
 int
-WeexRuntime::callJSOnAppContext(const String &instanceId, const String &func, std::vector<VALUE_WITH_TYPE *> params) {
+WeexRuntime::callJSOnAppContext(const String &instanceId, const String &func, std::vector<VALUE_WITH_TYPE *> &params) {
     // LOGE("Weex jsserver IPCJSMsg::CALLJSONAPPCONTEXT instanceId:%s, func:%s", instanceId.utf8().data(), func.utf8().data());
     if (instanceId == "") {
         return static_cast<int32_t>(false);
@@ -375,7 +375,7 @@ int WeexRuntime::exeCTimeCallback(const String &source) {
 }
 
 int WeexRuntime::exeJS(const String &instanceId, const String &nameSpace, const String &func,
-                       std::vector<VALUE_WITH_TYPE *> params) {
+                       std::vector<VALUE_WITH_TYPE *> &params) {
     // LOGE("EXECJS func:%s", func.utf8().data());
 
     String runFunc = func;
@@ -535,7 +535,7 @@ inline void convertJSArrayToWeexJSResult(ExecState *state, JSValue &ret, WeexJSR
 }
 
 WeexJSResult WeexRuntime::exeJSWithResult(const String &instanceId, const String &nameSpace, const String &func,
-                                          std::vector<VALUE_WITH_TYPE *> params) {
+                                          std::vector<VALUE_WITH_TYPE *> &params) {
     WeexJSResult jsResult;
     JSGlobalObject *globalObject;
     String runFunc = func;
@@ -924,7 +924,7 @@ WeexRuntime::_getArgListFromIPCArguments(MarkedArgumentBuffer *obj, ExecState *s
 }
 
 void WeexRuntime::_getArgListFromJSParams(MarkedArgumentBuffer *obj, ExecState *state,
-                                          std::vector<VALUE_WITH_TYPE *> params) {
+                                          std::vector<VALUE_WITH_TYPE *> &params) {
     for (unsigned int i = 0; i < params.size(); i++) {
         VALUE_WITH_TYPE *paramsObject = params[i];
         switch (paramsObject->type) {

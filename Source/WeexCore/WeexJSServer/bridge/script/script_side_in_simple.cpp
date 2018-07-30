@@ -9,7 +9,7 @@ namespace weex {
 namespace bridge {
 namespace js {
 int ScriptSideInSimple::InitFramework(
-    const char *script, std::vector<INIT_FRAMEWORK_PARAMS *> params) {
+    const char *script, std::vector<INIT_FRAMEWORK_PARAMS *> &params) {
   LOGE("ScriptSideInSimple::InitFramework");
 
   return runtime_->initFramework(String::fromUTF8(script), params);
@@ -17,7 +17,7 @@ int ScriptSideInSimple::InitFramework(
 
 int ScriptSideInSimple::InitAppFramework(
     const char *instanceId, const char *appFramework,
-    std::vector<INIT_FRAMEWORK_PARAMS *> params) {
+    std::vector<INIT_FRAMEWORK_PARAMS *> &params) {
   LOGE("ScriptSideInSimple::InitAppFramework");
   return runtime_->initAppFramework(String::fromUTF8(instanceId),
                                     String::fromUTF8(appFramework), params);
@@ -39,7 +39,7 @@ char *ScriptSideInSimple::ExecJSOnAppWithResult(const char *instanceId,
 
 int ScriptSideInSimple::CallJSOnAppContext(
     const char *instanceId, const char *func,
-    std::vector<VALUE_WITH_TYPE *> params) {
+    std::vector<VALUE_WITH_TYPE *> &params) {
   LOGE("ScriptSideInSimple::CallJSOnAppContext");
   return runtime_->callJSOnAppContext(String::fromUTF8(instanceId),
                                       String::fromUTF8(func), params);
@@ -62,7 +62,7 @@ int ScriptSideInSimple::ExecTimeCallback(const char *source) {
 
 int ScriptSideInSimple::ExecJS(const char *instanceId, const char *nameSpace,
                                const char *func,
-                               std::vector<VALUE_WITH_TYPE *> params) {
+                               std::vector<VALUE_WITH_TYPE *> &params) {
   LOGE("ScriptSideInSimple::ExecJS");
   return runtime_->exeJS(String::fromUTF8(instanceId),
                          String::fromUTF8(nameSpace), String::fromUTF8(func),
@@ -71,7 +71,7 @@ int ScriptSideInSimple::ExecJS(const char *instanceId, const char *nameSpace,
 
 WeexJSResult ScriptSideInSimple::ExecJSWithResult(
     const char *instanceId, const char *nameSpace, const char *func,
-    std::vector<VALUE_WITH_TYPE *> params) {
+    std::vector<VALUE_WITH_TYPE *> &params) {
   LOGE("ScriptSideInSimple::ExecJSWithResult");
   return runtime_->exeJSWithResult(String::fromUTF8(instanceId),
                                    String::fromUTF8(nameSpace),

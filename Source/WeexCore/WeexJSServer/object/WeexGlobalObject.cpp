@@ -102,7 +102,7 @@ void WeexGlobalObject::SetScriptBridge(WeexCore::ScriptBridge *script_bridge) {
     script_bridge_.reset(script_bridge);
 }
 
-void WeexGlobalObject::initWxEnvironment(std::vector<INIT_FRAMEWORK_PARAMS *> params, bool forAppContext, bool isSave) {
+void WeexGlobalObject::initWxEnvironment(std::vector<INIT_FRAMEWORK_PARAMS *> &params, bool forAppContext, bool isSave) {
     VM &vm = this->vm();
     JSNonFinalObject *WXEnvironment = SimpleObject::create(vm, this);
     bool hasInitCrashHandler = false;
@@ -149,7 +149,7 @@ void WeexGlobalObject::initWxEnvironment(std::vector<INIT_FRAMEWORK_PARAMS *> pa
 
         //LOGE("initWxEnvironment and value is %s", value.utf8().data());
         addString(vm, WXEnvironment, param->type->content, WTFMove(value));
-        //free(param);
+        //free(params);
     }
 
     if (!hasInitCrashHandler) {

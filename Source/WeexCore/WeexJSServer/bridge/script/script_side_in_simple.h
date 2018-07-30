@@ -15,10 +15,10 @@ namespace js {
 class ScriptSideInSimple : public WeexCore::ScriptBridge::ScriptSide {
  public:
   int InitFramework(const char *script,
-                    std::vector<INIT_FRAMEWORK_PARAMS *> params) override;
+                    std::vector<INIT_FRAMEWORK_PARAMS *> &params) override;
 
   int InitAppFramework(const char *instanceId, const char *appFramework,
-                       std::vector<INIT_FRAMEWORK_PARAMS *> params) override;
+                       std::vector<INIT_FRAMEWORK_PARAMS *> &params) override;
 
   int CreateAppContext(const char *instanceId, const char *jsBundle) override;
 
@@ -26,7 +26,7 @@ class ScriptSideInSimple : public WeexCore::ScriptBridge::ScriptSide {
                               const char *jsBundle) override;
 
   int CallJSOnAppContext(const char *instanceId, const char *func,
-                         std::vector<VALUE_WITH_TYPE *> params) override;
+                         std::vector<VALUE_WITH_TYPE *> &params) override;
 
   int DestroyAppContext(const char *instanceId) override;
 
@@ -35,11 +35,11 @@ class ScriptSideInSimple : public WeexCore::ScriptBridge::ScriptSide {
   int ExecTimeCallback(const char *source) override;
 
   int ExecJS(const char *instanceId, const char *nameSpace, const char *func,
-             std::vector<VALUE_WITH_TYPE *> params) override;
+             std::vector<VALUE_WITH_TYPE *> &params) override;
 
   WeexJSResult ExecJSWithResult(const char *instanceId, const char *nameSpace,
                                 const char *func,
-                                std::vector<VALUE_WITH_TYPE *> params) override;
+                                std::vector<VALUE_WITH_TYPE *> &params) override;
 
   int CreateInstance(const char *instanceId, const char *func,
                      const char *script, const char *opts, const char *initData,

@@ -65,22 +65,22 @@ class PlatformBridgeInMultiSo : public WeexCore::PlatformBridge {
   static void AddOption(const std::string &key, const std::string &value);
 
   static int InitFramework(const char *script,
-                           std::vector<INIT_FRAMEWORK_PARAMS *> params);
+                           std::vector<INIT_FRAMEWORK_PARAMS *> &params);
   static int InitAppFramework(const char *instanceId, const char *appFramework,
-                              std::vector<INIT_FRAMEWORK_PARAMS *> params);
+                              std::vector<INIT_FRAMEWORK_PARAMS *> &params);
   static int CreateAppContext(const char *instanceId, const char *jsBundle);
   static char *ExecJSOnAppWithResult(const char *instanceId,
                                      const char *jsBundle);
   static int CallJSOnAppContext(const char *instanceId, const char *func,
-                                std::vector<VALUE_WITH_TYPE *> params);
+                                std::vector<VALUE_WITH_TYPE *> &params);
   static int DestroyAppContext(const char *instanceId);
   static int ExecJsService(const char *source);
   static int ExecTimeCallback(const char *source);
   static int ExecJS(const char *instanceId, const char *nameSpace,
-                    const char *func, std::vector<VALUE_WITH_TYPE *> params);
+                    const char *func, std::vector<VALUE_WITH_TYPE *> &params);
   static WeexJSResult ExecJSWithResult(const char *instanceId,
                                        const char *nameSpace, const char *func,
-                                       std::vector<VALUE_WITH_TYPE *> params);
+                                       std::vector<VALUE_WITH_TYPE *> &params);
   static int CreateInstance(const char *instanceId, const char *func,
                             const char *script, const char *opts,
                             const char *initData, const char *extendsApi);

@@ -14,7 +14,7 @@ class InitFrameworkArgs {
 public:
     std::vector<INIT_FRAMEWORK_PARAMS *> params;
 
-    explicit InitFrameworkArgs(std::vector<INIT_FRAMEWORK_PARAMS *> params);
+    explicit InitFrameworkArgs(std::vector<INIT_FRAMEWORK_PARAMS *> &params);
 
     explicit InitFrameworkArgs(IPCArguments *arguments, size_t startCount);
 

@@ -204,13 +204,13 @@ void PlatformBridgeInMultiSo::AddOption(const std::string &key,
 }
 
 int PlatformBridgeInMultiSo::InitFramework(
-    const char *script, std::vector<INIT_FRAMEWORK_PARAMS *> params) {
+    const char *script, std::vector<INIT_FRAMEWORK_PARAMS *> &params) {
   return Instance()->core_side()->InitFramework(script, params);
 }
 
 int PlatformBridgeInMultiSo::InitAppFramework(
     const char *instanceId, const char *appFramework,
-    std::vector<INIT_FRAMEWORK_PARAMS *> params) {
+    std::vector<INIT_FRAMEWORK_PARAMS *> &params) {
   return Instance()->core_side()->InitAppFramework(instanceId, appFramework,
                                                    params);
 }
@@ -228,7 +228,7 @@ char *PlatformBridgeInMultiSo::ExecJSOnAppWithResult(const char *instanceId,
 
 int PlatformBridgeInMultiSo::CallJSOnAppContext(
     const char *instanceId, const char *func,
-    std::vector<VALUE_WITH_TYPE *> params) {
+    std::vector<VALUE_WITH_TYPE *> &params) {
   return Instance()->core_side()->CallJSOnAppContext(instanceId, func, params);
 }
 
@@ -246,13 +246,13 @@ int PlatformBridgeInMultiSo::ExecTimeCallback(const char *source) {
 
 int PlatformBridgeInMultiSo::ExecJS(const char *instanceId,
                                     const char *nameSpace, const char *func,
-                                    std::vector<VALUE_WITH_TYPE *> params) {
+                                    std::vector<VALUE_WITH_TYPE *> &params) {
   return Instance()->core_side()->ExecJS(instanceId, nameSpace, func, params);
 }
 
 WeexJSResult PlatformBridgeInMultiSo::ExecJSWithResult(
     const char *instanceId, const char *nameSpace, const char *func,
-    std::vector<VALUE_WITH_TYPE *> params) {
+    std::vector<VALUE_WITH_TYPE *> &params) {
   return Instance()->core_side()->ExecJSWithResult(instanceId, nameSpace, func,
                                                    params);
 }

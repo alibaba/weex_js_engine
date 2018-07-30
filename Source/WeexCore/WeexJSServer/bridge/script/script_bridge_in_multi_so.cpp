@@ -49,7 +49,7 @@ FunctionsExposedByJS *ScriptBridgeInMultiSo::GetExposedFunctions() {
 }
 
 int ScriptBridgeInMultiSo::InitFramework(
-    const char *script, std::vector<INIT_FRAMEWORK_PARAMS *> params) {
+    const char *script, std::vector<INIT_FRAMEWORK_PARAMS *> &params) {
   static_cast<ScriptSideInQueue *>(Instance()->script_side())
           ->setTaskQueue(new WeexTaskQueue(false));
 
@@ -60,7 +60,7 @@ int ScriptBridgeInMultiSo::InitFramework(
 
 int ScriptBridgeInMultiSo::InitAppFramework(
     const char *instanceId, const char *appFramework,
-    std::vector<INIT_FRAMEWORK_PARAMS *> params) {
+    std::vector<INIT_FRAMEWORK_PARAMS *> &params) {
   return Instance()->script_side()->InitAppFramework(instanceId, appFramework,
                                                  params);
 }
@@ -77,7 +77,7 @@ char *ScriptBridgeInMultiSo::ExecJSOnAppWithResult(const char *instanceId,
 
 int ScriptBridgeInMultiSo::CallJSOnAppContext(
     const char *instanceId, const char *func,
-    std::vector<VALUE_WITH_TYPE *> params) {
+    std::vector<VALUE_WITH_TYPE *> &params) {
   return Instance()->script_side()->CallJSOnAppContext(instanceId, func, params);
 }
 
@@ -95,13 +95,13 @@ int ScriptBridgeInMultiSo::ExecTimeCallback(const char *source) {
 
 int ScriptBridgeInMultiSo::ExecJS(const char *instanceId, const char *nameSpace,
                                   const char *func,
-                                  std::vector<VALUE_WITH_TYPE *> params) {
+                                  std::vector<VALUE_WITH_TYPE *> &params) {
   return Instance()->script_side()->ExecJS(instanceId, nameSpace, func, params);
 }
 
 WeexJSResult ScriptBridgeInMultiSo::ExecJSWithResult(
     const char *instanceId, const char *nameSpace, const char *func,
-    std::vector<VALUE_WITH_TYPE *> params) {
+    std::vector<VALUE_WITH_TYPE *> &params) {
   return Instance()->script_side()->ExecJSWithResult(instanceId, nameSpace, func,
                                                  params);
 }

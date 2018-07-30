@@ -5,7 +5,7 @@
 #include <WeexCore/WeexJSServer/utils/Utils.h>
 #include "InitFrameworkArgs.h"
 
-InitFrameworkArgs::InitFrameworkArgs(std::vector<INIT_FRAMEWORK_PARAMS *> params) {
+InitFrameworkArgs::InitFrameworkArgs(std::vector<INIT_FRAMEWORK_PARAMS *> &params) {
     for (auto param : params) {
         auto init_framework_params = (INIT_FRAMEWORK_PARAMS *) malloc(sizeof(INIT_FRAMEWORK_PARAMS));
 

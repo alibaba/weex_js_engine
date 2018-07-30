@@ -5,11 +5,11 @@
 #include "CallJsOnAppContextTask.h"
 
 CallJsOnAppContextTask::CallJsOnAppContextTask(const String &instanceId, const String &func,
-                                               std::vector<VALUE_WITH_TYPE *> param) : WeexTask(instanceId) {
+                                               std::vector<VALUE_WITH_TYPE *> &params) : WeexTask(instanceId) {
 
     this->func = func;
 
-    exeJsArgs = new ExeJsArgs(param);
+    exeJsArgs = new ExeJsArgs(params);
 
 }
 
@@ -23,5 +23,5 @@ CallJsOnAppContextTask::CallJsOnAppContextTask(const String &instanceId, const S
 }
 
 void CallJsOnAppContextTask::run(WeexRuntime *runtime) {
-    runtime->callJSOnAppContext(instanceId, func, exeJsArgs->param);
+    runtime->callJSOnAppContext(instanceId, func, exeJsArgs->params);
 }

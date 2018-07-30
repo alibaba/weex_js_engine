@@ -15,10 +15,10 @@ class ScriptBridgeInMultiSo : public WeexCore::ScriptBridge {
   static FunctionsExposedByJS *GetExposedFunctions();
 
   static int InitFramework(const char *script,
-                           std::vector<INIT_FRAMEWORK_PARAMS *> params);
+                           std::vector<INIT_FRAMEWORK_PARAMS *> &params);
 
   static int InitAppFramework(const char *instanceId, const char *appFramework,
-                              std::vector<INIT_FRAMEWORK_PARAMS *> params);
+                              std::vector<INIT_FRAMEWORK_PARAMS *> &params);
 
   static int CreateAppContext(const char *instanceId, const char *jsBundle);
 
@@ -26,7 +26,7 @@ class ScriptBridgeInMultiSo : public WeexCore::ScriptBridge {
                                      const char *jsBundle);
 
   static int CallJSOnAppContext(const char *instanceId, const char *func,
-                                std::vector<VALUE_WITH_TYPE *> params);
+                                std::vector<VALUE_WITH_TYPE *> &params);
 
   static int DestroyAppContext(const char *instanceId);
 
@@ -35,11 +35,11 @@ class ScriptBridgeInMultiSo : public WeexCore::ScriptBridge {
   static int ExecTimeCallback(const char *source);
 
   static int ExecJS(const char *instanceId, const char *nameSpace,
-                    const char *func, std::vector<VALUE_WITH_TYPE *> params);
+                    const char *func, std::vector<VALUE_WITH_TYPE *> &params);
 
   static WeexJSResult ExecJSWithResult(const char *instanceId,
                                        const char *nameSpace, const char *func,
-                                       std::vector<VALUE_WITH_TYPE *> params);
+                                       std::vector<VALUE_WITH_TYPE *> &params);
 
   static int CreateInstance(const char *instanceId, const char *func,
                             const char *script, const char *opts,

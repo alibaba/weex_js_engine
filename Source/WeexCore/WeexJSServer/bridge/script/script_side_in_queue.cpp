@@ -23,7 +23,7 @@ namespace weex {
     namespace bridge {
         namespace js {
             int ScriptSideInQueue::InitFramework(
-                    const char *script, std::vector<INIT_FRAMEWORK_PARAMS *> params) {
+                    const char *script, std::vector<INIT_FRAMEWORK_PARAMS *> &params) {
                 LOGE("ScriptSideInQueue::InitFramework");
 //                return runtime_->initFramework(String::fromUTF8(script), params);
                 weexTaskQueue_->addTask(new InitFrameworkTask(String::fromUTF8(script), params));
@@ -33,7 +33,7 @@ namespace weex {
 
             int ScriptSideInQueue::InitAppFramework(
                     const char *instanceId, const char *appFramework,
-                    std::vector<INIT_FRAMEWORK_PARAMS *> params) {
+                    std::vector<INIT_FRAMEWORK_PARAMS *> &params) {
                 LOGE("ScriptSideInQueue::InitAppFramework");
                 weexTaskQueue_->addTask(new InitFrameworkTask(String::fromUTF8(instanceId),
                                                               String::fromUTF8(appFramework), params));
@@ -66,7 +66,7 @@ namespace weex {
 
             int ScriptSideInQueue::CallJSOnAppContext(
                     const char *instanceId, const char *func,
-                    std::vector<VALUE_WITH_TYPE *> params) {
+                    std::vector<VALUE_WITH_TYPE *> &params) {
                 LOGE("ScriptSideInQueue::CallJSOnAppContext");
 
                 weexTaskQueue_->addTask(new CallJsOnAppContextTask(String::fromUTF8(instanceId),
@@ -101,7 +101,7 @@ namespace weex {
 
             int ScriptSideInQueue::ExecJS(const char *instanceId, const char *nameSpace,
                                           const char *func,
-                                          std::vector<VALUE_WITH_TYPE *> params) {
+                                          std::vector<VALUE_WITH_TYPE *> &params) {
                 LOGE("ScriptSideInQueue::ExecJS");
 
                 ExeJsTask *task = new ExeJsTask(instanceId, params);
@@ -116,7 +116,7 @@ namespace weex {
 
             WeexJSResult ScriptSideInQueue::ExecJSWithResult(
                     const char *instanceId, const char *nameSpace, const char *func,
-                    std::vector<VALUE_WITH_TYPE *> params) {
+                    std::vector<VALUE_WITH_TYPE *> &params) {
                 LOGE("ScriptSideInQueue::ExecJSWithResult");
 
                 ExeJsTask *task = new ExeJsTask(instanceId, params);

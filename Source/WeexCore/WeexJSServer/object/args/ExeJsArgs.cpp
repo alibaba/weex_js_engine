@@ -5,17 +5,14 @@
 #include "ExeJsArgs.h"
 #include "../../utils/Utils.h"
 
-ExeJsArgs::ExeJsArgs(std::vector<VALUE_WITH_TYPE *> param) {
-//    for (auto paramsObject : param) {
-//        auto pType = copyValueToSelf(paramsObject);
-//        if (pType != nullptr) {
-//            this->param.push_back(pType);
-//        }
-//
-//    }
+ExeJsArgs::ExeJsArgs(std::vector<VALUE_WITH_TYPE *> &params) {
+    for (auto paramsObject : params) {
+        auto pType = copyValueToSelf(paramsObject);
+        if (pType != nullptr) {
+            this->params.push_back(pType);
+        }
 
-    this->param = std::move(param);
-
+    }
 }
 
 ExeJsArgs::ExeJsArgs(IPCArguments *arguments, size_t startCount) {
@@ -55,7 +52,7 @@ ExeJsArgs::ExeJsArgs(IPCArguments *arguments, size_t startCount) {
                 break;
         }
 
-        this->param.push_back(pType);
+        this->params.push_back(pType);
     }
 
 }

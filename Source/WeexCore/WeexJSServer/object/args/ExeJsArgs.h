@@ -13,9 +13,9 @@
 
 class ExeJsArgs {
 public:
-    std::vector<VALUE_WITH_TYPE *> param;
+    std::vector<VALUE_WITH_TYPE *> params;
 
-    explicit ExeJsArgs(std::vector<VALUE_WITH_TYPE *> param);
+    explicit ExeJsArgs(std::vector<VALUE_WITH_TYPE *> &params);
 
     explicit ExeJsArgs(IPCArguments *arguments, size_t startCount);
 
@@ -25,7 +25,7 @@ public:
 
     ~ExeJsArgs() {
         LOGE("ExeJsArgs DEL is running");
-        freeParams(param);
+        freeParams(params);
     }
 
 private:

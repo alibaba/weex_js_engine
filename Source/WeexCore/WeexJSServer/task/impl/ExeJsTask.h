@@ -11,7 +11,7 @@
 
 class ExeJsTask : public WeexTask {
 public:
-    ExeJsTask(const String &instanceId, std::vector<VALUE_WITH_TYPE *> param, bool withResult = false);
+    ExeJsTask(const String &instanceId, std::vector<VALUE_WITH_TYPE *> &params, bool withResult = false);
 
     ExeJsTask(const String &instanceId, IPCArguments *arguments, size_t startCount, bool withResult = false);
 

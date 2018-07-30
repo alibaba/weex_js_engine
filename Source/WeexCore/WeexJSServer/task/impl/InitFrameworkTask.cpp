@@ -11,7 +11,7 @@ void InitFrameworkTask::run(WeexRuntime *runtime) {
         runtime->initAppFramework(instanceId, script, args->params);
 }
 
-InitFrameworkTask::InitFrameworkTask(const String &script, std::vector<INIT_FRAMEWORK_PARAMS *> params)
+InitFrameworkTask::InitFrameworkTask(const String &script, std::vector<INIT_FRAMEWORK_PARAMS *> &params)
         : InitFrameworkTask("", script, params) {
 
 }
@@ -22,7 +22,7 @@ InitFrameworkTask::InitFrameworkTask(const String &script, IPCArguments *argumen
 }
 
 InitFrameworkTask::InitFrameworkTask(const String &instanceId, const String &script,
-                                     std::vector<INIT_FRAMEWORK_PARAMS *> params) : WeexTask(instanceId) {
+                                     std::vector<INIT_FRAMEWORK_PARAMS *> &params) : WeexTask(instanceId) {
 
     this->script = script;
     args = new InitFrameworkArgs(params);

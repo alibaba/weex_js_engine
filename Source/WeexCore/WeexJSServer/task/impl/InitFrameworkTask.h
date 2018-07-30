@@ -14,9 +14,9 @@ public:
 
 
     explicit InitFrameworkTask(const String &instanceId, const String &script,
-                               std::vector<INIT_FRAMEWORK_PARAMS *> params);
+                               std::vector<INIT_FRAMEWORK_PARAMS *> &params);
 
-    explicit InitFrameworkTask(const String &script, std::vector<INIT_FRAMEWORK_PARAMS *> params);
+    explicit InitFrameworkTask(const String &script, std::vector<INIT_FRAMEWORK_PARAMS *> &params);
 
 
     explicit InitFrameworkTask(const String &instanceId, const String &script, IPCArguments *arguments,

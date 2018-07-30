@@ -23,7 +23,7 @@ public:
 
     void initFromIPCArguments(IPCArguments *arguments, size_t startCount, bool forAppContext);
 
-    void initFromParams(std::vector<INIT_FRAMEWORK_PARAMS *> params, bool forAppContext);
+    void initFromParams(std::vector<INIT_FRAMEWORK_PARAMS *> &params, bool forAppContext);
 
     WeexGlobalObject *cloneWeexObject(bool initContext, bool forAppContext);
 

@@ -5,6 +5,9 @@
 #include "ExeJsTask.h"
 
 void ExeJsTask::run(WeexRuntime *runtime) {
+
+    LOGE("ExeJsTask is running and extraArgsSize is %d", extraArgs.size());
+
     if (extraArgs.size() < 2)
         return;
 

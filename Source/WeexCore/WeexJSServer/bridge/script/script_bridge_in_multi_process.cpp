@@ -229,8 +229,9 @@ namespace weex {
                     init_framework_params->value = IPCByteArrayToWeexByteArray(ba);
                     params.push_back(init_framework_params);
                 }
-                return createInt32Result(
-                        Instance()->script_side()->InitFramework(source, params));
+                int val = Instance()->script_side()->InitFramework(source, params);
+                freeInitFrameworkParams(params);
+                return createInt32Result(val);
             }
 
             std::unique_ptr<IPCResult> ScriptBridgeInMultiProcess::InitAppFramework(

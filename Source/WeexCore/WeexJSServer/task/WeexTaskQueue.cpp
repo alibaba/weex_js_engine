@@ -12,6 +12,7 @@
 #include <WeexCore/WeexJSServer/bridge/platform/platform_side_multi_process.h>
 
 void WeexTaskQueue::run(WeexTask *task) {
+    //todo 移动到构造函数里
     if (this->weexRuntime == nullptr) {
         LOGE("WeexCore init runtime %d fd1 = %d, fd2 = %d", gettid(),WeexEnv::getEnv()->getIpcServerFd(),
              WeexEnv::getEnv()->getIpcClientFd());

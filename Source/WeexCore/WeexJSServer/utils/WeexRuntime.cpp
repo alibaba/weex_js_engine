@@ -376,7 +376,7 @@ int WeexRuntime::exeCTimeCallback(const String &source) {
 
 int WeexRuntime::exeJS(const String &instanceId, const String &nameSpace, const String &func,
                        std::vector<VALUE_WITH_TYPE *> &params) {
-    // LOGE("EXECJS func:%s", func.utf8().data());
+    LOGE("EXECJS func:%s and params size is %d", func.utf8().data(), params.size());
 
     String runFunc = func;
 
@@ -925,6 +925,7 @@ WeexRuntime::_getArgListFromIPCArguments(MarkedArgumentBuffer *obj, ExecState *s
 
 void WeexRuntime::_getArgListFromJSParams(MarkedArgumentBuffer *obj, ExecState *state,
                                           std::vector<VALUE_WITH_TYPE *> &params) {
+    LOGE("_getArgListFromJSParams params.size() is %d \r\n",params.size());
     for (unsigned int i = 0; i < params.size(); i++) {
         VALUE_WITH_TYPE *paramsObject = params[i];
         switch (paramsObject->type) {
@@ -940,6 +941,8 @@ void WeexRuntime::_getArgListFromJSParams(MarkedArgumentBuffer *obj, ExecState *
 
                 const WeexString *ipcstr = paramsObject->value.string;
 
+                const String &string = weexString2String(ipcstr);
+                LOGE("_getArgListFromJSParams pType->value.string is %s \r\n",string.utf8().data());
                 String str = jString2String(ipcstr->content, ipcstr->length);
                 JSValue o = parseToObject(state, str);
                 obj->append(o);

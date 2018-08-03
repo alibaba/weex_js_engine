@@ -259,18 +259,17 @@ JSFUNCTION functionClearIntervalWeex(ExecState *state) {
 
 JSFUNCTION functionCallNative(ExecState *state) {
     base::debug::TraceScope traceScope("weex", "callNative");
-    LOGE("functionCallNative");
+    LOGE("functionCallNative 11111");
 
     WeexGlobalObject *globalObject = static_cast<WeexGlobalObject *>(state->lexicalGlobalObject());
 
     JSValue id_js = state->argument(0);
     String id_str = id_js.toWTFString(state);
-    JSValue task_js = state->argument(1);
-    String task_str = task_js.toWTFString(state);
+    auto task = getCharOrJSONStringFromState(state, 1);
     JSValue callback_js = state->argument(2);
     String callback_str = callback_js.toWTFString(state);
 
-    globalObject->js_bridge()->core_side()->CallNative(id_str.utf8().data(), task_str.utf8().data(),
+    globalObject->js_bridge()->core_side()->CallNative(id_str.utf8().data(), task.get(),
                                                        callback_str.utf8().data());
     return JSValue::encode(jsNumber(0));
 }

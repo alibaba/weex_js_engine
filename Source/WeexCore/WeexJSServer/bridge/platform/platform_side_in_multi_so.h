@@ -83,6 +83,8 @@ class PlatformSideInMultiSo : public WeexCore::PlatformBridge::PlatformSide {
 
   int CreateFinish(const char* pageId) override;
 
+  int RenderSuccess(const char* pageId) override;
+
   int RemoveElement(const char* pageId, const char* ref) override;
 
   int MoveElement(const char* pageId, const char* ref, const char* parentRef,

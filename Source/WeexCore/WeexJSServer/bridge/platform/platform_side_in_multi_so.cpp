@@ -147,6 +147,10 @@ int PlatformSideInMultiSo::CreateFinish(const char *page_id) {
   return platform_expose_functions_->create_finish(page_id);
 }
 
+int PlatformSideInMultiSo::RenderSuccess(const char *page_id) {
+  return platform_expose_functions_->render_success(page_id);
+}
+
 int PlatformSideInMultiSo::RemoveElement(const char *page_id, const char *ref) {
   return platform_expose_functions_->remove_element(page_id, ref);
 }

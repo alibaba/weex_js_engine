@@ -594,6 +594,19 @@ int PlatformSideInMultiProcess::CreateFinish(const char *page_id) {
   return result->get<int>();
 }
 
+int PlatformSideInMultiProcess::RenderSuccess(const char *page_id) {
+  WeexIPCClient *pClient = client_;
+
+  IPCSender *sender = pClient->getSender();
+  std::unique_ptr<IPCSerializer> serializer(createIPCSerializer());
+  serializer->setMsg(
+      static_cast<uint32_t>(IPCMsgFromCoreToPlatform::RENDER_SUCCESS));
+  serializer->add(page_id, strlen(page_id));
+  std::unique_ptr<IPCBuffer> buffer = serializer->finish();
+  std::unique_ptr<IPCResult> result = sender->send(buffer.get());
+  return result->get<int>();
+}
+
 int PlatformSideInMultiProcess::RemoveElement(const char *page_id,
                                               const char *ref) {
   WeexIPCClient *pClient = client_;

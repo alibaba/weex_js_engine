@@ -9,8 +9,8 @@ endif ()
 add_subdirectory(WTF)
 add_subdirectory(JavaScriptCore)
 add_subdirectory(CrashHandler)
-#include_directories(/Users/darin/Library/Android/sdk/ndk-bundle/platforms/android-24/arch-arm/usr/include)
-#include_directories(/Volumes/MacData/macEnv/Android/ndk/android-ndk-r13b/platforms/android-24/arch-arm/usr/include)
+#include_directories(/Users/yxp/Library/Android/sdk/ndk-bundle/platforms/android-24/arch-arm/usr/include)
+#include_directories(/Users/yxp/Downloads/android-ndk-r13b/platforms/android-24/arch-arm/usr/include)
 #include_directories(/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include/c++/v1)
 
 #add_executable(TestWeexServerPolicy
@@ -30,7 +30,7 @@ include(WebKitCommon)
 
 set(WEEXJSSERVER_NAME weexjss${SERVERSUFFIX})
 #set(RENDER_PATH /Users/darin/Data/code/work/weex/sdk/gitlab/weex_core/Source)
-set(RENDER_PATH /Users/darin/Documents/code/weex/sdk/weexSdk/apache/weex_core/Source)
+set(RENDER_PATH /Users/yxp/Workspace/incubator-weex2/weex_core/Source)
 
 include_directories(${RENDER_PATH})
 # IPC
@@ -127,6 +127,7 @@ set(${WEEXJSSERVER_NAME}_SOURCES
         ${RENDER_PATH}/core/render/action/render_action_move_element.cpp
         ${RENDER_PATH}/core/render/action/render_action_createbody.cpp
         ${RENDER_PATH}/core/render/action/render_action_createfinish.cpp
+        ${RENDER_PATH}/core/render/action/render_action_render_success.cpp
         ${RENDER_PATH}/core/render/action/render_action_appendtree_createfinish.cpp
         ${RENDER_PATH}/core/render/action/render_action_layout.cpp
         ${RENDER_PATH}/core/render/action/render_action_update_attr.cpp

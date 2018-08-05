@@ -183,7 +183,7 @@ long PlatformBridgeInMultiSo::CopyRenderObject(long render_ptr) {
 }
 
 void PlatformBridgeInMultiSo::SetMeasureFunctionAdapter() {
-  WeexCore::WeexCoreManager::getInstance()->setPlatformBridge(
+  WeexCore::WeexCoreManager::Instance()->set_platform_bridge(
       PlatformBridgeInMultiSo::Instance());
   g_instance->core_side()->SetMeasureFunctionAdapter();
 }

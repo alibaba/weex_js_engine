@@ -27,7 +27,7 @@ void CoreSideInSimple::CallNative(const char *page_id, const char *task,
       0) {
     RenderManager::GetInstance()->CreateFinish(page_id) ? 0 : -1;
   } else {
-    WeexCoreManager::getInstance()
+    WeexCoreManager::Instance()
         ->getPlatformBridge()
         ->platform_side()
         ->CallNative(page_id, task, callback);
@@ -45,7 +45,7 @@ std::unique_ptr<IPCResult> CoreSideInSimple::CallNativeModule(
                                                    arguments, arguments_length,
                                                    options, options_length);
 
-    return WeexCoreManager::getInstance()
+    return WeexCoreManager::Instance()
         ->getPlatformBridge()
         ->platform_side()
         ->CallNativeModule(page_id, module, method, arguments, arguments_length,
@@ -63,7 +63,7 @@ void CoreSideInSimple::CallNativeComponent(const char *page_id, const char *ref,
                                            int options_length) {
   LOGE("Script Bridge Core Side Simple::CallNativeComponent");
   if (page_id != nullptr && ref != nullptr && method != nullptr) {
-    WeexCoreManager::getInstance()
+    WeexCoreManager::Instance()
         ->getPlatformBridge()
         ->platform_side()
         ->CallNativeComponent(page_id, ref, method, arguments, arguments_length,
@@ -88,7 +88,7 @@ void CoreSideInSimple::AddElement(const char *page_id, const char *parent_ref,
 
 void CoreSideInSimple::SetTimeout(const char *callback_id, const char *time) {
   LOGE("Script Bridge Core Side Simple::SetTimeout");
-  WeexCoreManager::getInstance()
+  WeexCoreManager::Instance()
       ->getPlatformBridge()
       ->platform_side()
       ->SetTimeout(callback_id, time);
@@ -96,7 +96,7 @@ void CoreSideInSimple::SetTimeout(const char *callback_id, const char *time) {
 
 void CoreSideInSimple::NativeLog(const char *str_array) {
   LOGE("Script Bridge Core Side Simple::NativeLog");
-  WeexCoreManager::getInstance()
+  WeexCoreManager::Instance()
       ->getPlatformBridge()
       ->platform_side()
       ->NativeLog(str_array);
@@ -112,7 +112,7 @@ int CoreSideInSimple::UpdateFinish(const char *page_id, const char *task,
                                    int task_length, const char *callback,
                                    int callback_length) {
   LOGE("Script Bridge Core Side Simple::UpdateFinish");
-  return WeexCoreManager::getInstance()
+  return WeexCoreManager::Instance()
       ->getPlatformBridge()
       ->platform_side()
       ->UpdateFinish(page_id, task,task_length, callback,callback_length);
@@ -127,7 +127,7 @@ int CoreSideInSimple::RefreshFinish(const char *page_id, const char *task,
                                     const char *callback) {
   LOGE("Script Bridge Core Side Simple::RefreshFinish");
   if (page_id == nullptr) return -1;
-  return WeexCoreManager::getInstance()
+  return WeexCoreManager::Instance()
       ->getPlatformBridge()
       ->platform_side()
       ->RefreshFinish(page_id, task, callback);
@@ -194,7 +194,7 @@ const char *CoreSideInSimple::CallT3DLinkNative(int type, const char *arg) {
 }
 void CoreSideInSimple::PostMessage(const char *vm_id, const char *data) {
   LOGE("Script Bridge Core Side Simple::PostMessage");
-  WeexCoreManager::getInstance()
+  WeexCoreManager::Instance()
       ->getPlatformBridge()
       ->platform_side()
       ->PostMessage(vm_id, data);
@@ -204,7 +204,7 @@ void CoreSideInSimple::DispatchMessage(const char *client_id, const char *data,
                                        const char *callback,
                                        const char *vm_id) {
   LOGE("Script Bridge Core Side Simple::DispatchMessage");
-  WeexCoreManager::getInstance()
+  WeexCoreManager::Instance()
       ->getPlatformBridge()
       ->platform_side()
       ->DispatchMessage(client_id, vm_id, data, callback);
@@ -213,7 +213,7 @@ void CoreSideInSimple::DispatchMessage(const char *client_id, const char *data,
 void CoreSideInSimple::ReportException(const char *page_id, const char *func,
                                        const char *exception_string) {
   LOGE("Script Bridge Core Side Simple::ReportException");
-  WeexCoreManager::getInstance()
+  WeexCoreManager::Instance()
       ->getPlatformBridge()
       ->platform_side()
       ->ReportException(page_id, func, exception_string);
@@ -222,7 +222,7 @@ void CoreSideInSimple::ReportException(const char *page_id, const char *func,
 void CoreSideInSimple::SetJSVersion(const char *js_version) {
   LOGE("Script Bridge Core Side Simple::SetJSVersion");
   LOGA("init JSFrm version %s", js_version);
-  WeexCoreManager::getInstance()
+  WeexCoreManager::Instance()
       ->getPlatformBridge()
       ->platform_side()
       ->SetJSVersion(js_version);

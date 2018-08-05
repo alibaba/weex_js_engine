@@ -17,7 +17,11 @@ void ExeJsTask::run(WeexRuntime *runtime) {
     }
     WeexJSResult jsResult = runtime->exeJSWithResult(instanceId, extraArgs.at(0), extraArgs.at(1),
                                                      exeJsArgs->params);
-    setResult(&jsResult);
+
+    if (future() != nullptr) {
+        LOGE("ExeJsTask setResult");
+        future()->setResult(jsResult);
+    }
 }
 
 void ExeJsTask::addExtraArg(String arg) {

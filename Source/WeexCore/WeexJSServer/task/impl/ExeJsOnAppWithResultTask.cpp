@@ -15,5 +15,8 @@ void ExeJsOnAppWithResultTask::run(WeexRuntime *runtime) {
     jsResult->data = string;
     jsResult->fromNew = true;
     jsResult->fromMalloc = false;
-    setResult(jsResult);
+    if (future() != nullptr) {
+        future()->setResult(*jsResult);
+    }
+    free(jsResult);
 }

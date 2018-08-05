@@ -12,24 +12,43 @@
 class WeexTask {
 
 public:
+
+    class Future {
+
+    public:
+
+        Future() : has_result_(false) {}
+
+        ~Future() {}
+
+        void setResult(WeexJSResult result);
+
+        WeexJSResult waitResult();
+
+    private:
+        bool has_result_ = false;
+        WeexJSResult result_;
+        ThreadLocker thread_locker_;
+    };
+
     String instanceId;
 
-    WeexJSResult *result = nullptr;
-public:
-
-    explicit WeexTask(const String &instanceId) { this->instanceId = instanceId; };
+    explicit WeexTask(const String &instanceId) : future_(nullptr) { this->instanceId = instanceId; };
 
     virtual ~WeexTask() = default;
 
     virtual void run(WeexRuntime *runtime) = 0;
 
-    void setResult(WeexJSResult *result);
+    inline void set_future(Future* future) {
+        future_ = future;
+    }
 
-    WeexJSResult *waitResult();
+    inline Future* future() {
+        return future_;
+    }
 
 private:
-    ThreadLocker threadLocker;
-
+    Future* future_;
 };
 
 

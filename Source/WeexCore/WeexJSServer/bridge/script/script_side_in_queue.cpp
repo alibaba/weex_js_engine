@@ -58,10 +58,13 @@ namespace weex {
                 WeexTask *task = new ExeJsOnAppWithResultTask(String::fromUTF8(instanceId),
                                                               String::fromUTF8(jsBundle));
 
+                auto future = std::unique_ptr<WeexTask::Future>(new WeexTask::Future());
+                task->set_future(future.get());
+
                 weexTaskQueue_->addTask(task);
 
-                WeexJSResult *pResult = task->waitResult();
-                return pResult->data;
+                WeexJSResult pResult = future->waitResult();
+                return pResult.data;
             }
 
             int ScriptSideInQueue::CallJSOnAppContext(
@@ -119,18 +122,16 @@ namespace weex {
                     std::vector<VALUE_WITH_TYPE *> &params) {
                 LOGE("ScriptSideInQueue::ExecJSWithResult");
 
-                ExeJsTask *task = new ExeJsTask(instanceId, params);
+                ExeJsTask *task = new ExeJsTask(instanceId, params, true);
+
+                auto future = std::unique_ptr<WeexTask::Future>(new WeexTask::Future());
+                task->set_future(future.get());
 
                 task->addExtraArg(String::fromUTF8(nameSpace));
                 task->addExtraArg(String::fromUTF8(func));
                 weexTaskQueue_->addTask(task);
-                WeexJSResult *pResult = task->waitResult();
-                if (pResult)
-                    return *pResult;
-                else {
-                    WeexJSResult jsResult = WeexJSResult();
-                    return jsResult;
-                }
+                WeexJSResult pResult = future->waitResult();
+                return pResult;
             }
 
             int ScriptSideInQueue::CreateInstance(const char *instanceId, const char *func,

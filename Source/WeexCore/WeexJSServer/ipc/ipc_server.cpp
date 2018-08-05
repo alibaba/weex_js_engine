@@ -47,7 +47,7 @@ WeexJSServer::WeexJSServer(int serverFd, int clientFd, bool enableTrace)
     // TODO
     static_cast<weex::PlatformSideInMultiProcess *>(weex::PlatformBridgeInMultiProcess::Instance()->platform_side())->set_server(this);
     weex::PlatformBridgeInMultiProcess::Instance()->RegisterIPCCallback(handler);
-    WeexCore::WeexCoreManager::getInstance()->setPlatformBridge(weex::PlatformBridgeInMultiProcess::Instance());
+    WeexCore::WeexCoreManager::Instance()->set_platform_bridge(weex::PlatformBridgeInMultiProcess::Instance());
 }
 
 WeexJSServer::~WeexJSServer() {

@@ -10,18 +10,16 @@
 #include "WeexIPCClient.h"
 
 WeexIPCClient::WeexIPCClient(int fd) {
-    void *base = mmap(nullptr, 2 * 1024 * 1024, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
-    LOGE("ipc client and fd is %d", fd);
+    void *base = mmap(nullptr, IPCFutexPageQueue::ipc_size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
     if (base == MAP_FAILED) {
         int _errno = errno;
         close(fd);
-        LOGE("failed to map ashmem region: %s %d", strerror(_errno), fd);
         throw IPCException("failed to map ashmem region: %s", strerror(_errno));
     }
 
-    futexPageQueue = std::make_unique<IPCFutexPageQueue>(base, 2 * 1024 * 1024, 1);
+
+    futexPageQueue.reset(new IPCFutexPageQueue(base, IPCFutexPageQueue::ipc_size, 1));
     handler = std::move(createIPCHandler());
-    LOGE("WeexCore WeexIPCClient HANDLER handler %x",handler.get());
     sender = std::move(createIPCSender(futexPageQueue.get(), handler.get()));
     serializer = std::move(createIPCSerializer());
     close(fd);

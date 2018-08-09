@@ -523,6 +523,10 @@ uint64_t microTime() {
 int __atomic_inc(volatile int *ptr) {
     return __sync_fetch_and_add(ptr,1);
 }
+static int taskIdGenerator = 0;
+int genTaskId(){
+    return __atomic_inc(&taskIdGenerator);
+}
 
 /**
  * this function is to execute a section of JavaScript content.

@@ -25,7 +25,7 @@ void TimerQueue::start() {
     while (true) {
         auto pTask = getTask();
         LOGE("getTask return task");
-        weexTaskQueue->addTimerTask(pTask->instanceID, pTask->function);
+        weexTaskQueue->addTimerTask(pTask->instanceID, pTask->function, pTask->taskId);
         if (pTask->repeat) {
             LOGE("repreat");
             addTimerTask(new TimerTask(pTask));
@@ -82,7 +82,7 @@ TimerTask *TimerQueue::getTask() {
             } else {
                 LOGE("begin wait");
                 auto i = threadLocker.waitTimeout(nextTaskWhen);
-                LOGE("after wait %d",i);
+                LOGE("after wait %d", i);
                 if (i == ETIMEDOUT) {
                     break;
                 }
@@ -116,10 +116,10 @@ void TimerQueue::removeTimer(int timerId) {
         return;
     } else {
         for (std::deque<TimerTask *>::iterator it = timerQueue_.begin(); it < timerQueue_.end(); ++it) {
-
             auto reference = *it;
-            if (reference->timeId == timerId) {
+            if (reference->taskId == timerId) {
                 timerQueue_.erase(it);
+                weexTaskQueue->removeTimer(reference->taskId);
                 delete (reference);
                 reference = nullptr;
             }
@@ -130,7 +130,6 @@ void TimerQueue::removeTimer(int timerId) {
     if (size > 0) {
         nextTaskWhen = timerQueue_.front()->when;
     }
-    //this->weexTaskQueue->removeTimer(std::move(id), std::move(timerId));
     threadLocker.unlock();
     threadLocker.signal();
 }

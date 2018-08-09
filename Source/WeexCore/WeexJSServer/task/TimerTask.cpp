@@ -6,7 +6,7 @@
 #include "../utils/Utils.h"
 
 TimerTask::TimerTask(String id, JSC::JSValue function, uint64_t millSecTimeout, bool repeat) {
-    this->timeId = __atomic_inc(&timerIdGenerator);
+    this->taskId = genTaskId();
     this->instanceID = std::move(id);
     this->function = function;
     this->timeout = millSecTimeout;
@@ -15,7 +15,7 @@ TimerTask::TimerTask(String id, JSC::JSValue function, uint64_t millSecTimeout, 
 }
 
 TimerTask::TimerTask(const TimerTask *timerTask) {
-    this->timeId = timerTask->timeId;
+    this->taskId = timerTask->taskId;
     this->instanceID = timerTask->instanceID;
     this->repeat = timerTask->repeat;
     this->timeout = timerTask->timeout;
@@ -24,7 +24,7 @@ TimerTask::TimerTask(const TimerTask *timerTask) {
 }
 
 TimerTask::TimerTask(const TimerTask &timerTask) {
-    this->timeId = timerTask.timeId;
+    this->taskId = timerTask.taskId;
     this->instanceID = timerTask.instanceID;
     this->repeat = timerTask.repeat;
     this->timeout = timerTask.timeout;

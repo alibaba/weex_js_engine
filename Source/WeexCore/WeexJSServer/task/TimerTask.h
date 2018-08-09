@@ -10,12 +10,12 @@
 #include "WTFString.h"
 #include "JSCJSValue.h"
 
-static int timerIdGenerator = 0;
+
 
 class TimerTask {
 
 public:
-    int timeId;
+    int taskId;
 
     String instanceID;
     JSC::JSValue function;

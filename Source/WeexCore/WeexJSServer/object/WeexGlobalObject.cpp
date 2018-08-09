@@ -76,7 +76,9 @@ JSFUNCTION functionDisPatchMeaage(ExecState *);
 JSFUNCTION functionPostMessage(ExecState *);
 
 JSFUNCTION functionNativeSetTimeout(ExecState *);
-
+JSFUNCTION functionNativeSetInterval(ExecState *);
+JSFUNCTION functionNativeClearTimeout(ExecState *);
+JSFUNCTION functionNativeClearInterval(ExecState *);
 
 const ClassInfo WeexGlobalObject::s_info = {"global", &JSGlobalObject::s_info, nullptr,
                                             CREATE_METHOD_TABLE(WeexGlobalObject)};
@@ -171,6 +173,9 @@ void WeexGlobalObject::initFunctionForContext() {
             {"callGCanvasLinkNative", JSC::Function, NoIntrinsic, {(intptr_t) static_cast<NativeFunction>(functionGCanvasLinkNative), (intptr_t) (3)}},
             {"callT3DLinkNative",     JSC::Function, NoIntrinsic, {(intptr_t) static_cast<NativeFunction>(functionT3DLinkNative),     (intptr_t) (2)}},
             {"setNativeTimeout",      JSC::Function, NoIntrinsic, {(intptr_t) static_cast<NativeFunction>(functionNativeSetTimeout),  (intptr_t) (2)}},
+            {"setNativeInterval",     JSC::Function, NoIntrinsic, {(intptr_t) static_cast<NativeFunction>(functionNativeSetInterval),  (intptr_t) (2)}},
+            {"clearNativeTimeout",    JSC::Function, NoIntrinsic, {(intptr_t) static_cast<NativeFunction>(functionNativeClearTimeout),  (intptr_t) (1)}},
+            {"clearNativeInterval",   JSC::Function, NoIntrinsic, {(intptr_t) static_cast<NativeFunction>(functionNativeClearInterval),  (intptr_t) (1)}},
     };
     reifyStaticProperties(vm, JSEventTargetPrototypeTableValues, *this);
 }
@@ -203,6 +208,9 @@ void WeexGlobalObject::initFunction() {
             {"clearIntervalWeex",     JSC::Function, NoIntrinsic, {(intptr_t) static_cast<NativeFunction>(functionClearIntervalWeex),   (intptr_t) (1)}},
             {"callT3DLinkNative",     JSC::Function, NoIntrinsic, {(intptr_t) static_cast<NativeFunction>(functionT3DLinkNative),       (intptr_t) (2)}},
             {"setNativeTimeout",      JSC::Function, NoIntrinsic, {(intptr_t) static_cast<NativeFunction>(functionNativeSetTimeout),    (intptr_t) (2)}},
+            {"setNativeInterval",     JSC::Function, NoIntrinsic, {(intptr_t) static_cast<NativeFunction>(functionNativeSetInterval),  (intptr_t) (2)}},
+            {"clearNativeTimeout",    JSC::Function, NoIntrinsic, {(intptr_t) static_cast<NativeFunction>(functionNativeClearTimeout),  (intptr_t) (1)}},
+            {"clearNativeInterval",   JSC::Function, NoIntrinsic, {(intptr_t) static_cast<NativeFunction>(functionNativeClearInterval),  (intptr_t) (1)}},
     };
     reifyStaticProperties(vm, JSEventTargetPrototypeTableValues, *this);
 }
@@ -214,6 +222,9 @@ void WeexGlobalObject::initFunctionForAppContext() {
             {"__dispatch_message__", JSC::Function, NoIntrinsic, {(intptr_t) static_cast<NativeFunction>(functionDisPatchMeaage),   (intptr_t) (3)}},
             {"postMessage",          JSC::Function, NoIntrinsic, {(intptr_t) static_cast<NativeFunction>(functionPostMessage),      (intptr_t) (1)}},
             {"setNativeTimeout",     JSC::Function, NoIntrinsic, {(intptr_t) static_cast<NativeFunction>(functionNativeSetTimeout), (intptr_t) (2)}},
+            {"setNativeInterval",     JSC::Function, NoIntrinsic, {(intptr_t) static_cast<NativeFunction>(functionNativeSetInterval),  (intptr_t) (2)}},
+            {"clearNativeTimeout",    JSC::Function, NoIntrinsic, {(intptr_t) static_cast<NativeFunction>(functionNativeClearTimeout),  (intptr_t) (1)}},
+            {"clearNativeInterval",   JSC::Function, NoIntrinsic, {(intptr_t) static_cast<NativeFunction>(functionNativeClearInterval),  (intptr_t) (1)}},
     };
     reifyStaticProperties(vm, JSEventTargetPrototypeTableValues, *this);
 }
@@ -711,8 +722,42 @@ JSFUNCTION functionNativeSetTimeout(ExecState *state) {
         TimerTask *task = new TimerTask(globalObject->id.c_str(), value,
                                         static_cast<uint64_t>(jsValue.asInt32()), false);
         timerQueue->addTimerTask(task);
-        return JSValue::encode(jsNumber(task->timeId));;
+        return JSValue::encode(jsNumber(task->taskId));;
     }
 
     return JSValue::encode(jsNumber(0));
+}
+
+JSFUNCTION functionNativeSetInterval(ExecState *state) {
+    LOGE("functionNativeSetInterval");
+    WeexGlobalObject *globalObject = static_cast<WeexGlobalObject *>(state->lexicalGlobalObject());
+    size_t i = state->argumentCount();
+    if (i < 2)
+        return JSValue::encode(jsNumber(0));
+    const JSValue &value = state->argument(0);
+    const JSValue &jsValue = state->argument(1);
+    TimerQueue *timerQueue =WeexEnv::getEnv()->timerQueue();
+    if (timerQueue != nullptr) {
+        TimerTask *task = new TimerTask(globalObject->id.c_str(), value,
+                                        static_cast<uint64_t>(jsValue.asInt32()), true);
+        timerQueue->addTimerTask(task);
+        return JSValue::encode(jsNumber(task->taskId));;
+    }
+
+    return JSValue::encode(jsNumber(0));
+}
+
+JSFUNCTION functionNativeClearTimeout(ExecState *state) {
+    LOGE("functionNativeClearTimeout");
+    TimerQueue *timerQueue = WeexEnv::getEnv()->timerQueue();
+    const JSValue &value = state->argument(0);
+    if (timerQueue != nullptr) {
+        timerQueue->removeTimer(value.asInt32());
+    }
+    return JSValue::encode(jsNumber(0));
+}
+
+JSFUNCTION functionNativeClearInterval(ExecState *state) {
+    LOGE("functionNativeClearInterval");
+    return functionNativeClearTimeout(state);
 }

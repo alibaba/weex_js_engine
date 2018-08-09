@@ -32,8 +32,13 @@ public:
     };
 
     String instanceId;
+    int taskId;
+    explicit WeexTask(const String &instanceId, int taskId) : future_(nullptr) {
+        this->instanceId = instanceId;
+        this->taskId = taskId;
+    };
 
-    explicit WeexTask(const String &instanceId) : future_(nullptr) { this->instanceId = instanceId; };
+    explicit WeexTask(const String &instanceId) : WeexTask(instanceId, genTaskId()) {};
 
     virtual ~WeexTask() = default;
 

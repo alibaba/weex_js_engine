@@ -20,9 +20,9 @@ public:
 
     WeexTask *getTask();
 
-    void removeTimer(int id);
+    void removeTimer(int taskId);
 
-    int addTimerTask(String id, JSC::JSValue function);
+    int addTimerTask(String id, JSC::JSValue function, int taskId);
 
     void start();
 

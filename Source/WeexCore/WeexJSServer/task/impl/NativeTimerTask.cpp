@@ -4,7 +4,8 @@
 
 #include "NativeTimerTask.h"
 
-NativeTimerTask::NativeTimerTask(const String &instanceId, JSC::JSValue function) : WeexTask(instanceId) {
+NativeTimerTask::NativeTimerTask(const String &instanceId, JSC::JSValue function, int taskId)
+        : WeexTask(instanceId, taskId) {
     this->timerFunction = function;
 }
 

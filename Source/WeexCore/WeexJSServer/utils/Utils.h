@@ -249,7 +249,7 @@ bool ExecuteJavaScript(JSGlobalObject *globalObject,
 
 uint64_t microTime();
 int __atomic_inc(volatile int *ptr);
-
+int genTaskId() ;
 WeexByteArray *IPCByteArrayToWeexByteArray(const IPCByteArray *byteArray);
 
 

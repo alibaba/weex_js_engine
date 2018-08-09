@@ -10,7 +10,7 @@
 
 class NativeTimerTask : public WeexTask {
 public:
-    explicit NativeTimerTask(const String &instanceId, JSC::JSValue function);
+    explicit NativeTimerTask(const String &instanceId, JSC::JSValue function, int taskId);
 
     void run(WeexRuntime *runtime) override;
 

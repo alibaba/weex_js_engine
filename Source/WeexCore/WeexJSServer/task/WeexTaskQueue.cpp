@@ -63,16 +63,31 @@ WeexTask *WeexTaskQueue::getTask() {
     return task;
 }
 
-int WeexTaskQueue::addTimerTask(String id, JSC::JSValue function) {
+int WeexTaskQueue::addTimerTask(String id, JSC::JSValue function, int taskId) {
     LOGE("addTimerTask is running task");
-    WeexTask *task = new NativeTimerTask(std::move(id), function);
+    WeexTask *task = new NativeTimerTask(id, function,taskId);
     return _addTask(
             task,
             true);
 }
 
-void WeexTaskQueue::removeTimer(int id) {
-//todo 是否需要将任务队列里的 timer 任务删掉..
+void WeexTaskQueue::removeTimer(int taskId) {
+    threadLocker.lock();
+    if (taskQueue_.empty()) {
+        threadLocker.unlock();
+        return;
+    } else {
+        for (std::deque<WeexTask *>::iterator it = taskQueue_.begin(); it < taskQueue_.end(); ++it) {
+            auto reference = *it;
+            if (reference->taskId == taskId) {
+                taskQueue_.erase(it);
+                delete (reference);
+                reference = nullptr;
+            }
+        }
+    }
+    threadLocker.unlock();
+    threadLocker.signal();
 }
 
 void WeexTaskQueue::start() {

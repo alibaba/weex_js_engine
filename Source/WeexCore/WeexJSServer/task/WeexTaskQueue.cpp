@@ -8,8 +8,6 @@
 #include <unistd.h>
 #include <WeexCore/WeexJSServer/bridge/script/script_bridge_in_multi_process.h>
 #include <WeexCore/WeexJSServer/bridge/script/core_side_in_multi_process.h>
-#include <WeexCore/WeexJSServer/bridge/platform/platform_bridge_in_multi_process.h>
-#include <WeexCore/WeexJSServer/bridge/platform/platform_side_multi_process.h>
 
 void WeexTaskQueue::run(WeexTask *task) {
     //todo 移动到构造函数里
@@ -21,8 +19,6 @@ void WeexTaskQueue::run(WeexTask *task) {
         if (this->isMultiProgress) {
             auto *client = new WeexIPCClient(WeexEnv::getEnv()->getIpcClientFd());
             static_cast<weex::bridge::js::CoreSideInMultiProcess *>(weex::bridge::js::ScriptBridgeInMultiProcess::Instance()->core_side())->set_ipc_client(
-                    client);
-            static_cast<weex::PlatformSideInMultiProcess *>(weex::PlatformBridgeInMultiProcess::Instance()->platform_side())->set_client(
                     client);
         }
         WeexEnv::getEnv()->setTimerQueue(new TimerQueue(this));

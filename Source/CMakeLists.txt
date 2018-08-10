@@ -63,15 +63,8 @@ set(${WEEXJSSERVER_NAME}_SOURCES
         WeexCore/WeexJSServer/object/SimpleObject.cpp
         WeexCore/WeexJSServer/object/WeexGlobalObject.cpp
         WeexCore/WeexJSServer/object/WeexObjectHolder.cpp
-        WeexCore/WeexJSServer/bridge/platform/platform_bridge_in_multi_so.cpp
-        WeexCore/WeexJSServer/bridge/platform/core_side_in_simple.cpp
-        WeexCore/WeexJSServer/bridge/platform/platform_side_in_multi_so.cpp
-        WeexCore/WeexJSServer/bridge/platform/platform_side_multi_process.cpp
-        WeexCore/WeexJSServer/bridge/platform/platform_bridge_in_multi_process.cpp
-        WeexCore/WeexJSServer/bridge/script/script_bridge_in_simple.cpp
         WeexCore/WeexJSServer/bridge/script/script_bridge_in_multi_so.cpp
         WeexCore/WeexJSServer/bridge/script/script_bridge_in_multi_process.cpp
-        WeexCore/WeexJSServer/bridge/script/core_side_in_simple.cpp
         WeexCore/WeexJSServer/bridge/script/core_side_in_multi_so.cpp
         WeexCore/WeexJSServer/bridge/script/core_side_in_multi_process.cpp
         WeexCore/WeexJSServer/bridge/script/script_side_in_simple.cpp
@@ -105,56 +98,64 @@ set(${WEEXJSSERVER_NAME}_SOURCES
         WeexCore/WeexJSServer/task/TimerQueue.cpp
 
 
-        ${RENDER_PATH}/base/time_point.cc
-        ${RENDER_PATH}/base/thread/thread_impl_posix.cc
-        ${RENDER_PATH}/base/thread/thread_impl_android.cc
-        ${RENDER_PATH}/base/message_loop/message_loop.cc
-        ${RENDER_PATH}/base/message_loop/message_pump_posix.cc
-        ${RENDER_PATH}/base/message_loop/message_pump_android.cc
-        ${RENDER_PATH}/core/render/manager/render_manager.cpp
-        ${RENDER_PATH}/core/render/page/render_page.cpp
-        ${RENDER_PATH}/core/render/node/render_object.cpp
-        ${RENDER_PATH}/core/render/node/factory/render_creator.cpp
-        ${RENDER_PATH}/core/render/node/render_appbar.cpp
-        ${RENDER_PATH}/core/render/node/render_list.cpp
-        ${RENDER_PATH}/core/render/node/render_mask.cpp
-        ${RENDER_PATH}/core/render/node/render_scroller.cpp
-        ${RENDER_PATH}/core/render/node/render_text.cpp
-        ${RENDER_PATH}/core/render/action/render_action_add_event.cpp
-        ${RENDER_PATH}/core/render/action/render_action_remove_event.cpp
-        ${RENDER_PATH}/core/render/action/render_action_add_element.cpp
-        ${RENDER_PATH}/core/render/action/render_action_remove_element.cpp
-        ${RENDER_PATH}/core/render/action/render_action_move_element.cpp
-        ${RENDER_PATH}/core/render/action/render_action_createbody.cpp
-        ${RENDER_PATH}/core/render/action/render_action_createfinish.cpp
-        ${RENDER_PATH}/core/render/action/render_action_render_success.cpp
-        ${RENDER_PATH}/core/render/action/render_action_appendtree_createfinish.cpp
-        ${RENDER_PATH}/core/render/action/render_action_layout.cpp
-        ${RENDER_PATH}/core/render/action/render_action_update_attr.cpp
-        ${RENDER_PATH}/core/render/action/render_action_update_style.cpp
-
-        ${RENDER_PATH}/core/layout/layout.cpp
-        ${RENDER_PATH}/core/layout/style.cpp
-        ${RENDER_PATH}/core/css/css_value_getter.cpp
-
-        ${RENDER_PATH}/core/config/core_environment.cpp
-
-        ${RENDER_PATH}/core/moniter/render_performance.cpp
-        ${RENDER_PATH}/core/manager/weex_core_manager.cpp
-        ${RENDER_PATH}/core/parser/dom_wson.cpp
-        ${RENDER_PATH}/wson/wson_parser.cpp
-        ${RENDER_PATH}/wson/wson_util.cpp
+#        WeexCore/WeexJSServer/bridge/platform/platform_bridge_in_multi_so.cpp
+#        WeexCore/WeexJSServer/bridge/platform/core_side_in_simple.cpp
+#        WeexCore/WeexJSServer/bridge/platform/platform_side_in_multi_so.cpp
+#        WeexCore/WeexJSServer/bridge/platform/platform_side_multi_process.cpp
+#        WeexCore/WeexJSServer/bridge/platform/platform_bridge_in_multi_process.cpp
+#        WeexCore/WeexJSServer/bridge/script/core_side_in_simple.cpp
+#        WeexCore/WeexJSServer/bridge/script/script_bridge_in_simple.cpp
+#
+#        ${RENDER_PATH}/base/time_point.cc
+#        ${RENDER_PATH}/base/thread/thread_impl_posix.cc
+#        ${RENDER_PATH}/base/thread/thread_impl_android.cc
+#        ${RENDER_PATH}/base/message_loop/message_loop.cc
+#        ${RENDER_PATH}/base/message_loop/message_pump_posix.cc
+#        ${RENDER_PATH}/base/message_loop/message_pump_android.cc
+#        ${RENDER_PATH}/core/render/manager/render_manager.cpp
+#        ${RENDER_PATH}/core/render/page/render_page.cpp
+#        ${RENDER_PATH}/core/render/node/render_object.cpp
+#        ${RENDER_PATH}/core/render/node/factory/render_creator.cpp
+#        ${RENDER_PATH}/core/render/node/render_appbar.cpp
+#        ${RENDER_PATH}/core/render/node/render_list.cpp
+#        ${RENDER_PATH}/core/render/node/render_mask.cpp
+#        ${RENDER_PATH}/core/render/node/render_scroller.cpp
+#        ${RENDER_PATH}/core/render/node/render_text.cpp
+#        ${RENDER_PATH}/core/render/action/render_action_add_event.cpp
+#        ${RENDER_PATH}/core/render/action/render_action_remove_event.cpp
+#        ${RENDER_PATH}/core/render/action/render_action_add_element.cpp
+#        ${RENDER_PATH}/core/render/action/render_action_remove_element.cpp
+#        ${RENDER_PATH}/core/render/action/render_action_move_element.cpp
+#        ${RENDER_PATH}/core/render/action/render_action_createbody.cpp
+#        ${RENDER_PATH}/core/render/action/render_action_createfinish.cpp
+#        ${RENDER_PATH}/core/render/action/render_action_render_success.cpp
+#        ${RENDER_PATH}/core/render/action/render_action_appendtree_createfinish.cpp
+#        ${RENDER_PATH}/core/render/action/render_action_layout.cpp
+#        ${RENDER_PATH}/core/render/action/render_action_update_attr.cpp
+#        ${RENDER_PATH}/core/render/action/render_action_update_style.cpp
+#
+#        ${RENDER_PATH}/core/layout/layout.cpp
+#        ${RENDER_PATH}/core/layout/style.cpp
+#        ${RENDER_PATH}/core/css/css_value_getter.cpp
+#
+#        ${RENDER_PATH}/core/config/core_environment.cpp
+#
+#        ${RENDER_PATH}/core/moniter/render_performance.cpp
+#        ${RENDER_PATH}/core/manager/weex_core_manager.cpp
+#        ${RENDER_PATH}/core/parser/dom_wson.cpp
+#        ${RENDER_PATH}/wson/wson_parser.cpp
+#        ${RENDER_PATH}/wson/wson_util.cpp
         ${RENDER_PATH}/wson/wson.c
-
-        ${RENDER_PATH}/android/base/jni/android_jni.cpp
-        ${RENDER_PATH}/android/base/jni/jbytearray_ref.cpp
-        ${RENDER_PATH}/android/base/jni/scoped_java_ref.cpp
-        ${RENDER_PATH}/android/base/string/scoped_jstring.cpp
-        ${RENDER_PATH}/android/base/string/scoped_jstring_utf8.cpp
-        ${RENDER_PATH}/android/base/string/jstring_cache.cpp
-
-        ${RENDER_PATH}/android/bridge/impl/measure_mode_impl_android.cpp
-        ${RENDER_PATH}/android/bridge/impl/content_box_measurement_impl_android.cpp
+#
+#        ${RENDER_PATH}/android/base/jni/android_jni.cpp
+#        ${RENDER_PATH}/android/base/jni/jbytearray_ref.cpp
+#        ${RENDER_PATH}/android/base/jni/scoped_java_ref.cpp
+#        ${RENDER_PATH}/android/base/string/scoped_jstring.cpp
+#        ${RENDER_PATH}/android/base/string/scoped_jstring_utf8.cpp
+#        ${RENDER_PATH}/android/base/string/jstring_cache.cpp
+#
+#        ${RENDER_PATH}/android/bridge/impl/measure_mode_impl_android.cpp
+#        ${RENDER_PATH}/android/bridge/impl/content_box_measurement_impl_android.cpp
 
         ${IPC_SOURCES}
 )

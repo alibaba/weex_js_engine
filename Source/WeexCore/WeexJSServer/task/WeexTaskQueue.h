@@ -22,6 +22,8 @@ public:
 
     void removeTimer(int taskId);
 
+    void removeAllTask(String id);
+
     int addTimerTask(String id, JSC::JSValue function, int taskId);
 
     void start();
@@ -32,11 +34,11 @@ public:
 
 public:
     WeexRuntime *weexRuntime;
-
+    bool isMultiProgress;
 
 private:
     int _addTask(WeexTask *task, bool front);
-    bool isMultiProgress;
+
     std::deque<WeexTask *> taskQueue_;
     ThreadLocker threadLocker;
 };

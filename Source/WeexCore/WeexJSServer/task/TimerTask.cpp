@@ -7,7 +7,7 @@
 
 TimerTask::TimerTask(String id, JSC::JSValue function, uint64_t millSecTimeout, bool repeat) {
     this->taskId = genTaskId();
-    this->instanceID = std::move(id);
+    this->instanceID = id;
     this->function = function;
     this->timeout = millSecTimeout;
     this->when = microTime() + millSecTimeout * TIMESPCE;

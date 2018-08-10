@@ -23,6 +23,8 @@ public:
 
     explicit WeexRuntime(WeexCore::ScriptBridge *script_bridge, bool isMultiProgress = true);
 
+    bool hasInstanceId(String &id);
+
     int initFramework(IPCArguments *arguments);
     int initFramework(const String &script, std::vector<INIT_FRAMEWORK_PARAMS *> &params);
 

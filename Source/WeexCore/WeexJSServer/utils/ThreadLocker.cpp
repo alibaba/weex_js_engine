@@ -26,16 +26,12 @@ int ThreadLocker::waitTimeout(const uint64_t microSecWhen) {
 
 int ThreadLocker::waitTimeout(const struct timeval *tv) {
     struct timespec ts{tv->tv_sec, tv->tv_usec * TIMESPCE};
-    LOGE("timeout value wait time sec is %lu  %lu", tv->tv_sec, tv->tv_usec * TIMESPCE);
     return waitTimeout(&ts);
 }
 
 int ThreadLocker::waitTimeout(const struct timespec *timeout) {
     struct timeval tv;
     gettimeofday(&tv, nullptr);
-
-    LOGE("timeout value wait time sec is %lu  %lu", timeout->tv_sec - tv.tv_sec, (timeout->tv_nsec/ TIMESPCE -tv.tv_usec)/TIMESPCE);
-
     return pthread_cond_timedwait(&condition_, &mutex_, timeout);
 }
 

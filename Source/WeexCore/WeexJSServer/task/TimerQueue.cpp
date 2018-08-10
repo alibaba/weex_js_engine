@@ -25,10 +25,13 @@ void TimerQueue::start() {
     while (true) {
         auto pTask = getTask();
         LOGE("getTask return task");
-        weexTaskQueue->addTimerTask(pTask->instanceID, pTask->function, pTask->taskId);
-        if (pTask->repeat) {
-            LOGE("repreat");
-            addTimerTask(new TimerTask(pTask));
+
+        if(weexTaskQueue->weexRuntime->hasInstanceId(pTask->instanceID)) {
+            weexTaskQueue->addTimerTask(pTask->instanceID, pTask->function, pTask->taskId);
+            if (pTask->repeat && weexTaskQueue->weexRuntime->hasInstanceId(pTask->instanceID)) {
+                LOGE("repreat");
+                addTimerTask(new TimerTask(pTask));
+            }
         }
         delete (pTask);
         pTask = nullptr;
@@ -80,16 +83,13 @@ TimerTask *TimerQueue::getTask() {
             if (timerQueue_.empty()) {
                 threadLocker.wait();
             } else {
-                LOGE("begin wait");
                 auto i = threadLocker.waitTimeout(nextTaskWhen);
-                LOGE("after wait %d", i);
                 if (i == ETIMEDOUT) {
                     break;
                 }
             }
         }
 
-        LOGE("in getTask2");
         if (timerQueue_.empty()) {
             threadLocker.unlock();
             continue;
@@ -118,6 +118,31 @@ void TimerQueue::removeTimer(int timerId) {
         for (std::deque<TimerTask *>::iterator it = timerQueue_.begin(); it < timerQueue_.end(); ++it) {
             auto reference = *it;
             if (reference->taskId == timerId) {
+                timerQueue_.erase(it);
+                weexTaskQueue->removeTimer(reference->taskId);
+                delete (reference);
+                reference = nullptr;
+            }
+        }
+    }
+
+    int size = timerQueue_.size();
+    if (size > 0) {
+        nextTaskWhen = timerQueue_.front()->when;
+    }
+    threadLocker.unlock();
+    threadLocker.signal();
+}
+
+void TimerQueue::destroyPageTimer(String instanceId) {
+    threadLocker.lock();
+    if (timerQueue_.empty()) {
+        threadLocker.unlock();
+        return;
+    } else {
+        for (std::deque<TimerTask *>::iterator it = timerQueue_.begin(); it < timerQueue_.end(); ++it) {
+            auto reference = *it;
+            if (reference->instanceID == instanceId) {
                 timerQueue_.erase(it);
                 weexTaskQueue->removeTimer(reference->taskId);
                 delete (reference);

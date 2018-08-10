@@ -207,10 +207,10 @@ void WeexGlobalObject::initFunction() {
             {"setIntervalWeex",       JSC::Function, NoIntrinsic, {(intptr_t) static_cast<NativeFunction>(functionSetIntervalWeex),     (intptr_t) (3)}},
             {"clearIntervalWeex",     JSC::Function, NoIntrinsic, {(intptr_t) static_cast<NativeFunction>(functionClearIntervalWeex),   (intptr_t) (1)}},
             {"callT3DLinkNative",     JSC::Function, NoIntrinsic, {(intptr_t) static_cast<NativeFunction>(functionT3DLinkNative),       (intptr_t) (2)}},
-            {"setNativeTimeout",      JSC::Function, NoIntrinsic, {(intptr_t) static_cast<NativeFunction>(functionNativeSetTimeout),    (intptr_t) (2)}},
-            {"setNativeInterval",     JSC::Function, NoIntrinsic, {(intptr_t) static_cast<NativeFunction>(functionNativeSetInterval),  (intptr_t) (2)}},
-            {"clearNativeTimeout",    JSC::Function, NoIntrinsic, {(intptr_t) static_cast<NativeFunction>(functionNativeClearTimeout),  (intptr_t) (1)}},
-            {"clearNativeInterval",   JSC::Function, NoIntrinsic, {(intptr_t) static_cast<NativeFunction>(functionNativeClearInterval),  (intptr_t) (1)}},
+//            {"setNativeTimeout",      JSC::Function, NoIntrinsic, {(intptr_t) static_cast<NativeFunction>(functionNativeSetTimeout),    (intptr_t) (2)}},
+//            {"setNativeInterval",     JSC::Function, NoIntrinsic, {(intptr_t) static_cast<NativeFunction>(functionNativeSetInterval),  (intptr_t) (2)}},
+//            {"clearNativeTimeout",    JSC::Function, NoIntrinsic, {(intptr_t) static_cast<NativeFunction>(functionNativeClearTimeout),  (intptr_t) (1)}},
+//            {"clearNativeInterval",   JSC::Function, NoIntrinsic, {(intptr_t) static_cast<NativeFunction>(functionNativeClearInterval),  (intptr_t) (1)}},
     };
     reifyStaticProperties(vm, JSEventTargetPrototypeTableValues, *this);
 }
@@ -719,6 +719,7 @@ JSFUNCTION functionNativeSetTimeout(ExecState *state) {
     const JSValue &jsValue = state->argument(1);
     TimerQueue *timerQueue =WeexEnv::getEnv()->timerQueue();
     if (timerQueue != nullptr) {
+        LOGE("set timeout %s",globalObject->id.c_str());
         TimerTask *task = new TimerTask(globalObject->id.c_str(), value,
                                         static_cast<uint64_t>(jsValue.asInt32()), false);
         timerQueue->addTimerTask(task);

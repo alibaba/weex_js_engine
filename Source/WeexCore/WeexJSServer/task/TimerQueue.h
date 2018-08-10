@@ -17,6 +17,8 @@ class TimerQueue {
 public:
     void init();
 
+    void destroyPageTimer(String instanceId);
+
     void removeTimer(int timerId);
 
     int addTimerTask(TimerTask *timerTask);

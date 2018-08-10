@@ -20,6 +20,7 @@ WeexRuntime::WeexRuntime(WeexCore::ScriptBridge *script_bridge, bool isMultiProg
     this->script_bridge_ = script_bridge;
 }
 
+
 int WeexRuntime::initFramework(IPCArguments *arguments) {
     base::debug::TraceEvent::StartATrace(nullptr);
 
@@ -54,12 +55,11 @@ int WeexRuntime::initAppFrameworkMultiProcess(const String &instanceId, const St
 
 int WeexRuntime::initAppFramework(const String &instanceId, const String &appFramework,
                                   std::vector<INIT_FRAMEWORK_PARAMS *> &params) {
-    auto k = instanceId.utf8().data();
     auto pHolder = getLightAppObjectHolder(instanceId);
     if (pHolder == nullptr) {
         auto holder = new WeexObjectHolder(is_multi_process_);
         holder->initFromParams(params, true);
-        weexLiteAppObjectHolderMap[k] = holder;
+        weexLiteAppObjectHolderMap[instanceId.utf8().data()] = holder;
     }
     return _initAppFramework(instanceId, appFramework);
 }
@@ -319,6 +319,8 @@ int WeexRuntime::destroyAppContext(const String &instanceId) {
         // LOGE("Weex jsserver IPCJSMsg::DESTORYAPPCONTEXT mAppInstanceGlobalObjectMap donnot contain and return");
         objectMap.erase(k);
     }
+
+    WeexEnv::getEnv()->timerQueue()->destroyPageTimer(instanceId);
 
     // GC on VM
 //    WeexGlobalObject* instanceGlobalObject = mAppInstanceGlobalObjectMap[instanceId.utf8().data()];
@@ -693,7 +695,7 @@ int WeexRuntime::destroyInstance(const String &instanceId) {
     // LOGE("DestoryInstance map 11 length:%d", weexObjectHolder->m_jsGlobalObjectMap.size());
     weexObjectHolder->m_jsInstanceGlobalObjectMap.erase(instanceId.utf8().data());
     // LOGE("DestoryInstance map 22 length:%d", weexObjectHolder->m_jsGlobalObjectMap.size());
-
+    WeexEnv::getEnv()->timerQueue()->destroyPageTimer(instanceId.utf8().data());
     // release JSGlobalContextRelease
     // when instanceId % 20 == 0 GC
     bool needGc = false;
@@ -756,6 +758,7 @@ int WeexRuntime::createInstance(const String &instanceId, const String &func, co
 //            }
 
             temp_object = weexObjectHolder->cloneWeexObject(true, false);
+            temp_object->id = instanceId.utf8().data();
             VM &vm = temp_object->vm();
             temp_object->SetScriptBridge(script_bridge_);
             JSLockHolder locker(&vm);
@@ -809,7 +812,7 @@ int WeexRuntime::createInstance(const String &instanceId, const String &func, co
 
             temp_object->resetPrototype(vm, ret);
             weexObjectHolder->m_jsInstanceGlobalObjectMap[instanceId.utf8().data()] = temp_object;
-
+            LOGE("create Instance instanceId.utf8().data() %s",instanceId.utf8().data());
             // -----------------------------------------
             // ExecState* exec =temp_object->globalExec();
             // JSLockHolder temp_locker(exec);
@@ -925,7 +928,6 @@ WeexRuntime::_getArgListFromIPCArguments(MarkedArgumentBuffer *obj, ExecState *s
 
 void WeexRuntime::_getArgListFromJSParams(MarkedArgumentBuffer *obj, ExecState *state,
                                           std::vector<VALUE_WITH_TYPE *> &params) {
-    LOGE("_getArgListFromJSParams params.size() is %d \r\n",params.size());
     for (unsigned int i = 0; i < params.size(); i++) {
         VALUE_WITH_TYPE *paramsObject = params[i];
         switch (paramsObject->type) {
@@ -942,7 +944,6 @@ void WeexRuntime::_getArgListFromJSParams(MarkedArgumentBuffer *obj, ExecState *
                 const WeexString *ipcstr = paramsObject->value.string;
 
                 const String &string = weexString2String(ipcstr);
-                LOGE("_getArgListFromJSParams pType->value.string is %s \r\n",string.utf8().data());
                 String str = jString2String(ipcstr->content, ipcstr->length);
                 JSValue o = parseToObject(state, str);
                 obj->append(o);
@@ -962,24 +963,24 @@ void WeexRuntime::_getArgListFromJSParams(MarkedArgumentBuffer *obj, ExecState *
 }
 
 WeexObjectHolder *WeexRuntime::getLightAppObjectHolder(const String &instanceId) {
-    auto k = instanceId.utf8().data();
-    auto iterator = weexLiteAppObjectHolderMap.find(k);
+    auto iterator = weexLiteAppObjectHolderMap.find(instanceId.utf8().data());
     if (iterator == weexLiteAppObjectHolderMap.end()) {
         return nullptr;
     }
 
-    return weexLiteAppObjectHolderMap[k];
+    return weexLiteAppObjectHolderMap[instanceId.utf8().data()];
 }
 
 int WeexRuntime::exeTimerFunction(const String &instanceId, JSC::JSValue timerFunction) {
-    LOGE("exeTimerFunction is running");
     uint64_t begin = microTime();
-
+    LOGE("exeTimerFunction id is %s",instanceId.utf8().data());
     JSGlobalObject *globalObject;
     globalObject = weexObjectHolder->m_jsInstanceGlobalObjectMap[instanceId.utf8().data()];
-    if (globalObject == NULL) {
+    if (globalObject == nullptr) {
+        LOGE("exeTimerFunction and object is null");
         // instance is not exist
-        globalObject = weexObjectHolder->m_globalObject.get();
+        return 0;
+//        globalObject = weexObjectHolder->m_globalObject.get();
     }
     VM &vm = globalObject->vm();
     JSLockHolder locker(&vm);
@@ -1001,6 +1002,24 @@ int WeexRuntime::exeTimerFunction(const String &instanceId, JSC::JSValue timerFu
     LOGE("exeTimerFunction cost %lld", end - begin);
 
     return 0;
+}
+
+bool WeexRuntime::hasInstanceId(String & id) {
+    bool lightAppHasId = false;
+
+    auto iterator = weexLiteAppObjectHolderMap.find(id.utf8().data());
+    if (iterator != weexLiteAppObjectHolderMap.end()) {
+        lightAppHasId = true;
+    }
+
+
+    bool weexHasId = false;
+    auto it = weexObjectHolder->m_jsInstanceGlobalObjectMap.find(id.utf8().data());
+    if (it != weexObjectHolder->m_jsInstanceGlobalObjectMap.end()) {
+        weexHasId = true;
+    }
+
+    return weexHasId || lightAppHasId;
 }
 
 

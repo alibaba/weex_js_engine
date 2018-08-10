@@ -12,21 +12,6 @@
 #include <WeexCore/WeexJSServer/bridge/platform/platform_side_multi_process.h>
 
 void WeexTaskQueue::run(WeexTask *task) {
-    //todo 移动到构造函数里
-    if (this->weexRuntime == nullptr) {
-        LOGE("WeexCore init runtime %d fd1 = %d, fd2 = %d", gettid(),WeexEnv::getEnv()->getIpcServerFd(),
-             WeexEnv::getEnv()->getIpcClientFd());
-        this->weexRuntime = new WeexRuntime(WeexEnv::getEnv()->scriptBridge(), this->isMultiProgress);
-        // init IpcClient in Js Thread
-        if (this->isMultiProgress) {
-            auto *client = new WeexIPCClient(WeexEnv::getEnv()->getIpcClientFd());
-            static_cast<weex::bridge::js::CoreSideInMultiProcess *>(weex::bridge::js::ScriptBridgeInMultiProcess::Instance()->core_side())->set_ipc_client(
-                    client);
-            static_cast<weex::PlatformSideInMultiProcess *>(weex::PlatformBridgeInMultiProcess::Instance()->platform_side())->set_client(
-                    client);
-        }
-        WeexEnv::getEnv()->setTimerQueue(new TimerQueue(this));
-    }
     task->run(weexRuntime);
     delete task;
 }
@@ -64,7 +49,6 @@ WeexTask *WeexTaskQueue::getTask() {
 }
 
 int WeexTaskQueue::addTimerTask(String id, JSC::JSValue function, int taskId) {
-    LOGE("addTimerTask is running task");
     WeexTask *task = new NativeTimerTask(id, function,taskId);
     return _addTask(
             task,
@@ -103,8 +87,21 @@ void WeexTaskQueue::start() {
 static void *startThread(void *td) {
     auto *self = static_cast<WeexTaskQueue *>(td);
     self->isInitOk = true;
+
+    if (self->weexRuntime == nullptr) {
+        self->weexRuntime = new WeexRuntime(WeexEnv::getEnv()->scriptBridge(), self->isMultiProgress);
+        // init IpcClient in Js Thread
+        if (self->isMultiProgress) {
+            auto *client = new WeexIPCClient(WeexEnv::getEnv()->getIpcClientFd());
+            static_cast<weex::bridge::js::CoreSideInMultiProcess *>(weex::bridge::js::ScriptBridgeInMultiProcess::Instance()->core_side())->set_ipc_client(
+                    client);
+            static_cast<weex::PlatformSideInMultiProcess *>(weex::PlatformBridgeInMultiProcess::Instance()->platform_side())->set_client(
+                    client);
+        }
+        WeexEnv::getEnv()->setTimerQueue(new TimerQueue(self));
+    }
+
     auto pTask = self->getTask();
-    LOGE("start weex queue task thread");
     self->run(pTask);
     self->start();
 }
@@ -133,5 +130,24 @@ int WeexTaskQueue::_addTask(WeexTask *task, bool front) {
 WeexTaskQueue::WeexTaskQueue(bool isMultiProgress) : weexRuntime(nullptr) {
     this->isMultiProgress = isMultiProgress;
     this->weexRuntime = nullptr;
+}
+
+void WeexTaskQueue::removeAllTask(String id) {
+    threadLocker.lock();
+    if (taskQueue_.empty()) {
+        threadLocker.unlock();
+        return;
+    } else {
+        for (std::deque<WeexTask *>::iterator it = taskQueue_.begin(); it < taskQueue_.end(); ++it) {
+            auto reference = *it;
+            if (reference->instanceId == id) {
+                taskQueue_.erase(it);
+                delete (reference);
+                reference = nullptr;
+            }
+        }
+    }
+    threadLocker.unlock();
+    threadLocker.signal();
 }
 

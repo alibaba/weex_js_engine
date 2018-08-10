@@ -5,9 +5,6 @@
 #include "ExeJsTask.h"
 
 void ExeJsTask::run(WeexRuntime *runtime) {
-
-    LOGE("ExeJsTask is running and extraArgsSize is %d", extraArgs.size());
-
     if (extraArgs.size() < 2)
         return;
 
@@ -41,6 +38,5 @@ ExeJsTask::ExeJsTask(const String &instanceId, IPCArguments *arguments, size_t s
 }
 
 ExeJsTask::~ExeJsTask() {
-    LOGE("del ExeJsTask");
     delete exeJsArgs;
 }

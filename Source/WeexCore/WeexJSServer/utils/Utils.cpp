@@ -397,16 +397,6 @@ void freeParams(std::vector<VALUE_WITH_TYPE *> &params) {
     }
 }
 
-void initCrashHandler(const char *path) {
-    // const char* path = getenv("CRASH_FILE_PATH");
-    LOGD("CRASH_FILE_PATH: %s:", path);
-    if (path) {
-        crash_handler::initializeCrashHandler(path);
-        freopen(path, "w", stderr);
-        chmod(path, 0600);
-    }
-}
-
 void initHeapTimer() {
     HeapTimer::startTimerThread();
 }

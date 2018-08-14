@@ -17,7 +17,7 @@ void CoreSideInMultiSo::CallNative(const char *page_id, const char *task,
   functions_exposed_by_core_->funcCallNative(page_id, task, callback);
 }
 
-std::unique_ptr<IPCResult> CoreSideInMultiSo::CallNativeModule(
+std::unique_ptr<ValueWithType> CoreSideInMultiSo::CallNativeModule(
     const char *page_id, const char *module, const char *method,
     const char *arguments, int arguments_length, const char *options,
     int options_length) {

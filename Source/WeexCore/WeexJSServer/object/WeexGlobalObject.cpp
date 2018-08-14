@@ -113,7 +113,6 @@ void WeexGlobalObject::SetScriptBridge(WeexCore::ScriptBridge *script_bridge) {
 void WeexGlobalObject::initWxEnvironment(std::vector<INIT_FRAMEWORK_PARAMS *> &params, bool forAppContext, bool isSave) {
     VM &vm = this->vm();
     JSNonFinalObject *WXEnvironment = SimpleObject::create(vm, this);
-    bool hasInitCrashHandler = false;
     for (int i = 0; i < params.size(); i++) {
         INIT_FRAMEWORK_PARAMS *param = params[i];
 
@@ -133,14 +132,7 @@ void WeexGlobalObject::initWxEnvironment(std::vector<INIT_FRAMEWORK_PARAMS *> &p
             m_initFrameworkParams.push_back(init_framework_params);
         }
 
-        if (String("cacheDir") == type) {
-            String path = value;
-            path.append("/jsserver_crash");
-            initCrashHandler(path.utf8().data());
-            hasInitCrashHandler = true;
-        }
-
-        if (!isGlobalConfigStartUpSet) {
+        if(!isGlobalConfigStartUpSet){
             if (strncmp(type.utf8().data(), WX_GLOBAL_CONFIG_KEY, strlen(WX_GLOBAL_CONFIG_KEY)) == 0) {
                 const char *config = value.utf8().data();
                 doUpdateGlobalSwitchConfig(config);
@@ -160,10 +152,6 @@ void WeexGlobalObject::initWxEnvironment(std::vector<INIT_FRAMEWORK_PARAMS *> &p
         //free(params);
     }
 
-    if (!hasInitCrashHandler) {
-        const char *path = getenv("CRASH_FILE_PATH");
-        initCrashHandler(path);
-    }
     if (forAppContext)
         addValue(vm, "__windmill_environment__", WXEnvironment);
     else
@@ -349,21 +337,24 @@ JSFUNCTION functionCallNativeModule(ExecState *state) {
                                                                            arguments.getLength(),
                                                                            options.getValue(),
                                                                            options.getLength());
+
     JSValue ret;
-    switch (result->getType()) {
-        case IPCType::DOUBLE:
-            ret = jsNumber(result->get<double>());
+    switch (result->type) {
+        case ParamsType::DOUBLE:
+            ret = jsNumber(result->value.doubleValue);
             break;
-        case IPCType::STRING:
-            ret = jString2JSValue(state, result->getStringContent(), result->getStringLength());
+        case ParamsType::STRING:
+            ret = jString2JSValue(state, result->value.string->content, result->value.string->length);
             break;
-        case IPCType::JSONSTRING: {
-            String val = jString2String(result->getStringContent(), result->getStringLength());
+        case ParamsType::JSONSTRING: {
+            String val = jString2String(result->value.string->content, result->value.string->length);
             ret = parseToObject(state, val);
+            free(result->value.string);
         }
             break;
-        case IPCType::BYTEARRAY: {
-            ret = wson::toJSValue(state, (void *) result->getByteArrayContent(), result->getByteArrayLength());
+        case ParamsType::BYTEARRAY: {
+            ret = wson::toJSValue(state, (void *) result->value.byteArray->content, result->value.byteArray->length);
+            free(result->value.byteArray);
         }
             break;
         default:

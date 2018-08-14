@@ -17,7 +17,7 @@ class CoreSideInSimple : public WeexCore::ScriptBridge::CoreSide {
 
   void CallNative(const char *page_id, const char *task,
                   const char *callback) override;
-  std::unique_ptr<IPCResult> CallNativeModule(
+  std::unique_ptr<ValueWithType> CallNativeModule(
       const char *page_id, const char *module, const char *method,
       const char *arguments, int arguments_length, const char *options,
       int options_length) override;

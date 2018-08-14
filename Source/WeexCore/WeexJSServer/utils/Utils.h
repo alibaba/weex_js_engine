@@ -218,9 +218,6 @@ std::unique_ptr<char[]> newCharString(const char *str, size_t length);
 void printLogOnFileWithNameS(const char * name,const char *log);
 void getArgumentAsCString(IPCSerializer *serializer, ExecState *state, int argument);
 
-
-void initCrashHandler(const char *path);
-
 void initHeapTimer();
 
 void deinitHeapTimer();

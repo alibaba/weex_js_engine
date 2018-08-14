@@ -7,19 +7,21 @@
 using namespace JSC;
 using namespace WTF;
 using namespace WEEXICU;
+using namespace crash_handler;
 
 
 struct WeexJSServer::WeexJSServerImpl {
-    WeexJSServerImpl(int serverFd, int clientFd, bool enableTrace);
+    WeexJSServerImpl(int serverFd, int clientFd, bool enableTrace, std::string crashFileName);
 
     std::unique_ptr<IPCFutexPageQueue> futexPageQueue;
     std::unique_ptr<IPCSender> sender;
     std::unique_ptr<IPCHandler> handler;
     std::unique_ptr<IPCListener> listener;
     std::unique_ptr<IPCSerializer> serializer;
+    std::unique_ptr<CrashHandlerInfo> crashHandler;
 };
 
-WeexJSServer::WeexJSServerImpl::WeexJSServerImpl(int serverFd, int clientFd, bool enableTrace) {
+WeexJSServer::WeexJSServerImpl::WeexJSServerImpl(int serverFd, int clientFd, bool enableTrace, std::string crashFileName) {
     WeexEnv::getEnv()->setIpcServerFd(serverFd);
     WeexEnv::getEnv()->setIpcClientFd(clientFd);
     WeexEnv::getEnv()->setEnableTrace(enableTrace);
@@ -37,10 +39,14 @@ WeexJSServer::WeexJSServerImpl::WeexJSServerImpl(int serverFd, int clientFd, boo
     sender = std::move(createIPCSender(futexPageQueue.get(), handler.get()));
     listener = std::move(createIPCListener(futexPageQueue.get(), handler.get()));
     serializer = std::move(createIPCSerializer());
+
+    // initialize signal handler
+    crashHandler.reset(new CrashHandlerInfo(crashFileName));
+    crashHandler->initializeCrashHandler();
 }
 
-WeexJSServer::WeexJSServer(int serverFd, int clientFd, bool enableTrace)
-        : m_impl(new WeexJSServerImpl(serverFd, clientFd, enableTrace)) {
+WeexJSServer::WeexJSServer(int serverFd, int clientFd, bool enableTrace, std::string crashFileName)
+        : m_impl(new WeexJSServerImpl(serverFd, clientFd, enableTrace, crashFileName)) {
 
 
     IPCHandler *handler = m_impl->handler.get();

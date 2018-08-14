@@ -37,6 +37,7 @@ struct ThreadData {
     int fd;
     int fd_client;
     bool enableTrace;
+    char* crashFileName;
 };
 
 static void *threadEntry(void *_td) {
@@ -44,7 +45,7 @@ static void *threadEntry(void *_td) {
     //  server = new weex::IPCServer(static_cast<int>(td->fd),
     //  static_cast<bool>(td->enableTrace));
     server = new WeexJSServer(static_cast<int>(td->fd), static_cast<int>(td->fd_client),
-                              static_cast<bool>(td->enableTrace));
+                              static_cast<bool>(td->enableTrace), td->crashFileName);
     // Register handler for bridge
     weex::bridge::js::ScriptBridgeInMultiProcess::RegisterIPCCallback(server->getHandler());
     nice(6);
@@ -61,18 +62,19 @@ extern "C" int serverMain(int argc, char **argv) {
     unsigned long fd;
     unsigned long fd_client = 0;
     unsigned long enableTrace;
-    if (argc != 4) {
+    if (argc < 4) {
         LOGE("argc is not correct");
         _exit(1);
     }
     fd = parseUL(argv[1]);
     fd_client = parseUL(argv[2]);
     enableTrace = parseUL(argv[3]);
+    char* fileName = argv[4];
     pthread_attr_t threadAttr;
     pthread_attr_init(&threadAttr);
     pthread_attr_setstacksize(&threadAttr, 10 * 1024 * 1024);
     pthread_t thread;
-    ThreadData td = {static_cast<int>(fd), static_cast<int>(fd_client), static_cast<bool>(enableTrace)};
+    ThreadData td = {static_cast<int>(fd), static_cast<int>(fd_client), static_cast<bool>(enableTrace),fileName};
     pthread_create(&thread, &threadAttr, threadEntry, &td);
     void *rdata;
     pthread_join(thread, &rdata);

@@ -42,7 +42,7 @@ namespace weex {
                 std::unique_ptr<IPCResult> result = sender->send(buffer.get());
             }
 
-            std::unique_ptr<IPCResult> CoreSideInMultiProcess::CallNativeModule(
+            std::unique_ptr<ValueWithType> CoreSideInMultiProcess::CallNativeModule(
                     const char *page_id, const char *module, const char *method,
                     const char *arguments, int arguments_length, const char *options,
                     int options_length) {
@@ -63,7 +63,33 @@ namespace weex {
                 serializer->add(options, options_length);
 
                 std::unique_ptr<IPCBuffer> buffer = serializer->finish();
-                return sender->send(buffer.get());
+
+                auto ipc_result = sender->send(buffer.get());
+
+                std::unique_ptr<ValueWithType> ret(new ValueWithType);
+
+                switch (ipc_result->getType()) {
+                    case IPCType::DOUBLE:
+                        ret->type = ParamsType::DOUBLE;
+                        ret->value.doubleValue = ipc_result->get<double>();
+                        break;
+                    case IPCType::STRING:
+                        ret->type = ParamsType::STRING;
+                        ret->value.string = genWeexStringSS(ipc_result->getStringContent(), ipc_result->getStringLength());
+                        break;
+                    case IPCType::JSONSTRING:
+                        ret->type = ParamsType::JSONSTRING;
+                        ret->value.string = genWeexStringSS(ipc_result->getStringContent(), ipc_result->getStringLength());
+                        break;
+                    case IPCType::BYTEARRAY: {
+                        ret->type = ParamsType::BYTEARRAY;
+                        ret->value.byteArray = genWeexByteArraySS(ipc_result->getByteArrayContent(), ipc_result->getByteArrayLength());
+                    }
+                        break;
+                    default:
+                        ret->type = ParamsType::JSUNDEFINED;
+                }
+                return ret;
             }
 
             void CoreSideInMultiProcess::CallNativeComponent(

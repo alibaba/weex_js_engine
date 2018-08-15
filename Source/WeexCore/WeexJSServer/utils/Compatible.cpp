@@ -91,7 +91,7 @@ int getpagesize()
 }
 
 size_t __ctype_get_mb_cur_max(void){
-    return MB_CUR_MAX;
+    return 1;
 }
 
 long double strtold(const char*p, char**end) {

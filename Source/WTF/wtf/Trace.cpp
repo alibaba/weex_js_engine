@@ -5,12 +5,10 @@
 
 #include <stdlib.h>
 #include <stdarg.h>
-#include <android/log.h>
 
 #include <string>
 #include "Trace.h"
 #define TAG "LINZJ"
-#define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, TAG, __VA_ARGS__)
 namespace {
 
 int g_atrace_fd = -1;
@@ -77,7 +75,6 @@ void TraceEvent::StartATrace(JNIEnv* env) {
 
   g_atrace_fd = open(kATraceMarkerFile, O_WRONLY);
   if (g_atrace_fd == -1) {
-    LOGE("Couldn't open %s", kATraceMarkerFile);
     return;
   }
 }

@@ -21,11 +21,8 @@
 #include <unistd.h>
 #include <vector>
 
-#include <android/log.h>
+//#include <android/log.h>
 #if 1
-#define TAG "ICUCompatible"
-#define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, TAG, __VA_ARGS__)
-#define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG, TAG, __VA_ARGS__)
 
 #define powerof2(x) ((((x)-1) & (x)) == 0)
 
@@ -539,7 +536,6 @@ bool StackFileReader::open(const char* fileName)
     FILE* file;
     file = fopen(fileName, "r");
     if (!file) {
-        LOGE("open file fails.\n");
         return false;
     }
     file_ = file;
@@ -561,7 +557,6 @@ void* SymbolResolver::findLibAddr()
 {
     StackFileReader sfr;
     if (!sfr.open("/proc/self/maps")) {
-        LOGE("open map file fails.\n");
         return nullptr;
     }
     const char* line;
@@ -579,7 +574,6 @@ check_elf(void* start, bool* is_elf32)
 {
     unsigned char* e_ident = static_cast<unsigned char*>(start);
     if (memcmp(e_ident, ELFMAG, SELFMAG)) {
-        LOGE("fails for not a elf.\n");
         return false;
     }
     *is_elf32 = (e_ident[EI_CLASS] != ELFCLASS64);
@@ -667,8 +661,6 @@ bool SymbolResolver::fill_with_dyn(void* start, void* end)
             gnu_chain_ = gnu_bucket_ + gnu_nbucket_ - reinterpret_cast<uint32_t*>(load_bias + pdyn->d_un.d_ptr)[1];
 
             if (!powerof2(gnu_maskwords_)) {
-                LOGE("invalid maskwords for gnu_hash = 0x%x expecting power to two",
-                    gnu_maskwords_);
                 return false;
             }
             --gnu_maskwords_;
@@ -680,7 +672,6 @@ bool SymbolResolver::fill_with_dyn(void* start, void* end)
         || strTableSz_ == 0
         || (gnu_chain_ == nullptr && chain_ == nullptr)) {
 
-        LOGE("fails for target fields is incomplete, %p %p %d %p %p.\n", symTable_, strTable_, strTableSz_, gnu_chain_, chain_);
         return false;
     }
     return true;
@@ -698,7 +689,6 @@ bool SymbolResolver::deal_with_elf()
     typedef typename ::elf_deducer<elf_header_type>::elf_addr elf_addr;
     hdr = static_cast<elf_header_type*>(start_);
     if (hdr->e_type != ET_DYN) {
-        LOGE("fails for target is not a shared library.\n");
         return false;
     }
     elf_phdr* phdr = reinterpret_cast<elf_phdr*>(static_cast<char*>(start_) + hdr->e_phoff);
@@ -712,7 +702,6 @@ bool SymbolResolver::deal_with_elf()
             min_vaddr = phdr->p_vaddr;
     }
     if (!dyn_phdr) {
-        LOGE("fails for target has no program header.\n");
         return false;
     }
     load_bias_ = static_cast<char*>(start_) - min_vaddr;
@@ -946,13 +935,11 @@ bool initICU(void)
 #define INIT_OR_CRASH(name)                                                 \
     var_##name = resolver.findSym(#name "_");                               \
     if (var_##name == NULL) {                                               \
-        LOGE("fails to get " #name " symbol.\n");                           \
         return false;                                                       \
     }
     {
         SymbolResolver resolver("libicui18n.so");
         if (!resolver.init()) {
-            LOGE("fails to init i18n resolver.\n");
             return false;
         }
         i18n_macro(INIT_OR_CRASH);
@@ -960,7 +947,6 @@ bool initICU(void)
     {
         SymbolResolver resolver("libicuuc.so");
         if (!resolver.init()) {
-            LOGE("fails to init uc resolver.\n");
             return false;
         }
         uc_macro(INIT_OR_CRASH);

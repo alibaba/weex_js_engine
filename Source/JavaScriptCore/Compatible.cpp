@@ -40,6 +40,23 @@
 #include <string.h>
 #include <unistd.h>
 
+sighandler_t _signal(int signum, sighandler_t handler, int flags) {
+    struct sigaction sa;
+    sigemptyset(&sa.sa_mask);
+    sa.sa_handler = handler;
+    sa.sa_flags = flags;
+
+    if (sigaction(signum, &sa, &sa) == -1) {
+        return SIG_ERR;
+    }
+
+    return sa.sa_handler;
+}
+
+sighandler_t signal(int signum, sighandler_t handler) {
+    return _signal(signum, handler, SA_RESTART);
+}
+
 int sigemptyset(sigset_t* set)
 {
     if (set == NULL) {

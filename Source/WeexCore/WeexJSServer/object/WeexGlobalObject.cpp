@@ -8,7 +8,7 @@
 #include "core/bridge/script_bridge.h"
 #include "WeexEnv.h"
 #include "WeexCore/WeexJSServer/utils/LogUtils.h"
-
+#include "WeexConsoleObject.h"
 #define WX_GLOBAL_CONFIG_KEY "global_switch_config"
 //#define GET_CHARFROM_UNIPTR(str) (str) == nullptr ? nullptr : (reinterpret_cast<const char*>((str).get()))
 using namespace JSC;
@@ -79,6 +79,12 @@ JSFUNCTION functionNativeSetTimeout(ExecState *);
 JSFUNCTION functionNativeSetInterval(ExecState *);
 JSFUNCTION functionNativeClearTimeout(ExecState *);
 JSFUNCTION functionNativeClearInterval(ExecState *);
+
+static JSValue createWeexConsoleProperty(VM& vm, JSObject* object) {
+    JSGlobalObject *global = jsCast<JSGlobalObject *>(object);
+    return WeexConsoleObject::create(vm, global, WeexConsoleObject::createStructure(vm, global, constructEmptyObject(
+            global->globalExec())));
+}
 
 const ClassInfo WeexGlobalObject::s_info = {"global", &JSGlobalObject::s_info, nullptr,
                                             CREATE_METHOD_TABLE(WeexGlobalObject)};
@@ -176,6 +182,7 @@ void WeexGlobalObject::initFunctionForContext() {
             {"setNativeInterval",     JSC::Function, NoIntrinsic, {(intptr_t) static_cast<NativeFunction>(functionNativeSetInterval),  (intptr_t) (2)}},
             {"clearNativeTimeout",    JSC::Function, NoIntrinsic, {(intptr_t) static_cast<NativeFunction>(functionNativeClearTimeout),  (intptr_t) (1)}},
             {"clearNativeInterval",   JSC::Function, NoIntrinsic, {(intptr_t) static_cast<NativeFunction>(functionNativeClearInterval),  (intptr_t) (1)}},
+            { "console", DontEnum|PropertyCallback, NoIntrinsic, { (intptr_t) static_cast<LazyPropertyCallback>(createWeexConsoleProperty), (intptr_t)(0) } },
     };
     reifyStaticProperties(vm, JSEventTargetPrototypeTableValues, *this);
 }
@@ -225,6 +232,7 @@ void WeexGlobalObject::initFunctionForAppContext() {
             {"setNativeInterval",     JSC::Function, NoIntrinsic, {(intptr_t) static_cast<NativeFunction>(functionNativeSetInterval),  (intptr_t) (2)}},
             {"clearNativeTimeout",    JSC::Function, NoIntrinsic, {(intptr_t) static_cast<NativeFunction>(functionNativeClearTimeout),  (intptr_t) (1)}},
             {"clearNativeInterval",   JSC::Function, NoIntrinsic, {(intptr_t) static_cast<NativeFunction>(functionNativeClearInterval),  (intptr_t) (1)}},
+            { "console", DontEnum|PropertyCallback, NoIntrinsic, { (intptr_t) static_cast<LazyPropertyCallback>(createWeexConsoleProperty), (intptr_t)(0) } },
     };
     reifyStaticProperties(vm, JSEventTargetPrototypeTableValues, *this);
 }

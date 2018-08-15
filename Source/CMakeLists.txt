@@ -76,7 +76,7 @@ set(${WEEXJSSERVER_NAME}_SOURCES
         WeexCore/WeexJSServer/object/args/ExeJsArgs.cpp
         WeexCore/WeexJSServer/object/args/InitFrameworkArgs.cpp
         WeexCore/WeexJSServer/object/WeexEnv.cpp
-
+        WeexCore/WeexJSServer/object/WeexConsoleObject.cpp
         WeexCore/WeexJSServer/task/impl/InitFrameworkTask.cpp
         WeexCore/WeexJSServer/task/impl/CreateAppContextTask.cpp
         WeexCore/WeexJSServer/task/impl/CreateInstanceTask.cpp

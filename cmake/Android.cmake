@@ -81,7 +81,7 @@ endif()
 
 set(PORT JSCOnly)
 set(WTF_CPU_$ENV{WTF_CPU} 1)
-set(JavaScriptCore_LIBRARY_TYPE STATIC)
+set(JavaScriptCore_LIBRARY_TYPE SHARED)
 
 if(gcc_compaile)
 set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-Os -g -DNDEBUG -flto=4")

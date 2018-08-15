@@ -48,7 +48,8 @@ set(JavaScriptCore_SYSTEM_INCLUDE_DIRECTORIES
 )
 
 set(JavaScriptCore_SOURCES
-    API/JSBase.cpp
+        Compatible.cpp
+        API/JSBase.cpp
     API/JSCTestRunnerUtils.cpp
     API/JSCallbackConstructor.cpp
     API/JSCallbackFunction.cpp
@@ -1534,12 +1535,27 @@ add_subdirectory(shell)
 
 WEBKIT_WRAP_SOURCELIST(${JavaScriptCore_SOURCES})
 WEBKIT_FRAMEWORK(JavaScriptCore)
+#set_target_properties(JavaScriptCore PROPERTIES OUTPUT_NAME "libJavaScriptCore")
+set_target_properties(JavaScriptCore
+        PROPERTIES
+        SKIP_BUILD_RPATH 1
+        )
+
+#if ("${JavaScriptCore_LIBRARY_TYPE}" MATCHES "SHARED")
+#    target_link_libraries(JavaScriptCore
+#            ${LIBSTDCPLUS}
+#            )
+#endif ()
+set_target_properties(JavaScriptCore
+        PROPERTIES
+        LINK_FLAGS "-Wl,-soname,libJavaScriptCore.so"
+        )
 
 MESSAGE("JavaScriptCore_LIBRARY_TYPE: ${JavaScriptCore_LIBRARY_TYPE}")
 if (NOT "${PORT}" STREQUAL "Mac")
     if (${JavaScriptCore_LIBRARY_TYPE} STREQUAL "SHARED")
         POPULATE_LIBRARY_VERSION(JAVASCRIPTCORE)
-        set_target_properties(JavaScriptCore PROPERTIES VERSION ${JAVASCRIPTCORE_VERSION} SOVERSION ${JAVASCRIPTCORE_VERSION_MAJOR})
+#        set_target_properties(JavaScriptCore PROPERTIES VERSION ${JAVASCRIPTCORE_VERSION} SOVERSION ${JAVASCRIPTCORE_VERSION_MAJOR})
         install(TARGETS JavaScriptCore DESTINATION "${LIB_INSTALL_DIR}")
     endif ()
 endif ()
@@ -1561,4 +1577,12 @@ if (MSVC)
         POST_BUILD
         COMMAND ${PERL_EXECUTABLE} ${WEBKIT_LIBRARIES_DIR}/tools/scripts/version-stamp.pl ${DERIVED_SOURCES_DIR} $<TARGET_FILE:JavaScriptCore>
         VERBATIM)
+endif ()
+if ("${JavaScriptCore_LIBRARY_TYPE}" MATCHES "SHARED")
+    add_custom_command(
+            TARGET JavaScriptCore
+            POST_BUILD
+            COMMAND ${CMAKE_STRIP} libJavaScriptCore.so -o ${CMAKE_SOURCE_DIR}/libJavaScriptCore.so
+            VERBATIM
+    )
 endif ()

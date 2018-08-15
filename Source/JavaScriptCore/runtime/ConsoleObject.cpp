@@ -31,7 +31,7 @@
 #include "JSCInlines.h"
 #include "ScriptArguments.h"
 #include "ScriptCallStackFactory.h"
-#include "WeexCore/WeexJSServer/utils/LogUtils.h"
+//#include "WeexCore/WeexJSServer/utils/LogUtils.h"
 #include "JSONObject.h"
 
 namespace JSC {
@@ -110,7 +110,7 @@ static void printConsoleLog(ExecState* exec, MessageLevel level) {
     JSValue val = exec->argument(0);
     if (val.isString()) {
         String s = val.toWTFString(exec);
-        Weex::LogUtil::ConsoleLogPrint((int)level, "jsLog", s.utf8().data());
+//        Weex::LogUtil::ConsoleLogPrint((int)level, "jsLog", s.utf8().data());
         // LOGE("consoleLogWithLevel level: %d log:%s", level, s.utf8().data());
         return;
     } else if (val.isObject()) {
@@ -122,10 +122,10 @@ static void printConsoleLog(ExecState* exec, MessageLevel level) {
             scope.clearException();
             return;
         }
-        Weex::LogUtil::ConsoleLogPrint((int)level, "jsLog", str.utf8().data());
+//        Weex::LogUtil::ConsoleLogPrint((int)level, "jsLog", str.utf8().data());
         // LOGE("consoleLogWithLevel level: %d log:%s", level, str.utf8().data());
     }
-    Weex::LogUtil::ConsoleLogPrint((int)level, "jsLog", "[object]");
+//    Weex::LogUtil::ConsoleLogPrint((int)level, "jsLog", "[object]");
 }
 
 static EncodedJSValue consoleLogWithLevel(ExecState* exec, MessageLevel level)

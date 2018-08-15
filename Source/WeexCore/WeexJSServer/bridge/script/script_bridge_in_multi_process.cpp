@@ -83,12 +83,15 @@ namespace weex {
     namespace bridge {
         namespace js {
 
+            static inline const char* GetUTF8StringFromIPCArg(IPCArguments* arguments, size_t index) {
+                return arguments->getByteArray(index)->length == 0 ? nullptr : arguments->getByteArray(index)->content;
+            }
+
             ScriptBridgeInMultiProcess *ScriptBridgeInMultiProcess::g_instance = NULL;
 
             ScriptBridgeInMultiProcess::ScriptBridgeInMultiProcess() {
                 set_script_side(new ScriptSideInQueue());
                 set_core_side(new CoreSideInMultiProcess());
-                //  set_core_side(new CoreSideInSimple());
             }
 
             ScriptBridgeInMultiProcess::~ScriptBridgeInMultiProcess() {}
@@ -205,7 +208,7 @@ namespace weex {
                 WeexEnv::getEnv()->setScriptBridge(Instance());
 
                 // Source
-                const char *source = arguments->getByteArray(0)->content;
+                const char *source = GetUTF8StringFromIPCArg(arguments, 0);
                 // Params
                 size_t startCount = 1;
                 size_t count = arguments->getCount();
@@ -236,8 +239,8 @@ namespace weex {
 
             std::unique_ptr<IPCResult> ScriptBridgeInMultiProcess::InitAppFramework(
                     IPCArguments *arguments) {
-                const char *id = arguments->getByteArray(0)->content;
-                const char *js = arguments->getByteArray(1)->content;
+                const char *id = GetUTF8StringFromIPCArg(arguments, 0);
+                const char *js = GetUTF8StringFromIPCArg(arguments, 1);
                 LOGE("Weex jsserver IPCJSMsg::INITAPPFRAMEWORK id:%s", id);
                 if (strcmp(id, "") == 0) {
                     return createInt32Result(static_cast<int32_t>(false));
@@ -273,8 +276,8 @@ namespace weex {
                     IPCArguments *arguments) {
                 LOGE("ScriptBridgeInMultiProcess::CreateAppContext");
                 // LOGE("Weex jsserver IPCJSMsg::CREATEAPPCONTEXT start");
-                const char *instanceID = arguments->getByteArray(0)->content;
-                const char *js = arguments->getByteArray(1)->content;
+                const char *instanceID = GetUTF8StringFromIPCArg(arguments, 0);
+                const char *js = GetUTF8StringFromIPCArg(arguments, 1);
                 // LOGE("Weex jsserver IPCJSMsg::CREATEAPPCONTEXT end");
                 return createInt32Result(
                         Instance()->script_side()->CreateAppContext(instanceID, js));
@@ -284,8 +287,8 @@ namespace weex {
                     IPCArguments *arguments) {
                 LOGE("ScriptBridgeInMultiProcess::ExecJSONAppWithResult");
                 // LOGE("Weex jsserver IPCJSMsg::ExecJSONAppWithResult start");
-                const char *instanceID = arguments->getByteArray(0)->content;
-                const char *js = arguments->getByteArray(1)->content;
+                const char *instanceID = GetUTF8StringFromIPCArg(arguments, 0);
+                const char *js = GetUTF8StringFromIPCArg(arguments, 1);
                 char *result = const_cast<char *>(
                         Instance()->script_side()->ExecJSOnAppWithResult(instanceID, js));
 
@@ -299,8 +302,8 @@ namespace weex {
                     IPCArguments *arguments) {
                 LOGE("ScriptBridgeInMultiProcess::CallJSONAppContext");
                 // LOGE("Weex jsserver IPCJSMsg::CallJSONAppContext start");
-                const char *instanceId = arguments->getByteArray(0)->content;
-                const char *func = arguments->getByteArray(1)->content;
+                const char *instanceId = GetUTF8StringFromIPCArg(arguments, 0);
+                const char *func = GetUTF8StringFromIPCArg(arguments, 1);
 
                 std::vector<VALUE_WITH_TYPE *> params;
                 FillVectorOfValueWithType(params, arguments, 2, arguments->getCount());
@@ -314,7 +317,7 @@ namespace weex {
                     IPCArguments *arguments) {
                 LOGE("ScriptBridgeInMultiProcess::DestroyAppContext");
                 // LOGE("Weex jsserver IPCJSMsg::DestroyAppContext start");
-                const char *instanceID = arguments->getByteArray(0)->content;
+                const char *instanceID = GetUTF8StringFromIPCArg(arguments, 0);
                 if (strlen(instanceID) == 0) {
                     return createInt32Result(static_cast<int32_t>(false));
                 }
@@ -326,14 +329,14 @@ namespace weex {
             std::unique_ptr<IPCResult> ScriptBridgeInMultiProcess::ExecJSService(
                     IPCArguments *arguments) {
                 LOGE("ScriptBridgeInMultiProcess::ExecJSService");
-                const char *source = arguments->getByteArray(0)->content;
+                const char *source = GetUTF8StringFromIPCArg(arguments, 0);
                 return createInt32Result(Instance()->script_side()->ExecJsService(source));
             }
 
             std::unique_ptr<IPCResult> ScriptBridgeInMultiProcess::ExecTimerCallback(
                     IPCArguments *arguments) {
                 LOGE("ScriptBridgeInMultiProcess::ExecTimerCallback");
-                const char *source = arguments->getByteArray(0)->content;
+                const char *source = GetUTF8StringFromIPCArg(arguments, 0);
                 Instance()->script_side()->ExecTimeCallback(source);
                 return createVoidResult();
             }
@@ -341,9 +344,9 @@ namespace weex {
             std::unique_ptr<IPCResult> ScriptBridgeInMultiProcess::ExecJS(
                     IPCArguments *arguments) {
                 LOGE("ScriptBridgeInMultiProcess::ExecJS");
-                const char *instanceId = arguments->getByteArray(0)->content;
-                const char *namespaceStr = arguments->getByteArray(1)->content;
-                const char *func = arguments->getByteArray(2)->content;
+                const char *instanceId = GetUTF8StringFromIPCArg(arguments, 0);
+                const char *namespaceStr = GetUTF8StringFromIPCArg(arguments, 1);
+                const char *func = GetUTF8StringFromIPCArg(arguments, 2);
 
                 std::vector<VALUE_WITH_TYPE *> params;
                 FillVectorOfValueWithType(params, arguments, 3, arguments->getCount());
@@ -356,9 +359,9 @@ namespace weex {
             std::unique_ptr<IPCResult> ScriptBridgeInMultiProcess::ExecJSWithResult(
                     IPCArguments *arguments) {
                 LOGE("ScriptBridgeInMultiProcess::ExecJSWithResult");
-                const char *instanceId = arguments->getByteArray(0)->content;
-                const char *namespaceStr = arguments->getByteArray(1)->content;
-                const char *func = arguments->getByteArray(2)->content;
+                const char *instanceId = GetUTF8StringFromIPCArg(arguments, 0);
+                const char *namespaceStr = GetUTF8StringFromIPCArg(arguments, 1);
+                const char *func = GetUTF8StringFromIPCArg(arguments, 2);
 
                 std::vector<VALUE_WITH_TYPE *> params;
                 FillVectorOfValueWithType(params, arguments, 3, arguments->getCount());
@@ -379,12 +382,12 @@ namespace weex {
                     IPCArguments *arguments) {
                 LOGE("ScriptBridgeInMultiProcess::CreateInstance");
 
-                const char *instanceID = arguments->getByteArray(0)->content;
-                const char *func = arguments->getByteArray(1)->content;
-                const char *script = arguments->getByteArray(2)->content;
-                const char *opts = arguments->getByteArray(3)->content;
-                const char *initData = arguments->getByteArray(4)->content;
-                const char *extendsApi = arguments->getByteArray(5)->content;
+                const char *instanceID = GetUTF8StringFromIPCArg(arguments, 0);
+                const char *func = GetUTF8StringFromIPCArg(arguments, 1);
+                const char *script = GetUTF8StringFromIPCArg(arguments, 2);
+                const char *opts = GetUTF8StringFromIPCArg(arguments, 3);
+                const char *initData = GetUTF8StringFromIPCArg(arguments, 4);
+                const char *extendsApi = GetUTF8StringFromIPCArg(arguments, 5);
 
                 return createInt32Result(Instance()->script_side()->CreateInstance(
                         instanceID, func, script, opts, initData, extendsApi));
@@ -393,7 +396,7 @@ namespace weex {
             std::unique_ptr<IPCResult> ScriptBridgeInMultiProcess::DestroyInstance(
                     IPCArguments *arguments) {
                 LOGE("ScriptBridgeInMultiProcess::DestroyInstance");
-                const char *instanceID = arguments->getByteArray(0)->content;
+                const char *instanceID = GetUTF8StringFromIPCArg(arguments, 0);
                 if (strlen(instanceID) == 0) {
                     LOGE("DestoryInstance instanceId is NULL");
                     return createInt32Result(static_cast<int32_t>(false));
@@ -406,8 +409,8 @@ namespace weex {
             std::unique_ptr<IPCResult> ScriptBridgeInMultiProcess::ExecJSOnInstance(
                     IPCArguments *arguments) {
                 LOGE("ScriptBridgeInMultiProcess::ExecJSONInstance");
-                const char *instanceID = arguments->getByteArray(0)->content;
-                const char *script = arguments->getByteArray(1)->content;
+                const char *instanceID = GetUTF8StringFromIPCArg(arguments, 0);
+                const char *script = GetUTF8StringFromIPCArg(arguments, 1);
 
                 char *result = const_cast<char *>(
                         Instance()->script_side()->ExecJSOnInstance(instanceID, script));
@@ -421,287 +424,16 @@ namespace weex {
             std::unique_ptr<IPCResult> ScriptBridgeInMultiProcess::UpdateGlobalConfig(
                     IPCArguments *arguments) {
                 LOGE("ScriptBridgeInMultiProcess::UpdateGlobalConfig");
-                const char *configString = arguments->getByteArray(0)->content;
+                const char *configString = GetUTF8StringFromIPCArg(arguments, 0);
                 Instance()->script_side()->UpdateGlobalConfig(configString);
                 return createVoidResult();
             }
-
-// std::unique_ptr<IPCResult> ScriptBridgeInMultiProcess::InitFramework(
-//    IPCArguments *arguments) {
-//  LOGE("ScriptBridgeInMultiProcess::InitFramework");
-//  static_cast<ScriptSideInSimple *>(Instance()->script_side())
-//      ->set_runtime(new WeexRuntime(Instance(), true));
-//  // Source
-//  const IPCString *ipcSource = arguments->getString(0);
-//  const String &source = jString2String(ipcSource->content,
-//  ipcSource->length);
-//  // Params
-//  size_t startCount = 1;
-//  size_t count = arguments->getCount();
-//  std::vector<INIT_FRAMEWORK_PARAMS *> params;
-//  for (size_t i = startCount; i < count; i += 2) {
-//    if (arguments->getType(i) != IPCType::BYTEARRAY) {
-//      continue;
-//    }
-//    if (arguments->getType(1 + i) != IPCType::BYTEARRAY) {
-//      continue;
-//    }
-//    const IPCByteArray *ba = arguments->getByteArray(1 + i);
-//    const IPCByteArray *ba_type = arguments->getByteArray(i);
-//    auto init_framework_params =
-//        (INIT_FRAMEWORK_PARAMS *)malloc(sizeof(INIT_FRAMEWORK_PARAMS));
-//    if (init_framework_params == nullptr) {
-//      break;
-//    }
-//    memset(init_framework_params, 0, sizeof(INIT_FRAMEWORK_PARAMS));
-//    init_framework_params->type = IPCByteArrayToWeexByteArray(ba_type);
-//    init_framework_params->value = IPCByteArrayToWeexByteArray(ba);
-//    params.push_back(init_framework_params);
-//  }
-//  return createInt32Result(
-//      Instance()->script_side()->InitFramework(source.utf8().data(), params));
-//}
-//
-// std::unique_ptr<IPCResult> ScriptBridgeInMultiProcess::InitAppFramework(
-//    IPCArguments *arguments) {
-//  const IPCString *ipcInstanceId = arguments->getString(0);
-//  String id = jString2String(ipcInstanceId->content, ipcInstanceId->length);
-//  const IPCString *appFrameWork = arguments->getString(1);
-//  String js = jString2String(appFrameWork->content, appFrameWork->length);
-//  LOGE("Weex jsserver IPCJSMsg::INITAPPFRAMEWORK id:%s", id.utf8().data());
-//  if (id.isEmpty() || id == "") {
-//    return createInt32Result(static_cast<int32_t>(false));
-//  }
-//  // Params
-//  size_t startCount = 2;
-//  size_t count = arguments->getCount();
-//  std::vector<INIT_FRAMEWORK_PARAMS *> params;
-//  for (size_t i = startCount; i < count; i += 2) {
-//    if (arguments->getType(i) != IPCType::BYTEARRAY) {
-//      continue;
-//    }
-//    if (arguments->getType(1 + i) != IPCType::BYTEARRAY) {
-//      continue;
-//    }
-//    const IPCByteArray *ba = arguments->getByteArray(1 + i);
-//    const IPCByteArray *ba_type = arguments->getByteArray(i);
-//    auto init_framework_params =
-//        (INIT_FRAMEWORK_PARAMS *)malloc(sizeof(INIT_FRAMEWORK_PARAMS));
-//    if (init_framework_params == nullptr) {
-//      break;
-//    }
-//    memset(init_framework_params, 0, sizeof(INIT_FRAMEWORK_PARAMS));
-//    init_framework_params->type = IPCByteArrayToWeexByteArray(ba_type);
-//    init_framework_params->value = IPCByteArrayToWeexByteArray(ba);
-//    params.push_back(init_framework_params);
-//  }
-//  return createInt32Result(Instance()->script_side()->InitAppFramework(
-//      id.utf8().data(), js.utf8().data(), params));
-//}
-//
-// std::unique_ptr<IPCResult> ScriptBridgeInMultiProcess::CreateAppContext(
-//    IPCArguments *arguments) {
-//  LOGE("ScriptBridgeInMultiProcess::CreateAppContext");
-//  // LOGE("Weex jsserver IPCJSMsg::CREATEAPPCONTEXT start");
-//  const IPCString *ipcInstanceId = arguments->getString(0);
-//  String instanceID =
-//      jString2String(ipcInstanceId->content, ipcInstanceId->length);
-//  const IPCString *jsBundle = arguments->getString(1);
-//  String js = jString2String(jsBundle->content, jsBundle->length);
-//  // LOGE("Weex jsserver IPCJSMsg::CREATEAPPCONTEXT end");
-//  return createInt32Result(Instance()->script_side()->CreateAppContext(
-//      instanceID.utf8().data(), js.utf8().data()));
-//}
-//
-// std::unique_ptr<IPCResult> ScriptBridgeInMultiProcess::ExecJSONAppWithResult(
-//    IPCArguments *arguments) {
-//  LOGE("ScriptBridgeInMultiProcess::ExecJSONAppWithResult");
-//  // LOGE("Weex jsserver IPCJSMsg::ExecJSONAppWithResult start");
-//  const IPCString *ipcInstanceId = arguments->getString(0);
-//  String instanceID =
-//      jString2String(ipcInstanceId->content, ipcInstanceId->length);
-//  const IPCString *jsBundle = arguments->getString(1);
-//  String js = jString2String(jsBundle->content, jsBundle->length);
-//  char *result = Instance()->script_side()->ExecJSOnAppWithResult(
-//      instanceID.utf8().data(), js.utf8().data());
-//
-//  if (result == nullptr)
-//    return createByteArrayResult(nullptr, 0);
-//  else
-//    return createCharArrayResult(result);
-//}
-//
-// std::unique_ptr<IPCResult> ScriptBridgeInMultiProcess::CallJSONAppContext(
-//    IPCArguments *arguments) {
-//  LOGE("ScriptBridgeInMultiProcess::CallJSONAppContext");
-//  // LOGE("Weex jsserver IPCJSMsg::CallJSONAppContext start");
-//  const IPCString *ipcInstanceId = arguments->getString(0);
-//  const IPCString *ipcFunc = arguments->getString(1);
-//  String instanceId =
-//      jString2String(ipcInstanceId->content, ipcInstanceId->length);
-//  String func = jString2String(ipcFunc->content, ipcFunc->length);
-//
-//  std::vector<VALUE_WITH_TYPE *> params;
-//  FillVectorOfValueWithType(params, arguments, 2, arguments->getCount());
-//  auto result = Instance()->script_side()->CallJSOnAppContext(
-//      instanceId.utf8().data(), func.utf8().data(), params);
-//  ClearVectorOfValueWithType(params);
-//  return createInt32Result(result);
-//}
-//
-// std::unique_ptr<IPCResult> ScriptBridgeInMultiProcess::DestroyAppContext(
-//    IPCArguments *arguments) {
-//  LOGE("ScriptBridgeInMultiProcess::DestroyAppContext");
-//  // LOGE("Weex jsserver IPCJSMsg::DestroyAppContext start");
-//  const IPCString *ipcInstanceId = arguments->getString(0);
-//  String instanceID =
-//      jString2String(ipcInstanceId->content, ipcInstanceId->length);
-//  if (instanceID.isEmpty()) {
-//    return createInt32Result(static_cast<int32_t>(false));
-//  }
-//
-//  return createInt32Result(
-//      Instance()->script_side()->DestroyAppContext(instanceID.utf8().data()));
-//}
-//
-// std::unique_ptr<IPCResult> ScriptBridgeInMultiProcess::ExecJSService(
-//    IPCArguments *arguments) {
-//  LOGE("ScriptBridgeInMultiProcess::ExecJSService");
-//  const IPCString *ipcSource = arguments->getString(0);
-//  String source = jString2String(ipcSource->content, ipcSource->length);
-//  return createInt32Result(
-//      Instance()->script_side()->ExecJsService(source.utf8().data()));
-//}
 
             std::unique_ptr<IPCResult> ScriptBridgeInMultiProcess::TakeHeapSnapshot(
                     IPCArguments *arguments) {
                 return createVoidResult();
             }
 
-// std::unique_ptr<IPCResult> ScriptBridgeInMultiProcess::ExecTimerCallback(
-//    IPCArguments *arguments) {
-//  LOGE("ScriptBridgeInMultiProcess::ExecTimerCallback");
-//  const IPCByteArray *ipcSource = arguments->getByteArray(0);
-//  String &&value = String::fromUTF8(ipcSource->content);
-//  String source = value;
-//  Instance()->script_side()->ExecTimeCallback(source.utf8().data());
-//  return createVoidResult();
-//}
-//
-// std::unique_ptr<IPCResult> ScriptBridgeInMultiProcess::ExecJS(
-//    IPCArguments *arguments) {
-//  LOGE("ScriptBridgeInMultiProcess::ExecJS");
-//  const IPCString *ipcInstanceId = arguments->getString(0);
-//  const IPCString *ipcNamespaceStr = arguments->getString(1);
-//  const IPCString *ipcFunc = arguments->getString(2);
-//  String instanceId =
-//      jString2String(ipcInstanceId->content, ipcInstanceId->length);
-//  String namespaceStr =
-//      jString2String(ipcNamespaceStr->content, ipcNamespaceStr->length);
-//  String func = jString2String(ipcFunc->content, ipcFunc->length);
-//
-//  std::vector<VALUE_WITH_TYPE *> params;
-//  FillVectorOfValueWithType(params, arguments, 3, arguments->getCount());
-//  auto result = Instance()->script_side()->ExecJS(instanceId.utf8().data(),
-//                                              namespaceStr.utf8().data(),
-//                                              func.utf8().data(), params);
-//  ClearVectorOfValueWithType(params);
-//  return createInt32Result(result);
-//}
-//
-// std::unique_ptr<IPCResult> ScriptBridgeInMultiProcess::ExecJSWithResult(
-//    IPCArguments *arguments) {
-//  LOGE("ScriptBridgeInMultiProcess::ExecJSWithResult");
-//  const IPCString *ipcInstanceId = arguments->getString(0);
-//  const IPCString *ipcNamespaceStr = arguments->getString(1);
-//  const IPCString *ipcFunc = arguments->getString(2);
-//  String instanceId =
-//      jString2String(ipcInstanceId->content, ipcInstanceId->length);
-//  String namespaceStr =
-//      jString2String(ipcNamespaceStr->content, ipcNamespaceStr->length);
-//  String func = jString2String(ipcFunc->content, ipcFunc->length);
-//
-//  std::vector<VALUE_WITH_TYPE *> params;
-//  FillVectorOfValueWithType(params, arguments, 3, arguments->getCount());
-//  WeexJSResult jsResult = Instance()->script_side()->ExecJSWithResult(
-//      instanceId.utf8().data(), namespaceStr.utf8().data(),
-//      func.utf8().data(), params);
-//  ClearVectorOfValueWithType(params);
-//
-//  if (jsResult.length <= 0) {
-//    return createByteArrayResult(nullptr, 0);
-//  }
-//  std::unique_ptr<IPCResult> ipcResult =
-//      createByteArrayResult(jsResult.data, jsResult.length);
-//  WeexJSResultDataFree(jsResult);
-//  return ipcResult;
-//}
-//
-// std::unique_ptr<IPCResult> ScriptBridgeInMultiProcess::CreateInstance(
-//    IPCArguments *arguments) {
-//  LOGE("ScriptBridgeInMultiProcess::CreateInstance");
-//  const IPCString *ipcInstanceId = arguments->getString(0);
-//  const IPCString *ipcFunc = arguments->getString(1);
-//  const IPCString *ipcScript = arguments->getString(2);
-//  const IPCString *ipcOpts = arguments->getString(3);
-//  const IPCString *ipcInitData = arguments->getString(4);
-//  const IPCString *ipcExtendApi = arguments->getString(5);
-//
-//  String instanceID =
-//      jString2String(ipcInstanceId->content, ipcInstanceId->length);
-//  String func = jString2String(ipcFunc->content, ipcFunc->length);
-//  String script = jString2String(ipcScript->content, ipcScript->length);
-//  String opts = jString2String(ipcOpts->content, ipcOpts->length);
-//  String initData = jString2String(ipcInitData->content, ipcInitData->length);
-//  String extendsApi =
-//      jString2String(ipcExtendApi->content, ipcExtendApi->length);
-//
-//  return createInt32Result(Instance()->script_side()->CreateInstance(
-//      instanceID.utf8().data(), func.utf8().data(), script.utf8().data(),
-//      opts.utf8().data(), initData.utf8().data(), extendsApi.utf8().data()));
-//}
-//
-// std::unique_ptr<IPCResult> ScriptBridgeInMultiProcess::DestroyInstance(
-//    IPCArguments *arguments) {
-//  LOGE("ScriptBridgeInMultiProcess::DestroyInstance");
-//  const IPCString *ipcInstanceId = arguments->getString(0);
-//  String instanceID =
-//      jString2String(ipcInstanceId->content, ipcInstanceId->length);
-//  if (instanceID.isEmpty()) {
-//    LOGE("DestoryInstance instanceId is NULL");
-//    return createInt32Result(static_cast<int32_t>(false));
-//  }
-//
-//  return createInt32Result(
-//      Instance()->script_side()->DestroyInstance(instanceID.utf8().data()));
-//}
-//
-// std::unique_ptr<IPCResult> ScriptBridgeInMultiProcess::ExecJSONInstance(
-//    IPCArguments *arguments) {
-//  LOGE("ScriptBridgeInMultiProcess::ExecJSONInstance");
-//  const IPCString *ipcInstanceId = arguments->getString(0);
-//  const IPCString *ipcScript = arguments->getString(1);
-//  String instanceID =
-//      jString2String(ipcInstanceId->content, ipcInstanceId->length);
-//  String script = jString2String(ipcScript->content, ipcScript->length);
-//
-//  char *result = Instance()->script_side()->ExecJSOnInstance(
-//      instanceID.utf8().data(), script.utf8().data());
-//
-//  if (result == nullptr)
-//    return createByteArrayResult(nullptr, 0);
-//  else
-//    return createCharArrayResult(result);
-//}
-//
-// std::unique_ptr<IPCResult> ScriptBridgeInMultiProcess::UpdateGlobalConfig(
-//    IPCArguments *arguments) {
-//  LOGE("ScriptBridgeInMultiProcess::UpdateGlobalConfig");
-//  const IPCString *ipcConfig = arguments->getString(0);
-//  String configString = jString2String(ipcConfig->content, ipcConfig->length);
-//  Instance()->script_side()->UpdateGlobalConfig(configString.utf8().data());
-//  return createVoidResult();
-//}
         }  // namespace js
     }  // namespace bridge
 }  // namespace weex

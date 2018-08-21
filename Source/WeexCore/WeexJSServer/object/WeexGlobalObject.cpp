@@ -107,7 +107,7 @@ WeexGlobalObject::WeexGlobalObject(VM &vm, Structure *structure)
 }
 
 void WeexGlobalObject::SetScriptBridge(WeexCore::ScriptBridge *script_bridge) {
-    script_bridge_.reset(script_bridge);
+    script_bridge_ = script_bridge;
 }
 
 void WeexGlobalObject::initWxEnvironment(std::vector<INIT_FRAMEWORK_PARAMS *> &params, bool forAppContext, bool isSave) {

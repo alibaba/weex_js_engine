@@ -24,7 +24,7 @@ namespace WeexCore {
 class WeexGlobalObject: public JSGlobalObject {
 private:
     WeexGlobalObject(VM&, Structure*);
-    std::unique_ptr<WeexCore::ScriptBridge> script_bridge_;
+    WeexCore::ScriptBridge *script_bridge_;
 
 public:
     typedef JSGlobalObject Base;
@@ -56,7 +56,7 @@ public:
     void initFunctionForAppContext();
     void initFunction();
 
-    inline WeexCore::ScriptBridge* js_bridge() { return script_bridge_.get(); }
+    inline WeexCore::ScriptBridge* js_bridge() { return script_bridge_; }
     void SetScriptBridge(WeexCore::ScriptBridge *script_bridge);
 protected:
     void finishCreation(VM& vm)

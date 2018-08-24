@@ -28,7 +28,6 @@ namespace weex {
 
             void CoreSideInMultiProcess::CallNative(const char *page_id, const char *task,
                                                     const char *callback) {
-                LOGE("CoreSideInMultiProcess::CallNative");
                 IPCSender *sender = client_->getSender();
                 std::unique_ptr<IPCSerializer> serializer(createIPCSerializer());
                 serializer->setMsg(static_cast<uint32_t>(IPCProxyMsg::CALLNATIVE));
@@ -46,7 +45,6 @@ namespace weex {
                     const char *page_id, const char *module, const char *method,
                     const char *arguments, int arguments_length, const char *options,
                     int options_length) {
-                LOGE("CoreSideInMultiProcess::CallNativeModule");
                 IPCSender *sender = client_->getSender();
                 std::unique_ptr<IPCSerializer> serializer(createIPCSerializer());;
                 serializer->setMsg(static_cast<uint32_t>(IPCProxyMsg::CALLNATIVEMODULE));
@@ -96,7 +94,6 @@ namespace weex {
                     const char *page_id, const char *ref, const char *method,
                     const char *arguments, int arguments_length, const char *options,
                     int options_length) {
-                LOGE("CoreSideInMultiProcess::CallNativeComponent");
                 IPCSender *sender = client_->getSender();
                 std::unique_ptr<IPCSerializer> serializer(createIPCSerializer());;
                 serializer->setMsg(static_cast<uint32_t>(IPCProxyMsg::CALLNATIVECOMPONENT));
@@ -124,7 +121,6 @@ namespace weex {
                                                     const char *parent_ref,
                                                     const char *dom_str, int dom_str_length,
                                                     const char *index_str) {
-                LOGE("CoreSideInMultiProcess::AddElement");
                 IPCSender *sender = client_->getSender();
                 std::unique_ptr<IPCSerializer> serializer(createIPCSerializer());;
                 serializer->setMsg(static_cast<uint32_t>(IPCProxyMsg::CALLADDELEMENT) |
@@ -145,7 +141,6 @@ namespace weex {
 
             void CoreSideInMultiProcess::SetTimeout(const char *callback_id,
                                                     const char *time) {
-                LOGE("CoreSideInMultiProcess::SetTimeout");
                 IPCSender *sender = client_->getSender();
                 std::unique_ptr<IPCSerializer> serializer(createIPCSerializer());;
                 serializer->setMsg(static_cast<uint32_t>(IPCProxyMsg::SETTIMEOUT));
@@ -163,24 +158,18 @@ namespace weex {
             }
 
             void CoreSideInMultiProcess::NativeLog(const char *str_array) {
-                LOGE("WeexCore CoreSideInMultiProcess::NativeLog1 %d", gettid());
                 IPCSender *sender = client_->getSender();
-                LOGE("WeexCore CoreSideInMultiProcess::NativeLog2");
                 std::unique_ptr<IPCSerializer> serializer(createIPCSerializer());;
-                LOGE("WeexCore CoreSideInMultiProcess::NativeLog3");
                 serializer->setMsg(static_cast<uint32_t>(IPCProxyMsg::NATIVELOG) |
                                    MSG_FLAG_ASYNC);
                 serializer->add(str_array, strlen(str_array));
                 std::unique_ptr<IPCBuffer> buffer = serializer->finish();
-                LOGE("WeexCore CoreSideInMultiProcess::NativeLog begin send");
                 sender->send(buffer.get());
-                LOGE("WeexCore CoreSideInMultiProcess::NativeLog Finish");
             }
 
             void CoreSideInMultiProcess::CreateBody(const char *page_id,
                                                     const char *dom_str,
                                                     int dom_str_length) {
-                LOGE("CoreSideInMultiProcess::CreateBody");
                 IPCSender *sender = client_->getSender();
                 std::unique_ptr<IPCSerializer> serializer(createIPCSerializer());;
                 serializer->setMsg(static_cast<uint32_t>(IPCProxyMsg::CALLCREATEBODY));
@@ -200,7 +189,6 @@ namespace weex {
             int CoreSideInMultiProcess::UpdateFinish(const char *page_id, const char *task,
                                                      int task_length, const char *callback,
                                                      int callback_length) {
-                LOGE("CoreSideInMultiProcess::UpdateFinish");
                 IPCSender *sender = client_->getSender();
                 std::unique_ptr<IPCSerializer> serializer(createIPCSerializer());;
                 serializer->setMsg(static_cast<uint32_t>(IPCProxyMsg::CALLUPDATEFINISH));
@@ -218,7 +206,6 @@ namespace weex {
             }
 
             void CoreSideInMultiProcess::CreateFinish(const char *page_id) {
-                LOGE("CoreSideInMultiProcess::CreateFinish");
                 IPCSender *sender = client_->getSender();
                 std::unique_ptr<IPCSerializer> serializer(createIPCSerializer());;
                 serializer->setMsg(static_cast<uint32_t>(IPCProxyMsg::CALLCREATEFINISH));
@@ -234,7 +221,6 @@ namespace weex {
 
             int CoreSideInMultiProcess::RefreshFinish(const char *page_id, const char *task,
                                                       const char *callback) {
-                LOGE("CoreSideInMultiProcess::RefreshFinish");
                 IPCSender *sender = client_->getSender();
                 std::unique_ptr<IPCSerializer> serializer(createIPCSerializer());;
                 serializer->setMsg(static_cast<uint32_t>(IPCProxyMsg::CALLREFRESHFINISH));
@@ -255,7 +241,6 @@ namespace weex {
 
             void CoreSideInMultiProcess::UpdateAttrs(const char *page_id, const char *ref,
                                                      const char *data, int data_length) {
-                LOGE("CoreSideInMultiProcess::UpdateAttrs");
                 IPCSender *sender = client_->getSender();
                 std::unique_ptr<IPCSerializer> serializer(createIPCSerializer());;
                 serializer->setMsg(static_cast<uint32_t>(IPCProxyMsg::CALLUPDATEATTRS));
@@ -275,7 +260,6 @@ namespace weex {
 
             void CoreSideInMultiProcess::UpdateStyle(const char *page_id, const char *ref,
                                                      const char *data, int data_length) {
-                LOGE("CoreSideInMultiProcess::UpdateStyle");
                 IPCSender *sender = client_->getSender();
                 std::unique_ptr<IPCSerializer> serializer(createIPCSerializer());;
                 serializer->setMsg(static_cast<uint32_t>(IPCProxyMsg::CALLUPDATESTYLE));
@@ -295,7 +279,6 @@ namespace weex {
 
             void CoreSideInMultiProcess::RemoveElement(const char *page_id,
                                                        const char *ref) {
-                LOGE("CoreSideInMultiProcess::RemoveElement");
                 IPCSender *sender = client_->getSender();
                 std::unique_ptr<IPCSerializer> serializer(createIPCSerializer());;
                 serializer->setMsg(static_cast<uint32_t>(IPCProxyMsg::CALLREMOVEELEMENT));
@@ -311,7 +294,6 @@ namespace weex {
 
             void CoreSideInMultiProcess::MoveElement(const char *page_id, const char *ref,
                                                      const char *parent_ref, int index) {
-                LOGE("CoreSideInMultiProcess::MoveElement");
                 IPCSender *sender = client_->getSender();
                 std::unique_ptr<IPCSerializer> serializer(createIPCSerializer());;
                 serializer->setMsg(static_cast<uint32_t>(IPCProxyMsg::CALLMOVEELEMENT));
@@ -331,7 +313,6 @@ namespace weex {
 
             void CoreSideInMultiProcess::AddEvent(const char *page_id, const char *ref,
                                                   const char *event) {
-                LOGE("CoreSideInMultiProcess::AddEvent");
                 IPCSender *sender = client_->getSender();
                 std::unique_ptr<IPCSerializer> serializer(createIPCSerializer());;
                 serializer->setMsg(static_cast<uint32_t>(IPCProxyMsg::CALLADDEVENT));
@@ -348,7 +329,6 @@ namespace weex {
 
             void CoreSideInMultiProcess::RemoveEvent(const char *page_id, const char *ref,
                                                      const char *event) {
-                LOGE("CoreSideInMultiProcess::RemoveEvent");
                 IPCSender *sender = client_->getSender();
                 std::unique_ptr<IPCSerializer> serializer(createIPCSerializer());;
                 serializer->setMsg(static_cast<uint32_t>(IPCProxyMsg::CALLREMOVEEVENT));
@@ -365,7 +345,6 @@ namespace weex {
 
             const char *CoreSideInMultiProcess::CallGCanvasLinkNative(
                     const char *context_id, int type, const char *arg) {
-                LOGE("CoreSideInMultiProcess::CallGCanvasLinkNative");
                 IPCSender *sender = client_->getSender();
                 std::unique_ptr<IPCSerializer> serializer(createIPCSerializer());;
                 serializer->setMsg(static_cast<uint32_t>(IPCProxyMsg::CALLGCANVASLINK));
@@ -408,7 +387,6 @@ namespace weex {
             int CoreSideInMultiProcess::SetInterval(const char *page_id,
                                                     const char *callback_id,
                                                     const char *time) {
-                LOGE("CoreSideInMultiProcess::SetInterval");
                 IPCSender *sender = client_->getSender();
                 std::unique_ptr<IPCSerializer> serializer(createIPCSerializer());;
                 serializer->setMsg(static_cast<uint32_t>(IPCProxyMsg::SETINTERVAL));
@@ -434,7 +412,6 @@ namespace weex {
 
             void CoreSideInMultiProcess::ClearInterval(const char *page_id,
                                                        const char *callback_id) {
-                LOGE("CoreSideInMultiProcess::ClearInterval");
                 IPCSender *sender = client_->getSender();
                 std::unique_ptr<IPCSerializer> serializer(createIPCSerializer());;
                 serializer->setMsg(static_cast<uint32_t>(IPCProxyMsg::CLEARINTERVAL));
@@ -452,7 +429,6 @@ namespace weex {
 
             const char *CoreSideInMultiProcess::CallT3DLinkNative(int type,
                                                                   const char *arg) {
-                LOGE("CoreSideInMultiProcess::CallT3DLinkNative");
                 IPCSender *sender = client_->getSender();
                 std::unique_ptr<IPCSerializer> serializer(createIPCSerializer());;
                 serializer->setMsg(static_cast<uint32_t>(IPCProxyMsg::CALLT3DLINK));
@@ -489,7 +465,6 @@ namespace weex {
             }
 
             void CoreSideInMultiProcess::PostMessage(const char *vim_id, const char *data) {
-                LOGE("CoreSideInMultiProcess::PostMessage");
                 IPCSender *sender = client_->getSender();
                 std::unique_ptr<IPCSerializer> serializer(createIPCSerializer());;
                 serializer->setMsg(static_cast<uint32_t>(IPCProxyMsg::POSTMESSAGE));
@@ -503,7 +478,6 @@ namespace weex {
                                                          const char *data,
                                                          const char *callback,
                                                          const char *vm_id) {
-                LOGE("CoreSideInMultiProcess::DispatchMessage");
                 IPCSender *sender = client_->getSender();
                 std::unique_ptr<IPCSerializer> serializer(createIPCSerializer());;
                 serializer->setMsg(static_cast<uint32_t>(IPCProxyMsg::DISPATCHMESSAGE));
@@ -522,7 +496,6 @@ namespace weex {
             void CoreSideInMultiProcess::ReportException(const char *page_id,
                                                          const char *func,
                                                          const char *exception_string) {
-                LOGE("CoreSideInMultiProcess::ReportException");
                 IPCSender *sender = client_->getSender();
                 std::unique_ptr<IPCSerializer> serializer(createIPCSerializer());;
                 serializer->setMsg(static_cast<uint32_t>(IPCProxyMsg::REPORTEXCEPTION));
@@ -538,7 +511,6 @@ namespace weex {
             }
 
             void CoreSideInMultiProcess::SetJSVersion(const char *js_version) {
-                LOGE("CoreSideInMultiProcess::SetJSVersion");
                 IPCSender *sender = client_->getSender();
                 std::unique_ptr<IPCSerializer> serializer(createIPCSerializer());;
                 serializer->setMsg(static_cast<uint32_t>(IPCProxyMsg::SETJSFVERSION));

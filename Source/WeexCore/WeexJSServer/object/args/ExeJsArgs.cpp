@@ -84,7 +84,7 @@ VALUE_WITH_TYPE *ExeJsArgs::copyValueToSelf(VALUE_WITH_TYPE *value_with_type) {
                                                   value_with_type->value.string->length);
 
             const String &string = weexString2String(pType->value.string);
-            LOGE("pType->value.string is %s \r\n",string.utf8().data());
+            LOGD("pType->value.string is %s \r\n",string.utf8().data());
 
         }
             break;

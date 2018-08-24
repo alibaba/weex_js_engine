@@ -204,7 +204,7 @@ namespace weex {
             std::unique_ptr<IPCResult> ScriptBridgeInMultiProcess::InitFramework(
                     IPCArguments *arguments) {
                 //TODO change ScriptSide
-                LOGE("ScriptBridgeInMultiProcess::InitFramework");
+                LOGD("ScriptBridgeInMultiProcess::InitFramework");
                 static_cast<ScriptSideInQueue *>(Instance()->script_side())
                         ->setTaskQueue(new WeexTaskQueue());
                 WeexEnv::getEnv()->setScriptBridge(Instance());
@@ -243,7 +243,7 @@ namespace weex {
                     IPCArguments *arguments) {
                 const char *id = GetUTF8StringFromIPCArg(arguments, 0);
                 const char *js = GetUTF8StringFromIPCArg(arguments, 1);
-                LOGE("Weex jsserver IPCJSMsg::INITAPPFRAMEWORK id:%s", id);
+                LOGD("Weex jsserver IPCJSMsg::INITAPPFRAMEWORK id:%s", id);
                 if (strcmp(id, "") == 0) {
                     return createInt32Result(static_cast<int32_t>(false));
                 }
@@ -276,19 +276,16 @@ namespace weex {
 
             std::unique_ptr<IPCResult> ScriptBridgeInMultiProcess::CreateAppContext(
                     IPCArguments *arguments) {
-                LOGE("ScriptBridgeInMultiProcess::CreateAppContext");
-                // LOGE("Weex jsserver IPCJSMsg::CREATEAPPCONTEXT start");
+                LOGD("ScriptBridgeInMultiProcess::CreateAppContext");
                 const char *instanceID = GetUTF8StringFromIPCArg(arguments, 0);
                 const char *js = GetUTF8StringFromIPCArg(arguments, 1);
-                // LOGE("Weex jsserver IPCJSMsg::CREATEAPPCONTEXT end");
                 return createInt32Result(
                         Instance()->script_side()->CreateAppContext(instanceID, js));
             }
 
             std::unique_ptr<IPCResult> ScriptBridgeInMultiProcess::ExecJSOnAppWithResult(
                     IPCArguments *arguments) {
-                LOGE("ScriptBridgeInMultiProcess::ExecJSONAppWithResult");
-                // LOGE("Weex jsserver IPCJSMsg::ExecJSONAppWithResult start");
+                LOGD("ScriptBridgeInMultiProcess::ExecJSONAppWithResult");
                 const char *instanceID = GetUTF8StringFromIPCArg(arguments, 0);
                 const char *js = GetUTF8StringFromIPCArg(arguments, 1);
                 char *result = const_cast<char *>(
@@ -302,8 +299,7 @@ namespace weex {
 
             std::unique_ptr<IPCResult> ScriptBridgeInMultiProcess::CallJSOnAppContext(
                     IPCArguments *arguments) {
-                LOGE("ScriptBridgeInMultiProcess::CallJSONAppContext");
-                // LOGE("Weex jsserver IPCJSMsg::CallJSONAppContext start");
+                LOGD("ScriptBridgeInMultiProcess::CallJSONAppContext");
                 const char *instanceId = GetUTF8StringFromIPCArg(arguments, 0);
                 const char *func = GetUTF8StringFromIPCArg(arguments, 1);
 
@@ -317,8 +313,7 @@ namespace weex {
 
             std::unique_ptr<IPCResult> ScriptBridgeInMultiProcess::DestroyAppContext(
                     IPCArguments *arguments) {
-                LOGE("ScriptBridgeInMultiProcess::DestroyAppContext");
-                // LOGE("Weex jsserver IPCJSMsg::DestroyAppContext start");
+                LOGD("ScriptBridgeInMultiProcess::DestroyAppContext");
                 const char *instanceID = GetUTF8StringFromIPCArg(arguments, 0);
                 if (strlen(instanceID) == 0) {
                     return createInt32Result(static_cast<int32_t>(false));
@@ -330,14 +325,14 @@ namespace weex {
 
             std::unique_ptr<IPCResult> ScriptBridgeInMultiProcess::ExecJSService(
                     IPCArguments *arguments) {
-                LOGE("ScriptBridgeInMultiProcess::ExecJSService");
+                LOGD("ScriptBridgeInMultiProcess::ExecJSService");
                 const char *source = GetUTF8StringFromIPCArg(arguments, 0);
                 return createInt32Result(Instance()->script_side()->ExecJsService(source));
             }
 
             std::unique_ptr<IPCResult> ScriptBridgeInMultiProcess::ExecTimerCallback(
                     IPCArguments *arguments) {
-                LOGE("ScriptBridgeInMultiProcess::ExecTimerCallback");
+                LOGD("ScriptBridgeInMultiProcess::ExecTimerCallback");
                 const char *source = GetUTF8StringFromIPCArg(arguments, 0);
                 Instance()->script_side()->ExecTimeCallback(source);
                 return createVoidResult();
@@ -345,7 +340,7 @@ namespace weex {
 
             std::unique_ptr<IPCResult> ScriptBridgeInMultiProcess::ExecJS(
                     IPCArguments *arguments) {
-                LOGE("ScriptBridgeInMultiProcess::ExecJS");
+                LOGD("ScriptBridgeInMultiProcess::ExecJS");
                 const char *instanceId = GetUTF8StringFromIPCArg(arguments, 0);
                 const char *namespaceStr = GetUTF8StringFromIPCArg(arguments, 1);
                 const char *func = GetUTF8StringFromIPCArg(arguments, 2);
@@ -360,7 +355,7 @@ namespace weex {
 
             std::unique_ptr<IPCResult> ScriptBridgeInMultiProcess::ExecJSWithResult(
                     IPCArguments *arguments) {
-                LOGE("ScriptBridgeInMultiProcess::ExecJSWithResult");
+                LOGD("ScriptBridgeInMultiProcess::ExecJSWithResult");
                 const char *instanceId = GetUTF8StringFromIPCArg(arguments, 0);
                 const char *namespaceStr = GetUTF8StringFromIPCArg(arguments, 1);
                 const char *func = GetUTF8StringFromIPCArg(arguments, 2);
@@ -382,7 +377,7 @@ namespace weex {
 
             std::unique_ptr<IPCResult> ScriptBridgeInMultiProcess::CreateInstance(
                     IPCArguments *arguments) {
-                LOGE("ScriptBridgeInMultiProcess::CreateInstance");
+                LOGD("ScriptBridgeInMultiProcess::CreateInstance");
 
                 const char *instanceID = GetUTF8StringFromIPCArg(arguments, 0);
                 const char *func = GetUTF8StringFromIPCArg(arguments, 1);
@@ -397,7 +392,7 @@ namespace weex {
 
             std::unique_ptr<IPCResult> ScriptBridgeInMultiProcess::DestroyInstance(
                     IPCArguments *arguments) {
-                LOGE("ScriptBridgeInMultiProcess::DestroyInstance");
+                LOGD("ScriptBridgeInMultiProcess::DestroyInstance");
                 const char *instanceID = GetUTF8StringFromIPCArg(arguments, 0);
                 if (strlen(instanceID) == 0) {
                     LOGE("DestoryInstance instanceId is NULL");
@@ -410,7 +405,7 @@ namespace weex {
 
             std::unique_ptr<IPCResult> ScriptBridgeInMultiProcess::ExecJSOnInstance(
                     IPCArguments *arguments) {
-                LOGE("ScriptBridgeInMultiProcess::ExecJSONInstance");
+                LOGD("ScriptBridgeInMultiProcess::ExecJSONInstance");
                 const char *instanceID = GetUTF8StringFromIPCArg(arguments, 0);
                 const char *script = GetUTF8StringFromIPCArg(arguments, 1);
 
@@ -425,7 +420,7 @@ namespace weex {
 
             std::unique_ptr<IPCResult> ScriptBridgeInMultiProcess::UpdateGlobalConfig(
                     IPCArguments *arguments) {
-                LOGE("ScriptBridgeInMultiProcess::UpdateGlobalConfig");
+                LOGD("ScriptBridgeInMultiProcess::UpdateGlobalConfig");
                 const char *configString = GetUTF8StringFromIPCArg(arguments, 0);
                 Instance()->script_side()->UpdateGlobalConfig(configString);
                 return createVoidResult();

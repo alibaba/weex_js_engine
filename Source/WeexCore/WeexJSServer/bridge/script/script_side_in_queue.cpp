@@ -24,7 +24,7 @@ namespace weex {
         namespace js {
             int ScriptSideInQueue::InitFramework(
                     const char *script, std::vector<INIT_FRAMEWORK_PARAMS *> &params) {
-                LOGE("ScriptSideInQueue::InitFramework");
+                LOGD("ScriptSideInQueue::InitFramework");
 //                return runtime_->initFramework(String::fromUTF8(script), params);
                 weexTaskQueue_->addTask(new InitFrameworkTask(String::fromUTF8(script), params));
                 weexTaskQueue_->init();
@@ -34,7 +34,7 @@ namespace weex {
             int ScriptSideInQueue::InitAppFramework(
                     const char *instanceId, const char *appFramework,
                     std::vector<INIT_FRAMEWORK_PARAMS *> &params) {
-                LOGE("ScriptSideInQueue::InitAppFramework");
+                LOGD("ScriptSideInQueue::InitAppFramework");
                 weexTaskQueue_->addTask(new InitFrameworkTask(String::fromUTF8(instanceId),
                                                               String::fromUTF8(appFramework), params));
                 return 1;
@@ -45,7 +45,7 @@ namespace weex {
 
             int ScriptSideInQueue::CreateAppContext(const char *instanceId,
                                                     const char *jsBundle) {
-                LOGE("ScriptSideInQueue::CreateAppContext");
+                LOGD("ScriptSideInQueue::CreateAppContext");
                 weexTaskQueue_->addTask(new CreateAppContextTask(String::fromUTF8(instanceId),
                                                                  String::fromUTF8(jsBundle)));
                 return 1;
@@ -53,7 +53,7 @@ namespace weex {
 
             char *ScriptSideInQueue::ExecJSOnAppWithResult(const char *instanceId,
                                                            const char *jsBundle) {
-                LOGE("ScriptSideInQueue::ExecJSOnAppWithResult");
+                LOGD("ScriptSideInQueue::ExecJSOnAppWithResult");
 
                 WeexTask *task = new ExeJsOnAppWithResultTask(String::fromUTF8(instanceId),
                                                               String::fromUTF8(jsBundle));
@@ -70,7 +70,7 @@ namespace weex {
             int ScriptSideInQueue::CallJSOnAppContext(
                     const char *instanceId, const char *func,
                     std::vector<VALUE_WITH_TYPE *> &params) {
-                LOGE("ScriptSideInQueue::CallJSOnAppContext");
+                LOGD("ScriptSideInQueue::CallJSOnAppContext");
 
                 weexTaskQueue_->addTask(new CallJsOnAppContextTask(String::fromUTF8(instanceId),
                                                                    String::fromUTF8(func), params));
@@ -79,7 +79,7 @@ namespace weex {
             }
 
             int ScriptSideInQueue::DestroyAppContext(const char *instanceId) {
-                LOGE("ScriptSideInQueue::DestroyAppContext");
+                LOGD("ScriptSideInQueue::DestroyAppContext");
 
                 weexTaskQueue_->addTask(new DestoryAppContextTask(String::fromUTF8(instanceId)));
 
@@ -87,7 +87,7 @@ namespace weex {
             }
 
             int ScriptSideInQueue::ExecJsService(const char *source) {
-                LOGE("ScriptSideInQueue::ExecJsService");
+                LOGD("ScriptSideInQueue::ExecJsService");
 
                 weexTaskQueue_->addTask(new ExeJsServicesTask(String::fromUTF8(source)));
 
@@ -95,7 +95,7 @@ namespace weex {
             }
 
             int ScriptSideInQueue::ExecTimeCallback(const char *source) {
-                LOGE("ScriptSideInQueue::ExecTimeCallback");
+                LOGD("ScriptSideInQueue::ExecTimeCallback");
 
                 weexTaskQueue_->addTask(new CTimeCallBackask(String::fromUTF8(source)));
 
@@ -105,7 +105,7 @@ namespace weex {
             int ScriptSideInQueue::ExecJS(const char *instanceId, const char *nameSpace,
                                           const char *func,
                                           std::vector<VALUE_WITH_TYPE *> &params) {
-                LOGE("ScriptSideInQueue::ExecJS");
+                LOGD("ScriptSideInQueue::ExecJS");
 
                 ExeJsTask *task = new ExeJsTask(instanceId, params);
 
@@ -120,7 +120,7 @@ namespace weex {
             WeexJSResult ScriptSideInQueue::ExecJSWithResult(
                     const char *instanceId, const char *nameSpace, const char *func,
                     std::vector<VALUE_WITH_TYPE *> &params) {
-                LOGE("ScriptSideInQueue::ExecJSWithResult");
+                LOGD("ScriptSideInQueue::ExecJSWithResult");
 
                 ExeJsTask *task = new ExeJsTask(instanceId, params, true);
 
@@ -138,7 +138,7 @@ namespace weex {
                                                   const char *script, const char *opts,
                                                   const char *initData,
                                                   const char *extendsApi) {
-                LOGE(
+                LOGD(
                         "CreateInstance id = %s, func = %s, script = %s, opts = %s, initData = "
                         "%s, extendsApi = %s",
                         instanceId, func, script, opts, initData, extendsApi);
@@ -157,7 +157,7 @@ namespace weex {
 
             char *ScriptSideInQueue::ExecJSOnInstance(const char *instanceId,
                                                       const char *script) {
-                LOGE("ScriptSideInQueue::ExecJSOnInstance");
+                LOGD("ScriptSideInQueue::ExecJSOnInstance");
                 weexTaskQueue_->addTask(new ExeJsOnInstanceTask(String::fromUTF8(instanceId),
                                                                 String::fromUTF8(script)));
 
@@ -165,13 +165,13 @@ namespace weex {
             }
 
             int ScriptSideInQueue::DestroyInstance(const char *instanceId) {
-                LOGE("ScriptSideInQueue::DestroyInstance");
+                LOGD("ScriptSideInQueue::DestroyInstance");
                 weexTaskQueue_->addTask(new DestoryInstanceTask(String::fromUTF8(instanceId)));
                 return 1;
             }
 
             int ScriptSideInQueue::UpdateGlobalConfig(const char *config) {
-                LOGE("ScriptSideInQueue::UpdateGlobalConfig");
+                LOGD("ScriptSideInQueue::UpdateGlobalConfig");
                 weexTaskQueue_->addTask(new UpdateGlobalConfigTask(String::fromUTF8(config)));
                 return 1;
             }

@@ -276,7 +276,6 @@ namespace weex {
 
             std::unique_ptr<IPCResult> ScriptBridgeInMultiProcess::CreateAppContext(
                     IPCArguments *arguments) {
-                LOGD("ScriptBridgeInMultiProcess::CreateAppContext");
                 const char *instanceID = GetUTF8StringFromIPCArg(arguments, 0);
                 const char *js = GetUTF8StringFromIPCArg(arguments, 1);
                 return createInt32Result(

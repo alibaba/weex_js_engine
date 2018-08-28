@@ -45,7 +45,7 @@ namespace weex {
 
             int ScriptSideInQueue::CreateAppContext(const char *instanceId,
                                                     const char *jsBundle) {
-                LOGD("ScriptSideInQueue::CreateAppContext");
+                LOGE("ScriptSideInQueue::CreateAppContext %d ", strlen(jsBundle));
                 weexTaskQueue_->addTask(new CreateAppContextTask(String::fromUTF8(instanceId),
                                                                  String::fromUTF8(jsBundle)));
                 return 1;

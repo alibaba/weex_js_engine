@@ -72,12 +72,17 @@ int WeexRuntime::createAppContext(const String &instanceId, const String &jsBund
     } else {
         // new a global object
         // --------------------------------------------------
-
         auto weexLiteAppObjectHolder = getLightAppObjectHolder(instanceId);
         if (weexLiteAppObjectHolder == nullptr) {
             return static_cast<int32_t>(false);
         }
-        WeexGlobalObject *globalObject_local = weexLiteAppObjectHolder->m_globalObject.get();
+        std::map<std::string, WeexGlobalObject *>::iterator it_find;
+        auto objectMap = weexLiteAppObjectHolder->m_jsAppGlobalObjectMap;
+        it_find = objectMap.find(instanceId.utf8().data());
+        if (it_find == objectMap.end()) {
+            return static_cast<int32_t>(false);
+        }
+        JSGlobalObject *globalObject_local = objectMap[instanceId.utf8().data()];
         if (globalObject_local == nullptr) {
             return static_cast<int32_t>(false);
         }

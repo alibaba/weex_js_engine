@@ -323,7 +323,6 @@ JSFUNCTION functionCallNativeModule(ExecState *state) {
     getStringArgsFromState(state, 2, methodChar);
     getWsonOrJsonArgsFromState(state, 3, arguments);
     getWsonOrJsonArgsFromState(state, 4, options);
-    LOGE("DYY jsengine callNativeModule is running and module is %s, method is %s arguments length is %d", moduleChar.getValue(), methodChar.getValue(),  arguments.getLength());
     auto result = globalObject->js_bridge()->core_side()->CallNativeModule(instanceId.getValue(),
                                                                            moduleChar.getValue(),
                                                                            methodChar.getValue(),
@@ -614,12 +613,11 @@ JSFUNCTION functionNativeLogContext(ExecState *state) {
 
 JSFUNCTION functionPostMessage(ExecState *state) {
 
-    Args id;
     Args dataChar;
-    getStringArgsFromState(state, 0, id);
-    getJSONArgsFromState(state, 1, dataChar);
+    getJSONArgsFromState(state, 0, dataChar);
     WeexGlobalObject *globalObject = static_cast<WeexGlobalObject *>(state->lexicalGlobalObject());
-    globalObject->js_bridge()->core_side()->PostMessage(id.getValue(), dataChar.getValue(), dataChar.getLength());
+    String id(globalObject->id.c_str());
+    globalObject->js_bridge()->core_side()->PostMessage(id.utf8().data(), dataChar.getValue(), dataChar.getLength());
     return JSValue::encode(jsNumber(0));
 }
 

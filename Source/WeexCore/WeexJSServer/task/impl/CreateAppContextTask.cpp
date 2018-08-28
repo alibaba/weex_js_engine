@@ -4,7 +4,9 @@
 
 #include "CreateAppContextTask.h"
 
-CreateAppContextTask::CreateAppContextTask(const String &instanceId, const String &script) : WeexTask(instanceId) {}
+CreateAppContextTask::CreateAppContextTask(const String &instanceId, const String &script) : WeexTask(instanceId) {
+    this->script = script;
+}
 
 void CreateAppContextTask::run(WeexRuntime *runtime) {
     runtime->createAppContext(instanceId, script);

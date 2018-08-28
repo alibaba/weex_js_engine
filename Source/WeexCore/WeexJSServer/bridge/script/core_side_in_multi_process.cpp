@@ -464,11 +464,11 @@ namespace weex {
                 return NULL;
             }
 
-            void CoreSideInMultiProcess::PostMessage(const char *vim_id, const char *data) {
+            void CoreSideInMultiProcess::PostMessage(const char *vim_id, const char *data, int dataLength) {
                 IPCSender *sender = client_->getSender();
                 std::unique_ptr<IPCSerializer> serializer(createIPCSerializer());;
                 serializer->setMsg(static_cast<uint32_t>(IPCProxyMsg::POSTMESSAGE));
-                serializer->add(data, strlen(data));
+                serializer->add(data, dataLength);
                 serializer->add(vim_id, strlen(vim_id));
                 std::unique_ptr<IPCBuffer> buffer = serializer->finish();
                 std::unique_ptr<IPCResult> result = sender->send(buffer.get());
@@ -476,6 +476,7 @@ namespace weex {
 
             void CoreSideInMultiProcess::DispatchMessage(const char *client_id,
                                                          const char *data,
+                                                         int dataLength,
                                                          const char *callback,
                                                          const char *vm_id) {
                 IPCSender *sender = client_->getSender();
@@ -484,7 +485,7 @@ namespace weex {
                 // clientid
                 serializer->add(client_id, strlen(client_id));
                 // data
-                serializer->add(data, strlen(data));
+                serializer->add(data, dataLength);
                 // callback
                 serializer->add(callback, strlen(callback));
                 serializer->add(vm_id, strlen(vm_id));

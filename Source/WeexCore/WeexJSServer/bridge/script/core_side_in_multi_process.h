@@ -80,9 +80,9 @@ namespace weex {
 
                 const char *CallT3DLinkNative(int type, const char *arg) override;
 
-                void PostMessage(const char *vim_id, const char *data) override;
+                void PostMessage(const char *vim_id, const char *data, int dataLength) override;
 
-                void DispatchMessage(const char *client_id, const char *data,
+                void DispatchMessage(const char *client_id, const char *data, int dataLength,
                                      const char *callback, const char *vm_id) override;
 
                 void ReportException(const char *page_id, const char *func,

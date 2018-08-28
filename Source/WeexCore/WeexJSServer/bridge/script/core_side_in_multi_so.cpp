@@ -126,14 +126,14 @@ const char *CoreSideInMultiSo::CallT3DLinkNative(int type, const char *arg) {
   return functions_exposed_by_core_->funcT3dLinkNative(type, arg);
 }
 
-void CoreSideInMultiSo::PostMessage(const char *vim_id, const char *data) {
-  functions_exposed_by_core_->funcCallHandlePostMessage(vim_id, data);
+void CoreSideInMultiSo::PostMessage(const char *vim_id, const char *data, int dataLength) {
+  functions_exposed_by_core_->funcCallHandlePostMessage(vim_id, data, dataLength);
 }
 
-void CoreSideInMultiSo::DispatchMessage(const char *client_id, const char *data,
+void CoreSideInMultiSo::DispatchMessage(const char *client_id, const char *data, int dataLength,
                                         const char *callback,
                                         const char *vm_id) {
-  functions_exposed_by_core_->funcCallDIspatchMessage(client_id, data, callback,
+  functions_exposed_by_core_->funcCallDIspatchMessage(client_id, data,dataLength, callback,
                                                       vm_id);
 }
 

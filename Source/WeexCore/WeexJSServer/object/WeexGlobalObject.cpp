@@ -694,7 +694,7 @@ JSFUNCTION functionNativeSetTimeout(ExecState *state) {
     const JSValue &jsValue = state->argument(1);
     TimerQueue *timerQueue =WeexEnv::getEnv()->timerQueue();
     if (timerQueue != nullptr) {
-        LOGE("set timeout %s",globalObject->id.c_str());
+//        LOGE("set timeout %s",globalObject->id.c_str());
         TimerTask *task = new TimerTask(globalObject->id.c_str(), value,
                                         static_cast<uint64_t>(jsValue.asInt32()), false);
         timerQueue->addTimerTask(task);

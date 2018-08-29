@@ -16,7 +16,6 @@ void ExeJsTask::run(WeexRuntime *runtime) {
                                                      exeJsArgs->params);
 
     if (future() != nullptr) {
-        LOGE("ExeJsTask setResult");
         future()->setResult(jsResult);
     }
 }

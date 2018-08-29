@@ -995,7 +995,7 @@ int WeexRuntime::exeTimerFunction(const String &instanceId, JSC::JSValue timerFu
     JSValue ret = call(globalObject->globalExec(), value, callType, callData, globalObject, a, returnedException);
     uint64_t end = microTime();
 
-    LOGE("exeTimerFunction cost %lld", end - begin);
+//    LOGE("exeTimerFunction cost %lld", end - begin);
 
     return 0;
 }

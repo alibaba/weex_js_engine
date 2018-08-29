@@ -118,7 +118,7 @@ int CoreSideInMultiSo::SetInterval(const char *page_id, const char *callback_id,
 
 void CoreSideInMultiSo::ClearInterval(const char *page_id,
                                       const char *callback_id) {
-  LOGE("CoreSideInMultiSo::ClearInterval");
+//  LOGE("CoreSideInMultiSo::ClearInterval");
   functions_exposed_by_core_->funcClearInterval(page_id, callback_id);
 }
 

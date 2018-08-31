@@ -287,13 +287,9 @@ namespace weex {
                 LOGD("ScriptBridgeInMultiProcess::ExecJSONAppWithResult");
                 const char *instanceID = GetUTF8StringFromIPCArg(arguments, 0);
                 const char *js = GetUTF8StringFromIPCArg(arguments, 1);
-                char *result = const_cast<char *>(
-                        Instance()->script_side()->ExecJSOnAppWithResult(instanceID, js));
+                const std::unique_ptr<WeexJSResult> &ptr = Instance()->script_side()->ExecJSOnAppWithResult(instanceID, js);
 
-                if (result == nullptr)
-                    return createByteArrayResult(nullptr, 0);
-                else
-                    return createCharArrayResult(result);
+                return createByteArrayResult(ptr->data.get(), ptr->length);
             }
 
             std::unique_ptr<IPCResult> ScriptBridgeInMultiProcess::CallJSOnAppContext(
@@ -361,17 +357,11 @@ namespace weex {
 
                 std::vector<VALUE_WITH_TYPE *> params;
                 FillVectorOfValueWithType(params, arguments, 3, arguments->getCount());
-                WeexJSResult jsResult = Instance()->script_side()->ExecJSWithResult(
-                        instanceId, namespaceStr, func, params);
+                const std::unique_ptr<WeexJSResult> &ptr = Instance()->script_side()->ExecJSWithResult(
+                                                        instanceId, namespaceStr, func, params);
                 ClearVectorOfValueWithType(params);
 
-                if (jsResult.length <= 0) {
-                    return createByteArrayResult(nullptr, 0);
-                }
-                std::unique_ptr<IPCResult> ipcResult =
-                        createByteArrayResult(jsResult.data, jsResult.length);
-                WeexJSResultDataFree(jsResult);
-                return ipcResult;
+                return createByteArrayResult(ptr->data.get(), ptr->length);
             }
 
             std::unique_ptr<IPCResult> ScriptBridgeInMultiProcess::CreateInstance(
@@ -408,13 +398,9 @@ namespace weex {
                 const char *instanceID = GetUTF8StringFromIPCArg(arguments, 0);
                 const char *script = GetUTF8StringFromIPCArg(arguments, 1);
 
-                char *result = const_cast<char *>(
-                        Instance()->script_side()->ExecJSOnInstance(instanceID, script));
+                const std::unique_ptr<WeexJSResult> &ptr = Instance()->script_side()->ExecJSOnInstance(instanceID, script);
 
-                if (result == nullptr)
-                    return createByteArrayResult(nullptr, 0);
-                else
-                    return createCharArrayResult(result);
+                return createByteArrayResult(ptr->data.get(), ptr->length);
             }
 
             std::unique_ptr<IPCResult> ScriptBridgeInMultiProcess::UpdateGlobalConfig(

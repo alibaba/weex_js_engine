@@ -12,7 +12,7 @@ void ExeJsTask::run(WeexRuntime *runtime) {
         runtime->exeJS(instanceId, extraArgs.at(0), extraArgs.at(1), exeJsArgs->params);
         return;
     }
-    WeexJSResult jsResult = runtime->exeJSWithResult(instanceId, extraArgs.at(0), extraArgs.at(1),
+    std::unique_ptr<WeexJSResult>  jsResult = runtime->exeJSWithResult(instanceId, extraArgs.at(0), extraArgs.at(1),
                                                      exeJsArgs->params);
 
     if (future() != nullptr) {

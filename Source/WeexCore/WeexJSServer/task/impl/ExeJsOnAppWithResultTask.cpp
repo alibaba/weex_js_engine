@@ -10,13 +10,8 @@ ExeJsOnAppWithResultTask::ExeJsOnAppWithResultTask(const String &instanceId, con
 }
 
 void ExeJsOnAppWithResultTask::run(WeexRuntime *runtime) {
-    auto *jsResult = (WeexJSResult *) malloc(sizeof(WeexJSResult));
-    char *string = runtime->exeJSOnAppWithResult(instanceId, script);
-    jsResult->data = string;
-    jsResult->fromNew = true;
-    jsResult->fromMalloc = false;
+    auto ptr = runtime->exeJSOnAppWithResult(instanceId, script);
     if (future() != nullptr) {
-        future()->setResult(*jsResult);
+        future()->setResult(ptr);
     }
-    free(jsResult);
 }

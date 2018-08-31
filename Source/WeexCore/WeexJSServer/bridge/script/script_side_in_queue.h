@@ -33,7 +33,7 @@ namespace weex {
 
                 int CreateAppContext(const char *instanceId, const char *jsBundle) override;
 
-                char *ExecJSOnAppWithResult(const char *instanceId,
+                std::unique_ptr<WeexJSResult> ExecJSOnAppWithResult(const char *instanceId,
                                             const char *jsBundle) override;
 
                 int CallJSOnAppContext(const char *instanceId, const char *func,
@@ -48,7 +48,7 @@ namespace weex {
                 int ExecJS(const char *instanceId, const char *nameSpace, const char *func,
                            std::vector<VALUE_WITH_TYPE *> &params) override;
 
-                WeexJSResult ExecJSWithResult(const char *instanceId, const char *nameSpace,
+                std::unique_ptr<WeexJSResult>  ExecJSWithResult(const char *instanceId, const char *nameSpace,
                                               const char *func,
                                               std::vector<VALUE_WITH_TYPE *> &params) override;
 
@@ -56,7 +56,7 @@ namespace weex {
                                    const char *script, const char *opts, const char *initData,
                                    const char *extendsApi) override;
 
-                char *ExecJSOnInstance(const char *instanceId, const char *script) override;
+                std::unique_ptr<WeexJSResult> ExecJSOnInstance(const char *instanceId, const char *script) override;
 
                 int DestroyInstance(const char *instanceId) override;
 

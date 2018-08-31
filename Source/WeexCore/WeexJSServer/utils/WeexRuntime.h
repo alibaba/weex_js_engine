@@ -35,7 +35,7 @@ public:
 
     int createAppContext(const String &instanceId, const String &jsBundle);
 
-    char *exeJSOnAppWithResult(const String &instanceId, const String &jsBundle);
+    std::unique_ptr<WeexJSResult> exeJSOnAppWithResult(const String &instanceId, const String &jsBundle);
 
     int callJSOnAppContext(IPCArguments *arguments);
 
@@ -47,21 +47,21 @@ public:
 
     int exeCTimeCallback(const String &source);
 
-    int exeJS(const String &instanceId, const String &nameSpace, const String &func, IPCArguments *arguments);
+//    int exeJS(const String &instanceId, const String &nameSpace, const String &func, IPCArguments *arguments);
 
     int
     exeJS(const String &instanceId, const String &nameSpace, const String &func, std::vector<VALUE_WITH_TYPE *> &params);
 
-    WeexJSResult exeJSWithResult(const String &instanceId, const String &nameSpace, const String &func,
-                          IPCArguments *arguments);
+//    std::unique_ptr<WeexJSResult>  exeJSWithResult(const String &instanceId, const String &nameSpace, const String &func,
+//                          IPCArguments *arguments);
 
-    WeexJSResult exeJSWithResult(const String &instanceId, const String &nameSpace, const String &func,
+    std::unique_ptr<WeexJSResult>  exeJSWithResult(const String &instanceId, const String &nameSpace, const String &func,
                           std::vector<VALUE_WITH_TYPE *> &params);
 
     int createInstance(const String &instanceId, const String &func, const String &script, const String &opts,
                        const String &initData, const String &extendsApi);
 
-    char *exeJSOnInstance(const String &instanceId, const String &script);
+    std::unique_ptr<WeexJSResult> exeJSOnInstance(const String &instanceId, const String &script);
 
     int destroyInstance(const String &instanceId);
 

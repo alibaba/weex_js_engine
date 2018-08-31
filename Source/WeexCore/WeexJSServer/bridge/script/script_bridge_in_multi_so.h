@@ -22,7 +22,7 @@ class ScriptBridgeInMultiSo : public WeexCore::ScriptBridge {
 
   static int CreateAppContext(const char *instanceId, const char *jsBundle);
 
-  static char *ExecJSOnAppWithResult(const char *instanceId,
+  static std::unique_ptr<WeexJSResult> ExecJSOnAppWithResult(const char *instanceId,
                                      const char *jsBundle);
 
   static int CallJSOnAppContext(const char *instanceId, const char *func,
@@ -37,7 +37,7 @@ class ScriptBridgeInMultiSo : public WeexCore::ScriptBridge {
   static int ExecJS(const char *instanceId, const char *nameSpace,
                     const char *func, std::vector<VALUE_WITH_TYPE *> &params);
 
-  static WeexJSResult ExecJSWithResult(const char *instanceId,
+  static std::unique_ptr<WeexJSResult>  ExecJSWithResult(const char *instanceId,
                                        const char *nameSpace, const char *func,
                                        std::vector<VALUE_WITH_TYPE *> &params);
 
@@ -45,7 +45,7 @@ class ScriptBridgeInMultiSo : public WeexCore::ScriptBridge {
                             const char *script, const char *opts,
                             const char *initData, const char *extendsApi);
 
-  static char *ExecJSOnInstance(const char *instanceId, const char *script);
+  static std::unique_ptr<WeexJSResult> ExecJSOnInstance(const char *instanceId, const char *script);
 
   static int DestroyInstance(const char *instanceId);
 

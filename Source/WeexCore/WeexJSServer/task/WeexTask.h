@@ -21,13 +21,13 @@ public:
 
         ~Future() {}
 
-        void setResult(WeexJSResult result);
+        void setResult(std::unique_ptr<WeexJSResult> &result);
 
-        WeexJSResult waitResult();
+        std::unique_ptr<WeexJSResult> waitResult();
 
     private:
         bool has_result_ = false;
-        WeexJSResult result_;
+        std::unique_ptr<WeexJSResult> result_;
         ThreadLocker thread_locker_;
     };
 

@@ -60,7 +60,7 @@ class CoreSideInSimple : public WeexCore::PlatformBridge::CoreSide {
     int InitAppFramework(const char *instanceId, const char *appFramework,
                          std::vector<INIT_FRAMEWORK_PARAMS *> &params) override;
     int CreateAppContext(const char *instanceId, const char *jsBundle) override;
-    const char *ExecJSOnAppWithResult(const char *instanceId,
+    std::unique_ptr<WeexJSResult> ExecJSOnAppWithResult(const char *instanceId,
                                       const char *jsBundle) override;
     int CallJSOnAppContext(const char *instanceId, const char *func,
                            std::vector<VALUE_WITH_TYPE *> &param) override;

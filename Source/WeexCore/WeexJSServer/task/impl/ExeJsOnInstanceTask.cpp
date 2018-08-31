@@ -10,5 +10,8 @@ ExeJsOnInstanceTask::ExeJsOnInstanceTask(const String &instanceId, const String 
 }
 
 void ExeJsOnInstanceTask::run(WeexRuntime *runtime) {
-    runtime->exeJSOnInstance(instanceId, script);
+    std::unique_ptr<WeexJSResult> ptr = runtime->exeJSOnInstance(instanceId, script);
+    if (future() != nullptr) {
+        future()->setResult(ptr);
+    }
 }

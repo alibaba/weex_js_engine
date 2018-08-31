@@ -70,7 +70,7 @@ int ScriptBridgeInMultiSo::CreateAppContext(const char *instanceId,
   return Instance()->script_side()->CreateAppContext(instanceId, jsBundle);
 }
 
-char *ScriptBridgeInMultiSo::ExecJSOnAppWithResult(const char *instanceId,
+std::unique_ptr<WeexJSResult> ScriptBridgeInMultiSo::ExecJSOnAppWithResult(const char *instanceId,
                                                    const char *jsBundle) {
   return Instance()->script_side()->ExecJSOnAppWithResult(instanceId, jsBundle);
 }
@@ -99,7 +99,7 @@ int ScriptBridgeInMultiSo::ExecJS(const char *instanceId, const char *nameSpace,
   return Instance()->script_side()->ExecJS(instanceId, nameSpace, func, params);
 }
 
-WeexJSResult ScriptBridgeInMultiSo::ExecJSWithResult(
+std::unique_ptr<WeexJSResult>  ScriptBridgeInMultiSo::ExecJSWithResult(
     const char *instanceId, const char *nameSpace, const char *func,
     std::vector<VALUE_WITH_TYPE *> &params) {
   return Instance()->script_side()->ExecJSWithResult(instanceId, nameSpace, func,
@@ -115,7 +115,7 @@ int ScriptBridgeInMultiSo::CreateInstance(const char *instanceId,
                                                initData, extendsApi);
 }
 
-char *ScriptBridgeInMultiSo::ExecJSOnInstance(const char *instanceId,
+std::unique_ptr<WeexJSResult> ScriptBridgeInMultiSo::ExecJSOnInstance(const char *instanceId,
                                               const char *script) {
   return Instance()->script_side()->ExecJSOnInstance(instanceId, script);
 }

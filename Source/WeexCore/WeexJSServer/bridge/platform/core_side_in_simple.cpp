@@ -309,7 +309,7 @@ int CoreSideInSimple::CreateAppContext(const char *instanceId,
       ->CreateAppContext(instanceId, jsBundle);
 }
 
-const char *CoreSideInSimple::ExecJSOnAppWithResult(const char *instanceId,
+std::unique_ptr<WeexJSResult> CoreSideInSimple::ExecJSOnAppWithResult(const char *instanceId,
                                                     const char *jsBundle) {
   return WeexCoreManager::Instance()
       ->script_bridge()

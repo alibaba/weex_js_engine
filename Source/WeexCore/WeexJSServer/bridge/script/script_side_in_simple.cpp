@@ -30,7 +30,7 @@ int ScriptSideInSimple::CreateAppContext(const char *instanceId,
                                     String::fromUTF8(jsBundle));
 }
 
-char *ScriptSideInSimple::ExecJSOnAppWithResult(const char *instanceId,
+std::unique_ptr<WeexJSResult> ScriptSideInSimple::ExecJSOnAppWithResult(const char *instanceId,
                                                 const char *jsBundle) {
   LOGD("ScriptSideInSimple::ExecJSOnAppWithResult");
   return runtime_->exeJSOnAppWithResult(String::fromUTF8(instanceId),
@@ -69,7 +69,7 @@ int ScriptSideInSimple::ExecJS(const char *instanceId, const char *nameSpace,
                          params);
 }
 
-WeexJSResult ScriptSideInSimple::ExecJSWithResult(
+std::unique_ptr<WeexJSResult>  ScriptSideInSimple::ExecJSWithResult(
     const char *instanceId, const char *nameSpace, const char *func,
     std::vector<VALUE_WITH_TYPE *> &params) {
   LOGD("ScriptSideInSimple::ExecJSWithResult");
@@ -93,7 +93,7 @@ int ScriptSideInSimple::CreateInstance(const char *instanceId, const char *func,
       String::fromUTF8(initData), String::fromUTF8(extendsApi));
 }
 
-char *ScriptSideInSimple::ExecJSOnInstance(const char *instanceId,
+std::unique_ptr<WeexJSResult> ScriptSideInSimple::ExecJSOnInstance(const char *instanceId,
                                            const char *script) {
   LOGD("ScriptSideInSimple::ExecJSOnInstance");
   return runtime_->exeJSOnInstance(String::fromUTF8(instanceId),

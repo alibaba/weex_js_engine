@@ -11,5 +11,5 @@ NativeTimerTask::NativeTimerTask(const String &instanceId, JSC::JSValue function
 
 void NativeTimerTask::run(WeexRuntime *runtime) {
 //    LOGE("NativeTimerTask is running");
-    runtime->exeTimerFunction(instanceId, timerFunction);
+    runtime->exeTimerFunction(instanceId, timerFunction, global_object());
 }

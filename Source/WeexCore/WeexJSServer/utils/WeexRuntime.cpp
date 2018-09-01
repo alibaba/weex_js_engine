@@ -986,10 +986,8 @@ WeexObjectHolder *WeexRuntime::getLightAppObjectHolder(const String &instanceId)
     return weexLiteAppObjectHolderMap.at(instanceId.utf8().data());
 }
 
-int WeexRuntime::exeTimerFunction(const String &instanceId, JSC::JSValue timerFunction) {
+int WeexRuntime::exeTimerFunction(const String &instanceId, JSC::JSValue timerFunction, JSGlobalObject *globalObject) {
     uint64_t begin = microTime();
-    JSGlobalObject *globalObject;
-    globalObject = weexObjectHolder->m_jsInstanceGlobalObjectMap[instanceId.utf8().data()];
     if (globalObject == nullptr) {
         LOGE("exeTimerFunction and object is null");
         // instance is not exist

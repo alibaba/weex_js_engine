@@ -9,7 +9,7 @@
 #include <cstdint>
 #include "WTFString.h"
 #include "JSCJSValue.h"
-
+#include "WeexCore/WeexJSServer/object/WeexGlobalObject.h"
 
 
 class TimerTask {
@@ -25,7 +25,9 @@ public:
 
     bool repeat = false;
 
-    explicit TimerTask(String id, JSC::JSValue function, uint64_t millSecTimeout, bool repeat = false);
+    WeexGlobalObject* global_object_;
+
+    explicit TimerTask(String id, JSC::JSValue function, uint64_t millSecTimeout, WeexGlobalObject* global_object, bool repeat = false);
 
     explicit TimerTask(const TimerTask *timerTask);
 

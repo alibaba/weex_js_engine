@@ -33,7 +33,7 @@ public:
 
     String instanceId;
     int taskId;
-    explicit WeexTask(const String &instanceId, int taskId) : future_(nullptr) {
+    explicit WeexTask(const String &instanceId, int taskId) : future_(nullptr), global_object_(nullptr) {
         this->instanceId = instanceId;
         this->taskId = taskId;
     };
@@ -52,8 +52,17 @@ public:
         return future_;
     }
 
+    inline WeexGlobalObject* global_object() {
+        return global_object_;
+    }
+
+    inline void set_global_object(WeexGlobalObject* global_object) {
+        global_object_ = global_object;
+    }
+
 private:
     Future* future_;
+    WeexGlobalObject* global_object_;
 };
 
 

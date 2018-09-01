@@ -24,7 +24,7 @@ public:
 
     void removeAllTask(String id);
 
-    int addTimerTask(String id, JSC::JSValue function, int taskId);
+    int addTimerTask(String id, JSC::JSValue function, int taskId, WeexGlobalObject* global_object);
 
     void start();
 

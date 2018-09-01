@@ -46,8 +46,9 @@ WeexTask *WeexTaskQueue::getTask() {
     return task;
 }
 
-int WeexTaskQueue::addTimerTask(String id, JSC::JSValue function, int taskId) {
+int WeexTaskQueue::addTimerTask(String id, JSC::JSValue function, int taskId, WeexGlobalObject* global_object) {
     WeexTask *task = new NativeTimerTask(id, function,taskId);
+    task->set_global_object(global_object);
     return _addTask(
             task,
             true);

@@ -3,6 +3,7 @@
 //
 
 #include "TimerQueue.h"
+#include "TimerTask.h"
 
 static void *startThread(void *td) {
     auto *self = static_cast<TimerQueue *>(td);
@@ -26,9 +27,9 @@ void TimerQueue::start() {
         auto pTask = getTask();
         LOGE("getTask return task");
 
-        if(weexTaskQueue->weexRuntime->hasInstanceId(pTask->instanceID)) {
-            weexTaskQueue->addTimerTask(pTask->instanceID, pTask->function, pTask->taskId);
-            if (pTask->repeat && weexTaskQueue->weexRuntime->hasInstanceId(pTask->instanceID)) {
+        if(pTask->global_object_ != nullptr && weexTaskQueue->weexRuntime->hasInstanceId(pTask->instanceID)) {
+            weexTaskQueue->addTimerTask(pTask->instanceID, pTask->function, pTask->taskId,pTask->global_object_);
+            if (pTask->repeat && pTask->global_object_ != nullptr && weexTaskQueue->weexRuntime->hasInstanceId(pTask->instanceID)) {
                 LOGE("repreat");
                 addTimerTask(new TimerTask(pTask));
             }

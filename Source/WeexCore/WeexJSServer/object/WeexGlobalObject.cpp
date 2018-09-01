@@ -696,7 +696,8 @@ JSFUNCTION functionNativeSetTimeout(ExecState *state) {
     if (timerQueue != nullptr) {
 //        LOGE("set timeout %s",globalObject->id.c_str());
         TimerTask *task = new TimerTask(globalObject->id.c_str(), value,
-                                        static_cast<uint64_t>(jsValue.asInt32()), false);
+                                        static_cast<uint64_t>(jsValue.asInt32()), globalObject, false);
+
         timerQueue->addTimerTask(task);
         return JSValue::encode(jsNumber(task->taskId));;
     }
@@ -714,7 +715,7 @@ JSFUNCTION functionNativeSetInterval(ExecState *state) {
     TimerQueue *timerQueue =WeexEnv::getEnv()->timerQueue();
     if (timerQueue != nullptr) {
         TimerTask *task = new TimerTask(globalObject->id.c_str(), value,
-                                        static_cast<uint64_t>(jsValue.asInt32()), true);
+                                        static_cast<uint64_t>(jsValue.asInt32()), globalObject, true);
         timerQueue->addTimerTask(task);
         return JSValue::encode(jsNumber(task->taskId));;
     }

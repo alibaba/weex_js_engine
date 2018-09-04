@@ -24,7 +24,6 @@ public:
     VALUE_WITH_TYPE *getValueWithTypePtr();
 
     ~ExeJsArgs() {
-        LOGE("ExeJsArgs DEL is running");
         freeParams(params);
     }
 

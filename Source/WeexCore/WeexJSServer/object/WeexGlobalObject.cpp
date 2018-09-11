@@ -618,7 +618,7 @@ JSFUNCTION functionPostMessage(ExecState *state) {
     WeexGlobalObject *globalObject = static_cast<WeexGlobalObject *>(state->lexicalGlobalObject());
     String id(globalObject->id.c_str());
     std::string data(dataChar.getValue());
-    globalObject->js_bridge()->core_side()->PostMessage(id.utf8().data(), data, dataChar.getLength());
+    globalObject->js_bridge()->core_side()->PostMessage(id.utf8().data(), data.c_str(), dataChar.getLength());
     return JSValue::encode(jsNumber(0));
 }
 
@@ -633,7 +633,7 @@ JSFUNCTION functionDisPatchMeaage(ExecState *state) {
     WeexGlobalObject *globalObject = static_cast<WeexGlobalObject *>(state->lexicalGlobalObject());
     String id(globalObject->id.c_str());
     std::string data(dataChar.getValue());
-    globalObject->js_bridge()->core_side()->DispatchMessage(clientIdChar.getValue(), data, dataChar.getLength(),
+    globalObject->js_bridge()->core_side()->DispatchMessage(clientIdChar.getValue(), data.c_str(), dataChar.getLength(),
                                                             callBackChar.getValue(), id.utf8().data());
     return JSValue::encode(jsNumber(0));
 }

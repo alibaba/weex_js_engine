@@ -152,6 +152,7 @@ namespace wson {
             for(int i=0; i<WSON_SYSTEM_IDENTIFIER_CACHE_COUNT; i++){
                 if(systemIdentifyCache[i].length > 0){
                     if(systemIdentifyCache[i].utf16){
+                        free((void*) systemIdentifyCache[i].utf16);
                         systemIdentifyCache[i].utf16 = NULL;
                     }
                     systemIdentifyCache[i].key = 0;
@@ -225,9 +226,11 @@ namespace wson {
            && !cache.identifer.isNull()){
             return cache.identifer;
         }
-        UChar* destination;
-        String string = String::createUninitialized(length, destination);
+
+        UChar* destination = static_cast<UChar*>(malloc(length*sizeof(UChar) + sizeof(UChar)));
+        memset((void*)destination, 0, length*sizeof(UChar) + sizeof(UChar));
         memcpy((void*)destination, (void*)utf16, length*sizeof(UChar));
+        String string(destination);
         Identifier identifier = Identifier::fromString(vm, string);
         cache.identifer = identifier;
         cache.length = length;

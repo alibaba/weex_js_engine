@@ -27,6 +27,8 @@ namespace WeexCore {
 
             void setString(WTF::String string){
                 this->json = string;
+                // avoid overflow
+                this->json.append('\0');
                 this->type = ARGS_TYPE_JSON;
             }
             /**object will auto free when args destructor */
@@ -42,7 +44,7 @@ namespace WeexCore {
                     }
                     return nullptr;
                 }else{
-                    return json.utf8().data();
+                    return reinterpret_cast<const char*>(json.characters8());
                 }
             }
 

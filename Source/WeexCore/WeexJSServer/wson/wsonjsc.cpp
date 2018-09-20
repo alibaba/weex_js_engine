@@ -227,11 +227,10 @@ namespace wson {
             return cache.identifer;
         }
 
-        UChar* destination = static_cast<UChar*>(malloc(length*sizeof(UChar) + sizeof(UChar)));
-        memset((void*)destination, 0, length*sizeof(UChar) + sizeof(UChar));
-        memcpy((void*)destination, (void*)utf16, length*sizeof(UChar));
-        String string(destination);
-        Identifier identifier = Identifier::fromString(vm, string);
+        UChar* destination = static_cast<UChar*>(malloc(length*sizeof(UChar) + sizeof(u'\0')));
+        memset((void*)destination, 0, length*sizeof(UChar) + sizeof(u'\0'));
+        memcpy((void*)destination, (void*)utf16, length*sizeof(UChar) + sizeof(u'\0'));
+        Identifier identifier = Identifier::fromString(vm, destination, length);
         cache.identifer = identifier;
         cache.length = length;
         cache.key = key;

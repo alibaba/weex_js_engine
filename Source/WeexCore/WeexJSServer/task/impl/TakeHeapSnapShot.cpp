@@ -7,5 +7,4 @@
 TakeHeapSnapShot::TakeHeapSnapShot(const String &instanceId) : WeexTask(instanceId) {}
 
 void TakeHeapSnapShot::run(WeexRuntime *runtime) {
-    WeexTask::run(runtime);
 }

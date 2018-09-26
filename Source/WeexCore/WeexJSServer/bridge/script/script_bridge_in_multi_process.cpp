@@ -191,6 +191,8 @@ namespace weex {
                 handler->registerHandler(static_cast<uint32_t>(IPCJSMsg::EXECJS), ExecJS);
                 handler->registerHandler(static_cast<uint32_t>(IPCJSMsg::EXECJSWITHRESULT),
                                          ExecJSWithResult);
+                handler->registerHandler(static_cast<uint32_t>(IPCJSMsg::EXECJSWITHCALLBACK),
+                                         ExecJSWithCallback);
                 handler->registerHandler(static_cast<uint32_t>(IPCJSMsg::CREATEINSTANCE),
                                          CreateInstance);
                 handler->registerHandler(static_cast<uint32_t>(IPCJSMsg::DESTORYINSTANCE),
@@ -362,6 +364,23 @@ namespace weex {
                 ClearVectorOfValueWithType(params);
 
                 return createByteArrayResult(ptr->data.get(), ptr->length);
+            }
+
+            std::unique_ptr<IPCResult> ScriptBridgeInMultiProcess::ExecJSWithCallback(
+                    IPCArguments *arguments) {
+                const char *instanceId = GetUTF8StringFromIPCArg(arguments, 0);
+                const char *namespaceStr = GetUTF8StringFromIPCArg(arguments, 1);
+                const char *func = GetUTF8StringFromIPCArg(arguments, 2);
+                // pass callback_id before params
+                long id = arguments->get<int64_t>(3);
+
+                std::vector<VALUE_WITH_TYPE *> params;
+                FillVectorOfValueWithType(params, arguments, 4, arguments->getCount());
+                Instance()->script_side()->ExecJSWithCallback(
+                        instanceId, namespaceStr, func, params, id);
+                ClearVectorOfValueWithType(params);
+
+                return createVoidResult();
             }
 
             std::unique_ptr<IPCResult> ScriptBridgeInMultiProcess::CreateInstance(

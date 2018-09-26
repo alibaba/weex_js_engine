@@ -42,6 +42,7 @@ class ScriptBridgeInMultiProcess : public WeexCore::ScriptBridge {
   IPC_METHOD(TakeHeapSnapshot)
   IPC_METHOD(ExecJS)
   IPC_METHOD(ExecJSWithResult)
+  IPC_METHOD(ExecJSWithCallback)
   IPC_METHOD(CreateInstance)
   IPC_METHOD(DestroyInstance)
   IPC_METHOD(ExecJSOnInstance)

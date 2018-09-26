@@ -41,6 +41,10 @@ class ScriptBridgeInMultiSo : public WeexCore::ScriptBridge {
                                        const char *nameSpace, const char *func,
                                        std::vector<VALUE_WITH_TYPE *> &params);
 
+  static void ExecJSWithCallback(const char *instanceId,
+                                       const char *nameSpace, const char *func,
+                                       std::vector<VALUE_WITH_TYPE *> &params, long callback_id);
+
   static int CreateInstance(const char *instanceId, const char *func,
                             const char *script, const char *opts,
                             const char *initData, const char *extendsApi);

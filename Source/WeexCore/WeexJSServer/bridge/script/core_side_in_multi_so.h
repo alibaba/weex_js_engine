@@ -66,6 +66,7 @@ class CoreSideInMultiSo : public WeexCore::ScriptBridge::CoreSide {
   void ReportException(const char *page_id, const char *func,
                        const char *exception_string) override;
   void SetJSVersion(const char *js_version) override;
+  void OnReceivedResult(long callback_id, std::unique_ptr<WeexJSResult>& result);
 
  private:
   FunctionsExposedByCore *functions_exposed_by_core_;

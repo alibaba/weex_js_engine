@@ -522,6 +522,21 @@ namespace weex {
                     LOGE("setJSFVersion: unexpected result: %d", result->getType());
                 }
             }
+
+            void CoreSideInMultiProcess::OnReceivedResult(long callback_id, std::unique_ptr<WeexJSResult>& result) {
+                IPCSender *sender = client_->getSender();
+                std::unique_ptr<IPCSerializer> serializer(createIPCSerializer());;
+                serializer->setMsg(static_cast<uint32_t>(IPCProxyMsg::ONRECEIVEDRESULT));
+                serializer->add(static_cast<int64_t>(callback_id));
+                if (result != nullptr) {
+                    serializer->add(result->data.get(), result->length);
+                } else {
+                    serializer->addVoid();
+                }
+
+                std::unique_ptr<IPCBuffer> buffer = serializer->finish();
+                sender->send(buffer.get());
+            }
         }  // namespace js
     }  // namespace bridge
 }  // namespace weex

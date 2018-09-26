@@ -146,6 +146,10 @@ void CoreSideInMultiSo::ReportException(const char *page_id, const char *func,
 void CoreSideInMultiSo::SetJSVersion(const char *js_version) {
   functions_exposed_by_core_->funcSetJSVersion(js_version);
 }
+
+void CoreSideInMultiSo::OnReceivedResult(long callback_id, std::unique_ptr<WeexJSResult>& result) {
+  functions_exposed_by_core_->funcOnReceivedResult(callback_id, result);
+}
 }  // namespace js
 }  // namespace bridge
 }  // namespace weex

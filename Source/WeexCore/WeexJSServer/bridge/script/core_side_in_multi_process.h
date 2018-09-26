@@ -7,6 +7,7 @@
 
 #include <WeexCore/WeexJSServer/object/WeexIPCClient.h>
 #include "core/bridge/script_bridge.h"
+#include <memory>
 
 class WeexJSServer;
 namespace weex {
@@ -89,6 +90,8 @@ namespace weex {
                                      const char *exception_string) override;
 
                 void SetJSVersion(const char *js_version) override;
+
+                void OnReceivedResult(long callback_id, std::unique_ptr<WeexJSResult>& result);
 
             private:
                 WeexIPCClient *client_;

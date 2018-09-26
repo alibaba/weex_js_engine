@@ -40,7 +40,7 @@ FunctionsExposedByJS *ScriptBridgeInMultiSo::GetExposedFunctions() {
       InitFramework,         InitAppFramework,   CreateAppContext,
       ExecJSOnAppWithResult, CallJSOnAppContext, DestroyAppContext,
       ExecJSService,         ExecTimeCallback,   ExecJS,
-      ExecJSWithResult,      CreateInstance,     ExecJSOnInstance,
+      ExecJSWithResult,      ExecJSWithCallback, CreateInstance,     ExecJSOnInstance,
       DestroyInstance,       UpdateGlobalConfig};
   auto functions = (FunctionsExposedByJS *)malloc(sizeof(FunctionsExposedByJS));
   memset(functions, 0, sizeof(FunctionsExposedByJS));
@@ -104,6 +104,12 @@ std::unique_ptr<WeexJSResult>  ScriptBridgeInMultiSo::ExecJSWithResult(
     std::vector<VALUE_WITH_TYPE *> &params) {
   return Instance()->script_side()->ExecJSWithResult(instanceId, nameSpace, func,
                                                  params);
+}
+
+void ScriptBridgeInMultiSo::ExecJSWithCallback(
+    const char *instanceId, const char *nameSpace, const char *func,
+    std::vector<VALUE_WITH_TYPE *> &params, long callback_id) {
+  Instance()->script_side()->ExecJSWithCallback(instanceId, nameSpace, func, params, callback_id);
 }
 
 int ScriptBridgeInMultiSo::CreateInstance(const char *instanceId,

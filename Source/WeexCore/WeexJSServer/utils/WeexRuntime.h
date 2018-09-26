@@ -58,6 +58,9 @@ public:
     std::unique_ptr<WeexJSResult>  exeJSWithResult(const String &instanceId, const String &nameSpace, const String &func,
                           std::vector<VALUE_WITH_TYPE *> &params);
 
+    void exeJSWithCallback(const String &instanceId, const String &nameSpace, const String &func,
+                          std::vector<VALUE_WITH_TYPE *> &params, long callback_id);
+
     int createInstance(const String &instanceId, const String &func, const String &script, const String &opts,
                        const String &initData, const String &extendsApi);
 

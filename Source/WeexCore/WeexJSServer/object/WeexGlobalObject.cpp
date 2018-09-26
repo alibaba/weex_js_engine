@@ -244,7 +244,6 @@ void WeexGlobalObject::addTimer(uint32_t function_id, JSC::Strong<JSC::Unknown>&
 }
 
 void WeexGlobalObject::removeTimer(uint32_t function_id) {
-    LOGE("zhangxiao WeexGlobalObject::removeTimer function_id %d ", function_id);
     MapIterator iter = function_maps_.find(function_id);
     if (iter == function_maps_.end()) {
        LOGE("timer do not exist!");

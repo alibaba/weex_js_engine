@@ -132,6 +132,18 @@ namespace weex {
                 return std::move(future->waitResult());
             }
 
+            void  ScriptSideInQueue::ExecJSWithCallback(
+                    const char *instanceId, const char *nameSpace, const char *func,
+                    std::vector<VALUE_WITH_TYPE *> &params, long callback_id) {
+                LOGD("ScriptSideInQueue::ExecJSWithCallback");
+
+                ExeJsTask *task = new ExeJsTask(instanceId, params, callback_id);
+
+                task->addExtraArg(String::fromUTF8(nameSpace));
+                task->addExtraArg(String::fromUTF8(func));
+                weexTaskQueue_->addTask(task);
+            }
+
             int ScriptSideInQueue::CreateInstance(const char *instanceId, const char *func,
                                                   const char *script, const char *opts,
                                                   const char *initData,

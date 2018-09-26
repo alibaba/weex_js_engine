@@ -12,6 +12,7 @@
 class ExeJsTask : public WeexTask {
 public:
     ExeJsTask(const String &instanceId, std::vector<VALUE_WITH_TYPE *> &params, bool withResult = false);
+    ExeJsTask(const String &instanceId, std::vector<VALUE_WITH_TYPE *> &params, long callback_id);
 
     ExeJsTask(const String &instanceId, IPCArguments *arguments, size_t startCount, bool withResult = false);
 
@@ -28,6 +29,7 @@ public:
 private:
 
     bool withResult;
+    long callbackId;
     ExeJsArgs *exeJsArgs;
     std::vector<String> extraArgs;
 };

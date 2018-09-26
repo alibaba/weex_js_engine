@@ -607,6 +607,12 @@ std::unique_ptr<WeexJSResult> WeexRuntime::exeJSWithResult(const String &instanc
     return returnResult;
 }
 
+void WeexRuntime::exeJSWithCallback(const String &instanceId, const String &nameSpace, const String &func,
+                                          std::vector<VALUE_WITH_TYPE *> &params,  long callback_id) {
+    auto result = exeJSWithResult(instanceId, nameSpace, func, params);
+    script_bridge_->core_side()->OnReceivedResult(callback_id, result);
+}
+
 
 //std::unique_ptr<WeexJSResult> WeexRuntime::exeJSWithResult(const String &instanceId, const String &nameSpace, const String &func,
 //                                          IPCArguments *arguments) {

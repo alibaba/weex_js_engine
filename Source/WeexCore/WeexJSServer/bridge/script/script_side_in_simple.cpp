@@ -78,6 +78,15 @@ std::unique_ptr<WeexJSResult>  ScriptSideInSimple::ExecJSWithResult(
                                    String::fromUTF8(func), params);
 }
 
+void ScriptSideInSimple::ExecJSWithCallback(
+    const char *instanceId, const char *nameSpace, const char *func,
+    std::vector<VALUE_WITH_TYPE *> &params, long callback_id) {
+  LOGD("ScriptSideInSimple::ExecJSWithResult");
+  runtime_->exeJSWithResult(String::fromUTF8(instanceId),
+                                   String::fromUTF8(nameSpace),
+                                   String::fromUTF8(func), params);
+}
+
 int ScriptSideInSimple::CreateInstance(const char *instanceId, const char *func,
                                        const char *script, const char *opts,
                                        const char *initData,

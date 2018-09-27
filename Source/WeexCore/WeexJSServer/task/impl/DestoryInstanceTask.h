@@ -14,6 +14,7 @@ public:
 
 
     void run(WeexRuntime *runtime) override;
+    std::string taskName() override { return " DestoryInstanceTask "; }
 };
 
 

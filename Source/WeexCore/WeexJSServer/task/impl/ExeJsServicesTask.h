@@ -13,6 +13,7 @@ public:
     explicit ExeJsServicesTask(const String &script);
 
      void run(WeexRuntime *runtime) override ;
+     std::string taskName() override { return " ExeJsServicesTask"; }
 
 
 private:

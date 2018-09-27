@@ -13,6 +13,7 @@ public:
     DestoryAppContextTask(const String &instanceId);
 
     void run(WeexRuntime *runtime) override;
+    std::string taskName() override { return "DestoryAppContextTask"; }
 
 };
 

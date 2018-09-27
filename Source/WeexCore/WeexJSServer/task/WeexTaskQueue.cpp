@@ -17,6 +17,7 @@ void WeexTaskQueue::run(WeexTask *task) {
 
 WeexTaskQueue::~WeexTaskQueue() {
     delete this->weexRuntime;
+    weexRuntime = nullptr;
 }
 
 int WeexTaskQueue::addTask(WeexTask *task) {
@@ -46,8 +47,8 @@ WeexTask *WeexTaskQueue::getTask() {
     return task;
 }
 
-int WeexTaskQueue::addTimerTask(String id, JSC::JSValue function, int taskId, WeexGlobalObject* global_object) {
-    WeexTask *task = new NativeTimerTask(id, function,taskId);
+int WeexTaskQueue::addTimerTask(String id, uint32_t function, int taskId, WeexGlobalObject* global_object, bool one_shot) {
+    WeexTask *task = new NativeTimerTask(id, function,taskId, one_shot);
     task->set_global_object(global_object);
     return _addTask(
             task,
@@ -63,9 +64,9 @@ void WeexTaskQueue::removeTimer(int taskId) {
         for (std::deque<WeexTask *>::iterator it = taskQueue_.begin(); it < taskQueue_.end(); ++it) {
             auto reference = *it;
             if (reference->taskId == taskId) {
+                NativeTimerTask* timer_task = static_cast<NativeTimerTask*>(reference);
                 taskQueue_.erase(it);
-                delete (reference);
-                reference = nullptr;
+                delete (timer_task);
             }
         }
     }
@@ -101,6 +102,7 @@ static void *startThread(void *td) {
     auto pTask = self->getTask();
     self->run(pTask);
     self->start();
+    return NULL;
 }
 
 void WeexTaskQueue::init() {

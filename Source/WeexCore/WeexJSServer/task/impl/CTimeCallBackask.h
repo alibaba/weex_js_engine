@@ -13,6 +13,7 @@ public:
     CTimeCallBackask(const String &script);
 
     void run(WeexRuntime *runtime) override;
+    std::string taskName() override { return "CTimeCallBackask"; }
 
 private:
     String script;

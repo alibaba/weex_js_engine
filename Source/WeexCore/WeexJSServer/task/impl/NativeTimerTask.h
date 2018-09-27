@@ -10,12 +10,16 @@
 
 class NativeTimerTask : public WeexTask {
 public:
-    explicit NativeTimerTask(const String &instanceId, JSC::JSValue function, int taskId);
+    explicit NativeTimerTask(const String &instanceId, uint32_t function, int taskId, bool one_shot);
+    ~NativeTimerTask() override {}
 
     void run(WeexRuntime *runtime) override;
+    std::string taskName() override { return "NativeTimerTask"; }
+    uint32_t timerFunctionID() const { return timerFunction; }
 
 private:
-    JSC::JSValue timerFunction = JSC::jsUndefined();
+    uint32_t timerFunction;
+    bool repeatTimer;
 };
 
 

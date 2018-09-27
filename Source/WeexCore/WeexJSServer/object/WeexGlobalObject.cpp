@@ -104,6 +104,7 @@ const GlobalObjectMethodTable WeexGlobalObject::s_globalObjectMethodTable = {
 
 WeexGlobalObject::WeexGlobalObject(VM &vm, Structure *structure)
         : JSGlobalObject(vm, structure, &s_globalObjectMethodTable), script_bridge_() {
+    function_id_ = 0;
 }
 
 void WeexGlobalObject::SetScriptBridge(WeexCore::ScriptBridge *script_bridge) {
@@ -225,6 +226,39 @@ void WeexGlobalObject::initFunctionForAppContext() {
     reifyStaticProperties(vm, JSEventTargetPrototypeTableValues, *this);
 }
 
+uint32_t WeexGlobalObject::genFunctionID() {
+    if (function_id_ > (INT_MAX - 1)) {
+       LOGE(" WeexGlobalObject::genFunctionID timer fucntion id to large, something wrong now, crash!");
+       abort();
+    }
+    return function_id_++;
+}
+
+void WeexGlobalObject::addTimer(uint32_t function_id, JSC::Strong<JSC::Unknown>&& function) {
+    MapIterator iter = function_maps_.find(function_id);
+    if (iter != function_maps_.end()) {
+       LOGE("timer already exist in map, return now");
+       return;
+    }
+    function_maps_.insert(std::pair<uint32_t, JSC::Strong<JSC::Unknown>>(function_id, WTFMove(function)));
+}
+
+void WeexGlobalObject::removeTimer(uint32_t function_id) {
+    LOGE("zhangxiao WeexGlobalObject::removeTimer function_id %d ", function_id);
+    MapIterator iter = function_maps_.find(function_id);
+    if (iter == function_maps_.end()) {
+       LOGE("timer do not exist!");
+       return;
+    }
+    function_maps_.erase(function_id);
+}
+
+JSValue WeexGlobalObject::getTimerFunction(uint32_t function_id) {
+    MapIterator iter = function_maps_.find(function_id);
+    if (iter == function_maps_.end())
+        return jsUndefined();
+   return function_maps_[function_id].get();
+}
 
 JSFUNCTION functionGCAndSweep(ExecState *exec) {
     JSLockHolder lock(exec);
@@ -692,14 +726,17 @@ JSFUNCTION functionNativeSetTimeout(ExecState *state) {
     size_t i = state->argumentCount();
     if (i < 2)
         return JSValue::encode(jsNumber(0));
-    const JSValue &value = state->argument(0);
-    const JSValue &jsValue = state->argument(1);
+    VM &vm = globalObject->vm();
+    const JSValue value = state->argument(0);
+    const JSValue jsValue = state->argument(1);
     TimerQueue *timerQueue =WeexEnv::getEnv()->timerQueue();
     if (timerQueue != nullptr) {
+        uint32_t function_id = globalObject->genFunctionID();
+        globalObject->addTimer(function_id, JSC::Strong<JSC::Unknown> { vm, JSC::asObject(value) });
         uint64_t timeout = static_cast<uint64_t>(jsValue.asInt32());
         if(timeout < 1)
             timeout = 1;
-        TimerTask *task = new TimerTask(globalObject->id.c_str(), value,
+        TimerTask *task = new TimerTask(globalObject->id.c_str(), function_id,
                                         timeout, globalObject, false);
 
         timerQueue->addTimerTask(task);
@@ -714,11 +751,14 @@ JSFUNCTION functionNativeSetInterval(ExecState *state) {
     size_t i = state->argumentCount();
     if (i < 2)
         return JSValue::encode(jsNumber(0));
-    const JSValue &value = state->argument(0);
-    const JSValue &jsValue = state->argument(1);
+    VM &vm = globalObject->vm();
+    const JSValue value = state->argument(0);
+    const JSValue jsValue = state->argument(1);
     TimerQueue *timerQueue =WeexEnv::getEnv()->timerQueue();
     if (timerQueue != nullptr) {
-        TimerTask *task = new TimerTask(globalObject->id.c_str(), value,
+        uint32_t function_id = globalObject->genFunctionID();
+        globalObject->addTimer(function_id, JSC::Strong<JSC::Unknown> { vm, JSC::asObject(value) });
+        TimerTask *task = new TimerTask(globalObject->id.c_str(), function_id,
                                         static_cast<uint64_t>(jsValue.asInt32()), globalObject, true);
         timerQueue->addTimerTask(task);
         return JSValue::encode(jsNumber(task->taskId));;
@@ -729,7 +769,7 @@ JSFUNCTION functionNativeSetInterval(ExecState *state) {
 
 JSFUNCTION functionNativeClearTimeout(ExecState *state) {
     TimerQueue *timerQueue = WeexEnv::getEnv()->timerQueue();
-    const JSValue &value = state->argument(0);
+    const JSValue& value = state->argument(0);
     if (timerQueue != nullptr) {
         timerQueue->removeTimer(value.asInt32());
     }

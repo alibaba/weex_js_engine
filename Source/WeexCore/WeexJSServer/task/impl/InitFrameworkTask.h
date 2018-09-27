@@ -25,6 +25,7 @@ public:
     explicit InitFrameworkTask(const String &script, IPCArguments *arguments, size_t startCount);
 
     void run(WeexRuntime *runtime) override;
+    std::string taskName() override { return "InitFrameworkTask"; }
 
 
     ~InitFrameworkTask();

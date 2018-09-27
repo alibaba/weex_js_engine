@@ -18,7 +18,7 @@ public:
     int taskId;
 
     String instanceID;
-    JSC::JSValue function;
+    uint32_t m_function;
 
     uint64_t timeout;
     uint64_t when;
@@ -27,11 +27,11 @@ public:
 
     WeexGlobalObject* global_object_;
 
-    explicit TimerTask(String id, JSC::JSValue function, uint64_t millSecTimeout, WeexGlobalObject* global_object, bool repeat = false);
+    explicit TimerTask(String id, uint32_t function, uint64_t millSecTimeout, WeexGlobalObject* global_object, bool repeat = false);
 
-    explicit TimerTask(const TimerTask *timerTask);
+    explicit TimerTask(TimerTask *timerTask);
 
-    TimerTask(const TimerTask &timerTask);
+    TimerTask(TimerTask &timerTask);
 
 private:
 

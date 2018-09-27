@@ -13,6 +13,7 @@ public:
     CreateAppContextTask(const String &instanceId, const String &script);
 
     void run(WeexRuntime *runtime) override;
+    std::string taskName() override { return " CreateAppContextTask "; }
 
 private:
     String script;

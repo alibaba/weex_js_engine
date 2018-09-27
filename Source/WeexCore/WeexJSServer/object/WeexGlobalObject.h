@@ -58,6 +58,13 @@ public:
 
     inline WeexCore::ScriptBridge* js_bridge() { return script_bridge_; }
     void SetScriptBridge(WeexCore::ScriptBridge *script_bridge);
+
+    // store js timer function
+    void addTimer(uint32_t function_id, JSC::Strong<JSC::Unknown>&& function);
+    void removeTimer(uint32_t function_id);
+    uint32_t genFunctionID();
+    JSValue getTimerFunction(uint32_t function_id);
+
 protected:
     void finishCreation(VM& vm)
     {
@@ -99,6 +106,12 @@ protected:
     {
         addValue(vm, this, name, value);
     }
+
+    // use map to store timer js function, avoid the object be gc
+    std::map<uint32_t, JSC::Strong<JSC::Unknown>> function_maps_;
+    typedef std::map<uint32_t, JSC::Strong<JSC::Unknown>>::iterator MapIterator;
+
+    uint32_t function_id_;
 };
 
 

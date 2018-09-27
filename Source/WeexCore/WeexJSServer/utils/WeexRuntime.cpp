@@ -48,9 +48,8 @@ int WeexRuntime::initAppFrameworkMultiProcess(const String &instanceId, const St
         holder->initFromIPCArguments(arguments, 2, true);
         weexLiteAppObjectHolderMap[instanceId.utf8().data()] = holder;
     }
-//    LOGE("initAppFrameworkMultiProcess is running and id is %s", k);
+
     return _initAppFramework(instanceId, appFramework);
-    // LOGE("Weex jsserver IPCJSMsg::INITAPPFRAMEWORK end");
 }
 
 int WeexRuntime::initAppFramework(const String &instanceId, const String &appFramework,
@@ -986,22 +985,23 @@ WeexObjectHolder *WeexRuntime::getLightAppObjectHolder(const String &instanceId)
     return weexLiteAppObjectHolderMap.at(instanceId.utf8().data());
 }
 
-int WeexRuntime::exeTimerFunction(const String &instanceId, JSC::JSValue timerFunction, JSGlobalObject *globalObject) {
+int WeexRuntime::exeTimerFunction(const String &instanceId, uint32_t timerFunction, JSGlobalObject *globalObject) {
     uint64_t begin = microTime();
     if (globalObject == nullptr) {
         LOGE("exeTimerFunction and object is null");
-        // instance is not exist
         return 0;
-//        globalObject = weexObjectHolder->m_globalObject.get();
     }
     VM &vm = globalObject->vm();
     JSLockHolder locker(&vm);
-    const JSValue &value = timerFunction;
+    WeexGlobalObject* go = static_cast<WeexGlobalObject*>(globalObject);
+    const JSValue& value = go->getTimerFunction(timerFunction);
     JSValue result;
     CallData callData;
     CallType callType = getCallData(value, callData);
+    if (callType == CallType::None)
+        return -1;
+
     NakedPtr<Exception> returnedException;
-    // LOGE("Weex jsserver IPCJSMsg::CALLJSONAPPCONTEXT start call js runtime funtion");
     if (value.isEmpty()) {
         LOGE("Weex jsserver IPCJSMsg::CALLJSONAPPCONTEXT js funtion is empty");
     }
@@ -1011,11 +1011,16 @@ int WeexRuntime::exeTimerFunction(const String &instanceId, JSC::JSValue timerFu
     JSValue ret = call(globalObject->globalExec(), value, callType, callData, globalObject, a, returnedException);
     uint64_t end = microTime();
 
-//    LOGE("exeTimerFunction cost %lld", end - begin);
-
     return 0;
 }
 
+void WeexRuntime::removeTimerFunction(const uint32_t timerFunction, JSGlobalObject *globalObject) {
+    WeexGlobalObject* go = static_cast<WeexGlobalObject*>(globalObject);
+    if (go == nullptr)
+        return;
+
+    go->removeTimer(timerFunction);
+}
 
 bool WeexRuntime::hasInstanceId(String &id) {
     bool lightAppHasId = false;

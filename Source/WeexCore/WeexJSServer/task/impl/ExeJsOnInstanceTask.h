@@ -13,6 +13,7 @@ public:
     explicit ExeJsOnInstanceTask(const String &instanceId, const String &script);
 
     void run(WeexRuntime *runtime) override;
+    std::string taskName() override { return "ExeJsOnInstanceTask"; }
 private:
     String script;
 };

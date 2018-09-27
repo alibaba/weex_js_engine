@@ -28,7 +28,7 @@ void TimerQueue::start() {
         LOGE("getTask return task");
 
         if(pTask->global_object_ != nullptr && weexTaskQueue->weexRuntime->hasInstanceId(pTask->instanceID)) {
-            weexTaskQueue->addTimerTask(pTask->instanceID, pTask->function, pTask->taskId,pTask->global_object_);
+            weexTaskQueue->addTimerTask(pTask->instanceID, pTask->m_function, pTask->taskId,pTask->global_object_, !pTask->repeat);
             if (pTask->repeat && pTask->global_object_ != nullptr && weexTaskQueue->weexRuntime->hasInstanceId(pTask->instanceID)) {
                 LOGE("repreat");
                 addTimerTask(new TimerTask(pTask));
@@ -121,6 +121,8 @@ void TimerQueue::removeTimer(int timerId) {
             if (reference->taskId == timerId) {
                 timerQueue_.erase(it);
                 weexTaskQueue->removeTimer(reference->taskId);
+                if (weexTaskQueue->weexRuntime)
+                    weexTaskQueue->weexRuntime->removeTimerFunction(reference->m_function, reference->global_object_);
                 delete (reference);
                 reference = nullptr;
             }
@@ -146,6 +148,8 @@ void TimerQueue::destroyPageTimer(String instanceId) {
             if (reference->instanceID == instanceId) {
                 timerQueue_.erase(it);
                 weexTaskQueue->removeTimer(reference->taskId);
+                if (weexTaskQueue->weexRuntime)
+                    weexTaskQueue->weexRuntime->removeTimerFunction(reference->m_function, reference->global_object_);
                 delete (reference);
                 reference = nullptr;
             }

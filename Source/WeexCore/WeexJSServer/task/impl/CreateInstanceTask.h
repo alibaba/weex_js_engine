@@ -15,6 +15,7 @@ public:
     void addExtraArg(String arg);
 
     void run(WeexRuntime *runtime) override ;
+    std::string taskName() override { return "CreateInstanceTask"; }
 
 private:
     std::vector<String> extraArgs;

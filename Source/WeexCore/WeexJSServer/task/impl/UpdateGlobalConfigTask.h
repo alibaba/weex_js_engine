@@ -13,6 +13,7 @@ public:
     UpdateGlobalConfigTask(const String &script);
 
     void run(WeexRuntime *runtime) override;
+    std::string taskName() override { return "UpdateGlobalConfigTask"; }
 
 private:
     String script;

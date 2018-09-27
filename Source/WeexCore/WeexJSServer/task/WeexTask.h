@@ -43,6 +43,7 @@ public:
     virtual ~WeexTask() = default;
 
     virtual void run(WeexRuntime *runtime) = 0;
+    virtual std::string taskName() = 0;
 
     inline void set_future(Future* future) {
         future_ = future;

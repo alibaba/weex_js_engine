@@ -17,6 +17,7 @@ public:
     CallJsOnAppContextTask(const String &instanceId, const String &func, IPCArguments *arguments, size_t startCount);
 
     void run(WeexRuntime *runtime) override;
+    std::string taskName() override { return " CallJsOnAppContextTask "; }
 
 
     ~CallJsOnAppContextTask() {

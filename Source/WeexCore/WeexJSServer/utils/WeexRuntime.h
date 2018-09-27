@@ -66,8 +66,12 @@ public:
     int destroyInstance(const String &instanceId);
 
     int updateGlobalConfig(const String &config);
-    int exeTimerFunction(const String &instanceId, JSC::JSValue timerFunction, JSGlobalObject *globalObject);
+
+    int exeTimerFunction(const String &instanceId, uint32_t timerFunction, JSGlobalObject *globalObject);
+
     WeexObjectHolder * getLightAppObjectHolder(const String &instanceId);
+
+    void removeTimerFunction(const uint32_t timerFunction, JSGlobalObject *globalObject);
 
 private:
     int _initFramework(const String &source);

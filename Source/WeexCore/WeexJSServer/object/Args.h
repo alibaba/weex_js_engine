@@ -26,12 +26,9 @@ namespace WeexCore {
 
             void setString(WTF::String string){
                 this->json = string;
-                // avoid overflow
-                this->json.append('\0');
                 this->type = ARGS_TYPE_JSON;
                 // if string is not utf8, we convert it
-                if (!json.is8Bit())
-                  utf8.assign(json.utf8().data());
+                utf8.assign(json.utf8().data());
             }
             /**object will auto free when args destructor */
             void setWson(wson_buffer* buffer){
@@ -46,10 +43,7 @@ namespace WeexCore {
                     }
                     return nullptr;
                 }else{
-                    if (json.is8Bit())
-                      return reinterpret_cast<const char*>(json.characters8());
-                    else
-                      return utf8.c_str();
+                    return utf8.c_str();
                 }
             }
 

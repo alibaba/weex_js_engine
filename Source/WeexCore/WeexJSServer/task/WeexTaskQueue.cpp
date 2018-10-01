@@ -52,7 +52,7 @@ int WeexTaskQueue::addTimerTask(String id, uint32_t function, int taskId, WeexGl
     task->set_global_object(global_object);
     return _addTask(
             task,
-            true);
+            false);
 }
 
 void WeexTaskQueue::removeTimer(int taskId) {

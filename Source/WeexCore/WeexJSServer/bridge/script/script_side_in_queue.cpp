@@ -46,8 +46,12 @@ namespace weex {
             int ScriptSideInQueue::CreateAppContext(const char *instanceId,
                                                     const char *jsBundle) {
                 LOGD("ScriptSideInQueue::CreateAppContext");
+                auto script = String::fromUTF8(jsBundle);
+                if(script.isEmpty()) {
+                    return 0;
+                }
                 weexTaskQueue_->addTask(new CreateAppContextTask(String::fromUTF8(instanceId),
-                                                                 String::fromUTF8(jsBundle)));
+                                                                 script));
                 return 1;
             }
 
@@ -153,8 +157,12 @@ namespace weex {
                         "%s, extendsApi = %s",
                         instanceId, func, script, opts, initData, extendsApi);
 
+                auto string = String::fromUTF8(script);
+                if(string.isEmpty()) {
+                    return 0;
+                }
                 CreateInstanceTask *task = new CreateInstanceTask(String::fromUTF8(instanceId),
-                                                                  String::fromUTF8(script));
+                                                                  string);
 
                 task->addExtraArg(String::fromUTF8(func));
                 task->addExtraArg(String::fromUTF8(opts));

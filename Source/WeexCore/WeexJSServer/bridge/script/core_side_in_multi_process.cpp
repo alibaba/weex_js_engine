@@ -494,6 +494,35 @@ namespace weex {
                 std::unique_ptr<IPCResult> result = sender->send(buffer.get());
             }
 
+            std::unique_ptr<WeexJSResult>
+            CoreSideInMultiProcess::DispatchMessageSync(const char *client_id,
+                                                        const char *data,
+                                                        int dataLength,
+                                                        const char *vm_id) {
+              IPCSender *sender = client_->getSender();
+              std::unique_ptr<IPCSerializer> serializer(createIPCSerializer());
+              serializer->setMsg(
+                  static_cast<uint32_t>(IPCProxyMsg::DISPATCHMESSAGESYNC));
+              // clientid
+              serializer->add(client_id, strlen(client_id));
+              // data
+              serializer->add(data, dataLength);
+              serializer->add(vm_id, strlen(vm_id));
+
+              std::unique_ptr<IPCBuffer> buffer = serializer->finish();
+              std::unique_ptr<IPCResult> result = sender->send(buffer.get());
+
+              char *copy = nullptr;
+              int length = 0;
+              if (result->getType() == IPCType::BYTEARRAY) {
+                length = result->getByteArrayLength();
+                copy = new char[length];
+                strcpy(copy, result->getByteArrayContent());
+              }
+              return std::unique_ptr<WeexJSResult>(
+                  new WeexJSResult(std::unique_ptr<char[]>(copy), length));
+            }
+
             void CoreSideInMultiProcess::ReportException(const char *page_id,
                                                          const char *func,
                                                          const char *exception_string) {

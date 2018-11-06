@@ -86,7 +86,7 @@ int WeexRuntime::createAppContext(const String &instanceId, const String &jsBund
             return static_cast<int32_t>(false);
         }
 
-        VM &vm_global = *weexObjectHolder->m_globalVM.get();
+        VM &vm_global = VM::sharedInstance();
         JSLockHolder locker_global(&vm_global);
 
         WeexGlobalObject *globalObject = weexLiteAppObjectHolder->cloneWeexObject(true, true);
@@ -94,7 +94,6 @@ int WeexRuntime::createAppContext(const String &instanceId, const String &jsBund
         globalObject->SetScriptBridge(script_bridge_);
 
         VM &vm = globalObject_local->vm();
-
 
         JSLockHolder locker_1(&vm);
 
@@ -155,7 +154,7 @@ std::unique_ptr<WeexJSResult> WeexRuntime::exeJSOnAppWithResult(const String &in
             return returnResult;
         }
 
-        VM &vm_global = *weexObjectHolder->m_globalVM.get();
+        VM &vm_global = VM::sharedInstance();
         JSLockHolder locker_global(&vm_global);
         VM &vm = globalObject->vm();
         JSLockHolder locker(&vm);
@@ -208,7 +207,7 @@ WeexRuntime::callJSOnAppContext(const String &instanceId, const String &func, st
             return static_cast<int32_t>(false);
         }
 //        LOGE("Weex jsserver IPCJSMsg::CALLJSONAPPCONTEXT1");
-        VM &vm_global = *weexObjectHolder->m_globalVM.get();
+        VM &vm_global = VM::sharedInstance();
         JSLockHolder locker_global(&vm_global);
 
         VM &vm = globalObject->vm();
@@ -269,7 +268,7 @@ int WeexRuntime::callJSOnAppContext(IPCArguments *arguments) {
             return static_cast<int32_t>(false);
         }
 //        LOGE("Weex jsserver IPCJSMsg::CALLJSONAPPCONTEXT1");
-        VM &vm_global = *weexObjectHolder->m_globalVM.get();
+        VM &vm_global = VM::sharedInstance();
         JSLockHolder locker_global(&vm_global);
 
         VM &vm = globalObject->vm();
@@ -872,7 +871,7 @@ int WeexRuntime::createInstance(const String &instanceId, const String &func, co
 }
 
 int WeexRuntime::_initFramework(const String &source) {
-    VM &vm = *weexObjectHolder->m_globalVM.get();
+    VM &vm = VM::sharedInstance();
     JSLockHolder locker(&vm);
 
     auto globalObject = weexObjectHolder->m_globalObject.get();
@@ -887,7 +886,7 @@ int WeexRuntime::_initFramework(const String &source) {
 }
 
 int WeexRuntime::_initAppFramework(const String &instanceId, const String &appFramework) {
-    VM &vm = *weexObjectHolder->m_globalVM.get();
+    VM &vm = VM::sharedInstance();
     JSLockHolder locker_global(&vm);
 
     auto weexLiteAppObjectHolder = getLightAppObjectHolder(instanceId);

@@ -137,6 +137,13 @@ void CoreSideInMultiSo::DispatchMessage(const char *client_id, const char *data,
                                                       vm_id);
 }
 
+std::unique_ptr<WeexJSResult> CoreSideInMultiSo::DispatchMessageSync(
+    const char *client_id, const char *data, int dataLength,
+    const char *vm_id) {
+  return functions_exposed_by_core_->funcCallDispatchMessageSync(client_id, data,
+                                                          dataLength, vm_id);
+}
+
 void CoreSideInMultiSo::ReportException(const char *page_id, const char *func,
                                         const char *exception_string) {
   functions_exposed_by_core_->funcReportException(page_id, func,

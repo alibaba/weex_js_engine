@@ -537,6 +537,18 @@ namespace weex {
                 std::unique_ptr<IPCBuffer> buffer = serializer->finish();
                 sender->send(buffer.get());
             }
+
+            void CoreSideInMultiProcess::UpdateComponentData(const char* page_id, const char* cid, const char* json_data) {
+                IPCSender *sender = client_->getSender();
+                std::unique_ptr<IPCSerializer> serializer(createIPCSerializer());
+                serializer->setMsg(static_cast<uint32_t>(IPCProxyMsg::UPDATECOMPONENTDATA));
+                serializer->add(page_id, strlen(page_id));
+                serializer->add(cid, strlen(cid));
+                serializer->add(json_data, strlen(json_data));
+
+                std::unique_ptr<IPCBuffer> buffer = serializer->finish();
+                sender->send(buffer.get());
+            }
         }  // namespace js
     }  // namespace bridge
 }  // namespace weex

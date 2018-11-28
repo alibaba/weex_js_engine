@@ -80,6 +80,9 @@ JSFUNCTION functionNativeSetInterval(ExecState *);
 JSFUNCTION functionNativeClearTimeout(ExecState *);
 JSFUNCTION functionNativeClearInterval(ExecState *);
 
+// For data render
+JSFUNCTION functionUpdateComponentData(ExecState *);
+
 static JSValue createWeexConsoleProperty(VM& vm, JSObject* object) {
     JSGlobalObject *global = jsCast<JSGlobalObject *>(object);
     return WeexConsoleObject::create(vm, global, WeexConsoleObject::createStructure(vm, global, constructEmptyObject(
@@ -172,6 +175,7 @@ void WeexGlobalObject::initFunctionForContext() {
             {"clearNativeTimeout",    JSC::Function, NoIntrinsic, {(intptr_t) static_cast<NativeFunction>(functionNativeClearTimeout),  (intptr_t) (1)}},
             {"clearNativeInterval",   JSC::Function, NoIntrinsic, {(intptr_t) static_cast<NativeFunction>(functionNativeClearInterval),  (intptr_t) (1)}},
             { "console", DontEnum|PropertyCallback, NoIntrinsic, { (intptr_t) static_cast<LazyPropertyCallback>(createWeexConsoleProperty), (intptr_t)(0) } },
+            {"__updateComponentData",     JSC::Function, NoIntrinsic, {(intptr_t) static_cast<NativeFunction>(functionUpdateComponentData),       (intptr_t) (2)}},
     };
     reifyStaticProperties(vm, JSEventTargetPrototypeTableValues, *this);
 }
@@ -777,4 +781,17 @@ JSFUNCTION functionNativeClearTimeout(ExecState *state) {
 
 JSFUNCTION functionNativeClearInterval(ExecState *state) {
     return functionNativeClearTimeout(state);
+}
+
+JSFUNCTION functionUpdateComponentData(ExecState *state) {
+    base::debug::TraceScope traceScope("weex", "functionUpdateComponentData");
+
+    WeexGlobalObject *globalObject = static_cast<WeexGlobalObject *>(state->lexicalGlobalObject());
+
+    auto page_id = getCharOrJSONStringFromState(state, 0);
+    auto cid = getCharOrJSONStringFromState(state, 1);
+    auto json_data = getCharOrJSONStringFromState(state, 2);
+
+    globalObject->js_bridge()->core_side()->UpdateComponentData(page_id.get(), cid.get(), json_data.get());
+    return JSValue::encode(jsUndefined());
 }

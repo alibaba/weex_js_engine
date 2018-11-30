@@ -86,6 +86,10 @@ namespace weex {
                 void DispatchMessage(const char *client_id, const char *data, int dataLength,
                                      const char *callback, const char *vm_id) override;
 
+                std::unique_ptr<WeexJSResult> DispatchMessageSync(
+                    const char *client_id, const char *data, int dataLength,
+                    const char *vm_id) override;
+
                 void ReportException(const char *page_id, const char *func,
                                      const char *exception_string) override;
 

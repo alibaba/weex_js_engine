@@ -51,8 +51,7 @@ void WeexObjectHolder::initFromParams(std::vector<INIT_FRAMEWORK_PARAMS *> &para
 #if ENABLE(WEBASSEMBLY)
     JSC::Wasm::enableFastMemory();
 #endif
-    m_globalVM = std::move(VM::create(LargeHeap));
-    VM &vm = *m_globalVM.get();
+    VM &vm = VM::sharedInstance();
     JSLockHolder locker(&vm);
     WeexGlobalObject *globalObject = WeexGlobalObject::create(vm, WeexGlobalObject::createStructure(vm, jsNull()));
     globalObject->initWxEnvironment(params, forAppContext, true);
@@ -70,7 +69,7 @@ WeexObjectHolder::WeexObjectHolder(bool isMultiProgress) {
 }
 
 WeexGlobalObject *WeexObjectHolder::cloneWeexObject(bool initContext, bool forAppContext) {
-    VM &vm = *(m_globalVM.get());
+    VM &vm = VM::sharedInstance();
     JSLockHolder locker(&vm);
     auto *temp_object = WeexGlobalObject::create(vm,
                                                  WeexGlobalObject::createStructure(vm, jsNull()));
@@ -88,10 +87,9 @@ WeexGlobalObject *WeexObjectHolder::cloneWeexObject(bool initContext, bool forAp
 }
 
 WeexObjectHolder::~WeexObjectHolder() {
-    VM &vm = *(m_globalVM.get());
+    VM &vm = VM::sharedInstance();
     wson::destory();
     JSLockHolder locker(&vm);
     vm.heap.collectAllGarbage();
-    m_globalVM = nullptr;
 }
 

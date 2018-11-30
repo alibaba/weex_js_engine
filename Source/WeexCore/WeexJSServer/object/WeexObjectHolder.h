@@ -11,7 +11,6 @@ class WeexObjectHolder {
 
 public:
     Strong<WeexGlobalObject> m_globalObject;
-    RefPtr<VM> m_globalVM;
     std::map<std::string, WeexGlobalObject *> m_jsInstanceGlobalObjectMap;
 
     std::map<std::string, WeexGlobalObject *> m_jsAppGlobalObjectMap;

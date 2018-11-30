@@ -73,6 +73,8 @@ JSFUNCTION functionNativeLogContext(ExecState *);
 
 JSFUNCTION functionDisPatchMeaage(ExecState *);
 
+JSFUNCTION functionDispatchMessageSync(ExecState *);
+
 JSFUNCTION functionPostMessage(ExecState *);
 
 JSFUNCTION functionNativeSetTimeout(ExecState *);
@@ -220,6 +222,7 @@ void WeexGlobalObject::initFunctionForAppContext() {
     const HashTableValue JSEventTargetPrototypeTableValues[] = {
             {"nativeLog",            JSC::Function, NoIntrinsic, {(intptr_t) static_cast<NativeFunction>(functionNativeLogContext), (intptr_t) (5)}},
             {"__dispatch_message__", JSC::Function, NoIntrinsic, {(intptr_t) static_cast<NativeFunction>(functionDisPatchMeaage),   (intptr_t) (3)}},
+            {"__dispatch_message_sync__", JSC::Function, NoIntrinsic, {(intptr_t) static_cast<NativeFunction>(functionDispatchMessageSync),   (intptr_t) (3)}},
             {"postMessage",          JSC::Function, NoIntrinsic, {(intptr_t) static_cast<NativeFunction>(functionPostMessage),      (intptr_t) (1)}},
             {"setNativeTimeout",     JSC::Function, NoIntrinsic, {(intptr_t) static_cast<NativeFunction>(functionNativeSetTimeout), (intptr_t) (2)}},
             {"setNativeInterval",     JSC::Function, NoIntrinsic, {(intptr_t) static_cast<NativeFunction>(functionNativeSetInterval),  (intptr_t) (2)}},
@@ -673,6 +676,26 @@ JSFUNCTION functionDisPatchMeaage(ExecState *state) {
     globalObject->js_bridge()->core_side()->DispatchMessage(clientIdChar.getValue(), data.c_str(), dataChar.getLength(),
                                                             callBackChar.getValue(), id.utf8().data());
     return JSValue::encode(jsNumber(0));
+}
+
+JSFUNCTION functionDispatchMessageSync(ExecState *state) {
+    Args clientIdChar;
+    Args dataChar;
+    getStringArgsFromState(state, 0, clientIdChar);
+    getJSONArgsFromState(state, 1, dataChar);
+    WeexGlobalObject *globalObject =
+      static_cast<WeexGlobalObject *>(state->lexicalGlobalObject());
+    String id(globalObject->id.c_str());
+    std::string data(dataChar.getValue());
+    auto result = globalObject->js_bridge()->core_side()->DispatchMessageSync(
+      clientIdChar.getValue(), data.c_str(), dataChar.getLength(),
+      id.utf8().data());
+    if (result->length == 0) {
+        return JSValue::encode(jsUndefined());
+    } else {
+        String result_str = String::fromUTF8(result->data.get(), result->length);
+        return JSValue::encode(parseToObject(state, result_str));
+    }
 }
 
 JSFUNCTION functionNotifyTrimMemory(ExecState *state) {

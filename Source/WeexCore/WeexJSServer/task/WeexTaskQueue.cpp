@@ -10,7 +10,10 @@
 #include <WeexCore/WeexJSServer/bridge/script/core_side_in_multi_process.h>
 
 void WeexTaskQueue::run(WeexTask *task) {
+    task->timeCalculator->setTaskName(task->taskName());
+    task->timeCalculator->taskStart();
     task->run(weexRuntime);
+    task->timeCalculator->taskEnd();
     delete task;
 }
 

@@ -345,10 +345,7 @@ JSFUNCTION functionT3DLinkNative(ExecState *state) {
 
 JSFUNCTION functionCallNativeModule(ExecState *state) {
     base::debug::TraceScope traceScope("weex", "callNativeModule");
-
-
     WeexGlobalObject *globalObject = static_cast<WeexGlobalObject *>(state->lexicalGlobalObject());
-
     Args instanceId;
     Args moduleChar;
     Args methodChar;
@@ -359,6 +356,12 @@ JSFUNCTION functionCallNativeModule(ExecState *state) {
     getStringArgsFromState(state, 2, methodChar);
     getWsonOrJsonArgsFromState(state, 3, arguments);
     getWsonOrJsonArgsFromState(state, 4, options);
+
+    String a = "jsEngine functionCallNativeModule -->";
+    a.append(moduleChar.getValue());
+    a.append(": ");
+    a.append(methodChar.getValue());
+    weex::base::TimeCalculator timeCalculator(weex::base::TaskPlatform::JSS_ENGINE,a.utf8().data());
     auto result = globalObject->js_bridge()->core_side()->CallNativeModule(instanceId.getValue(),
                                                                            moduleChar.getValue(),
                                                                            methodChar.getValue(),
@@ -366,7 +369,6 @@ JSFUNCTION functionCallNativeModule(ExecState *state) {
                                                                            arguments.getLength(),
                                                                            options.getValue(),
                                                                            options.getLength());
-
     JSValue ret;
     switch (result->type) {
         case ParamsType::DOUBLE:

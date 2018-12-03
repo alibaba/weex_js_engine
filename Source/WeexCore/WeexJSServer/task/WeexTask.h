@@ -8,6 +8,7 @@
 
 #include <WeexCore/WeexJSServer/utils/WeexRuntime.h>
 #include <WeexCore/WeexJSServer/utils/ThreadLocker.h>
+#include "base/time_calculator.h"
 
 class WeexTask {
 
@@ -16,7 +17,6 @@ public:
     class Future {
 
     public:
-
         Future() : has_result_(false) {}
 
         ~Future() {}
@@ -36,6 +36,7 @@ public:
     explicit WeexTask(const String &instanceId, int taskId) : future_(nullptr), global_object_(nullptr) {
         this->instanceId = instanceId;
         this->taskId = taskId;
+        timeCalculator.reset(std::move(new weex::base::TimeCalculator(weex::base::TaskPlatform::JSS_ENGINE,"")));
     };
 
     explicit WeexTask(const String &instanceId) : WeexTask(instanceId, genTaskId()) {};
@@ -60,6 +61,8 @@ public:
     inline void set_global_object(WeexGlobalObject* global_object) {
         global_object_ = global_object;
     }
+
+    std::unique_ptr<weex::base::TimeCalculator> timeCalculator;
 
 private:
     Future* future_;

@@ -30,7 +30,7 @@ include(WebKitCommon)
 
 set(WEEXJSSERVER_NAME weexjss${SERVERSUFFIX})
 #set(RENDER_PATH /Users/darin/Data/code/work/weex/sdk/gitlab/weex_core/Source)
-set(RENDER_PATH /Users/darin/Documents/code/work/weex/sdk/weexSdk/gitlabOnly/weex_core/Source)
+set(RENDER_PATH /Volumes/Data/code/work/weex/sdk/weexsdk/gitlab/weex_core/Source)
 
 include_directories(${RENDER_PATH})
 # IPC
@@ -52,6 +52,7 @@ set(IPC_SOURCES
         )
 
 set(${WEEXJSSERVER_NAME}_SOURCES
+        ${RENDER_PATH}/base/time_point.cc
         ./base/base64/base64.cpp
         WeexCore/WeexJSServer/utils/LogUtils.cpp
         ./base/base64/modp_base64/modp_b64.cc

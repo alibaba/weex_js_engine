@@ -382,7 +382,7 @@ int WeexRuntime::exeCTimeCallback(const String &source) {
 
 int WeexRuntime::exeJS(const String &instanceId, const String &nameSpace, const String &func,
                        std::vector<VALUE_WITH_TYPE *> &params) {
-//    LOGE("EXECJS func:%s and params size is %d", func.utf8().data(), params.size());
+    LOGE("jsengine shopp EXECJS func:%s and params size is %d", func.utf8().data(), params.size());
 
     String runFunc = func;
 
@@ -956,14 +956,16 @@ void WeexRuntime::_getArgListFromJSParams(MarkedArgumentBuffer *obj, ExecState *
                 break;
             case ParamsType::STRING: {
                 WeexString *ipcstr = paramsObject->value.string;
+                const String &string2String = weexString2String(ipcstr);
+                LOGE("jsengine shopp exejs STRING args is %s", string2String.utf8().data());
                 obj->append(jString2JSValue(state, ipcstr->content, ipcstr->length));
             }
                 break;
             case ParamsType::JSONSTRING: {
-
                 const WeexString *ipcstr = paramsObject->value.string;
                 const String &string = weexString2String(ipcstr);
                 String str = jString2String(ipcstr->content, ipcstr->length);
+                LOGE("jsengine shopp exejs JSON args is %s", str.utf8().data());
                 JSValue o = parseToObject(state, str);
                 obj->append(o);
             }

@@ -83,7 +83,8 @@ class PlatformBridgeInMultiSo : public WeexCore::PlatformBridge {
                                        std::vector<VALUE_WITH_TYPE *> &params);
   static int CreateInstance(const char *instanceId, const char *func,
                             const char *script, const char *opts,
-                            const char *initData, const char *extendsApi);
+                            const char *initData, const char *extendsApi,
+                            std::vector<VALUE_WITH_TYPE*>& params);
   static std::unique_ptr<WeexJSResult> ExecJSOnInstance(const char *instanceId, const char *script);
   static int DestroyInstance(const char *instanceId);
   static int UpdateGlobalConfig(const char *config);

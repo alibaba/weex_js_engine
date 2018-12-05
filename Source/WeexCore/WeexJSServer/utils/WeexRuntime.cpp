@@ -763,7 +763,8 @@ int WeexRuntime::updateGlobalConfig(const String &config) {
 
 int WeexRuntime::createInstance(const String &instanceId, const String &func, const String &script, const String &opts,
                                 const String &initData,
-                                const String &extendsApi) {
+                                const String &extendsApi,
+                                std::vector<VALUE_WITH_TYPE*>& params) {
     JSGlobalObject *impl_globalObject = weexObjectHolder->m_globalObject.get();
     JSGlobalObject *globalObject;
     if (instanceId == "") {

@@ -393,9 +393,11 @@ namespace weex {
                 const char *opts = GetUTF8StringFromIPCArg(arguments, 3);
                 const char *initData = GetUTF8StringFromIPCArg(arguments, 4);
                 const char *extendsApi = GetUTF8StringFromIPCArg(arguments, 5);
-
+                std::vector<VALUE_WITH_TYPE*> params;
+                FillVectorOfValueWithType(params, arguments, 6, arguments->getCount());
+                ClearVectorOfValueWithType(params);
                 return createInt32Result(Instance()->script_side()->CreateInstance(
-                        instanceID, func, script, opts, initData, extendsApi));
+                        instanceID, func, script, opts, initData, extendsApi,params));
             }
 
             std::unique_ptr<IPCResult> ScriptBridgeInMultiProcess::DestroyInstance(

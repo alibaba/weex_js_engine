@@ -366,11 +366,12 @@ WeexJSResult CoreSideInSimple::ExecJSWithResult(
 int CoreSideInSimple::CreateInstance(const char *instanceId, const char *func,
                                      const char *script, const char *opts,
                                      const char *initData,
-                                     const char *extendsApi) {
+                                     const char *extendsApi,
+                                     std::vector<VALUE_WITH_TYPE*>& params) {
   return WeexCoreManager::Instance()
       ->script_bridge()
       ->script_side()
-      ->CreateInstance(instanceId, func, script, opts, initData, extendsApi);
+      ->CreateInstance(instanceId, func, script, opts, initData, extendsApi,params);
 }
 
 const char *CoreSideInSimple::ExecJSOnInstance(const char *instanceId,

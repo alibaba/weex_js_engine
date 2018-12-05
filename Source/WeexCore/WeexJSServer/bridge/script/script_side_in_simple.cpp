@@ -90,7 +90,8 @@ void ScriptSideInSimple::ExecJSWithCallback(
 int ScriptSideInSimple::CreateInstance(const char *instanceId, const char *func,
                                        const char *script, const char *opts,
                                        const char *initData,
-                                       const char *extendsApi) {
+                                       const char *extendsApi,
+                                       std::vector<VALUE_WITH_TYPE*>& params) {
   LOGD(
       "CreateInstance id = %s, func = %s, script = %s, opts = %s, initData = "
       "%s, extendsApi = %s",
@@ -99,7 +100,7 @@ int ScriptSideInSimple::CreateInstance(const char *instanceId, const char *func,
   return runtime_->createInstance(
       String::fromUTF8(instanceId), String::fromUTF8(func),
       String::fromUTF8(script), String::fromUTF8(opts),
-      String::fromUTF8(initData), String::fromUTF8(extendsApi));
+      String::fromUTF8(initData), String::fromUTF8(extendsApi),params);
 }
 
 std::unique_ptr<WeexJSResult> ScriptSideInSimple::ExecJSOnInstance(const char *instanceId,

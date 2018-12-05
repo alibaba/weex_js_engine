@@ -47,7 +47,8 @@ class ScriptBridgeInMultiSo : public WeexCore::ScriptBridge {
 
   static int CreateInstance(const char *instanceId, const char *func,
                             const char *script, const char *opts,
-                            const char *initData, const char *extendsApi);
+                            const char *initData, const char *extendsApi,
+                            std::vector<VALUE_WITH_TYPE*>& params);
 
   static std::unique_ptr<WeexJSResult> ExecJSOnInstance(const char *instanceId, const char *script);
 

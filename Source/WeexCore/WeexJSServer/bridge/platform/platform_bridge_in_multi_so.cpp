@@ -259,9 +259,10 @@ std::unique_ptr<WeexJSResult>  PlatformBridgeInMultiSo::ExecJSWithResult(
 
 int PlatformBridgeInMultiSo::CreateInstance(
     const char *instanceId, const char *func, const char *script,
-    const char *opts, const char *initData, const char *extendsApi) {
+    const char *opts, const char *initData, const char *extendsApi,
+    std::vector<VALUE_WITH_TYPE*>& params) {
   return Instance()->core_side()->CreateInstance(instanceId, func, script, opts,
-                                                 initData, extendsApi);
+                                                 initData, extendsApi,params);
 }
 
 std::unique_ptr<WeexJSResult> PlatformBridgeInMultiSo::ExecJSOnInstance(const char *instanceId,

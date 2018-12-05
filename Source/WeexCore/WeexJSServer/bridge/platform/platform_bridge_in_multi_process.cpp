@@ -665,9 +665,13 @@ std::unique_ptr<IPCResult> PlatformBridgeInMultiProcess::CreateInstance(
   const char* opts = arguments->getByteArray(3)->content;
   const char* initData = arguments->getByteArray(4)->content;
   const char* extendsApi = arguments->getByteArray(5)->content;
-
+  std::vector<VALUE_WITH_TYPE*> params;
+  FillVectorOfValueWithType(params, arguments, 6, arguments->getCount());
+  WeexJSResult jsResult = Instance()->core_side()->ExecJSWithResult(
+          instanceId, namespaceStr, func, params);
+  ClearVectorOfValueWithType(params);
   return createInt32Result(Instance()->core_side()->CreateInstance(
-      instanceID, func, script, opts, initData, extendsApi));
+      instanceID, func, script, opts, initData, extendsApi,params));
 }
 
 std::unique_ptr<IPCResult> PlatformBridgeInMultiProcess::DestroyInstance(

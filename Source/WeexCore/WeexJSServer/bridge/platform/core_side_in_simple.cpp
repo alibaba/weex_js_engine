@@ -367,7 +367,7 @@ int CoreSideInSimple::CreateInstance(const char *instanceId, const char *func,
                                      const char *script, const char *opts,
                                      const char *initData,
                                      const char *extendsApi,
-                                     std::vector<VALUE_WITH_TYPE*>& params) {
+                                     std::vector<INIT_FRAMEWORK_PARAMS*>& params) {
   return WeexCoreManager::Instance()
       ->script_bridge()
       ->script_side()

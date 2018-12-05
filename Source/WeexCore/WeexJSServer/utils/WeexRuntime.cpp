@@ -764,7 +764,7 @@ int WeexRuntime::updateGlobalConfig(const String &config) {
 int WeexRuntime::createInstance(const String &instanceId, const String &func, const String &script, const String &opts,
                                 const String &initData,
                                 const String &extendsApi,
-                                std::vector<VALUE_WITH_TYPE*>& params) {
+                                std::vector<INIT_FRAMEWORK_PARAMS*>& params) {
     JSGlobalObject *impl_globalObject = weexObjectHolder->m_globalObject.get();
     JSGlobalObject *globalObject;
     if (instanceId == "") {
@@ -781,6 +781,7 @@ int WeexRuntime::createInstance(const String &instanceId, const String &func, co
 //            }
 
             temp_object = weexObjectHolder->cloneWeexObject(true, false);
+            temp_object->addExtraOptions(params);
             temp_object->id = instanceId.utf8().data();
             VM &vm = temp_object->vm();
             temp_object->SetScriptBridge(script_bridge_);

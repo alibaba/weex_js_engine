@@ -113,6 +113,19 @@ void WeexGlobalObject::SetScriptBridge(WeexCore::ScriptBridge *script_bridge) {
     script_bridge_ = script_bridge;
 }
 
+void WeexGlobalObject::addExtraOptions(std::vector<INIT_FRAMEWORK_PARAMS *> &params) {
+    VM &vm = this->vm();
+    JSNonFinalObject *WXExtraOption = SimpleObject::create(vm, this);
+    for (int i = 0; i < params.size(); i++) {
+        INIT_FRAMEWORK_PARAMS *param = params[i];
+
+        String &&type = String::fromUTF8(param->type->content);
+        String &&value = String::fromUTF8(param->value->content);
+        addString(vm, WXExtraOption, param->type->content, WTFMove(value));
+    }
+    addValue(vm, "WXExtraOption", WXExtraOption);
+}
+
 void WeexGlobalObject::initWxEnvironment(std::vector<INIT_FRAMEWORK_PARAMS *> &params, bool forAppContext, bool isSave) {
     VM &vm = this->vm();
     JSNonFinalObject *WXEnvironment = SimpleObject::create(vm, this);

@@ -18,11 +18,11 @@ void CreateInstanceTask::run(WeexRuntime *runtime) {
         return;
 
     runtime->createInstance(instanceId, extraArgs.at(0), this->script, extraArgs.at(1), extraArgs.at(2),
-                            extraArgs.at(3), exeJsArgs->params);
+                            extraArgs.at(3), initExtraArgs->params);
 }
 
-void CreateInstanceTask::addExtraOptionArgs(std::vector<VALUE_WITH_TYPE*>& params) {
-    exeJsArgs.reset(new ExeJsArgs(params));
+void CreateInstanceTask::addExtraOptionArgs(std::vector<INIT_FRAMEWORK_PARAMS*>& params) {
+    initExtraArgs.reset(new InitFrameworkArgs(params));
 }
 
 

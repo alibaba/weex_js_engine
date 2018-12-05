@@ -63,7 +63,7 @@ public:
 
     int createInstance(const String &instanceId, const String &func, const String &script, const String &opts,
                        const String &initData, const String &extendsApi,
-                       std::vector<VALUE_WITH_TYPE*>& params);
+                       std::vector<INIT_FRAMEWORK_PARAMS*>& params);
 
     std::unique_ptr<WeexJSResult> exeJSOnInstance(const String &instanceId, const String &script);
 

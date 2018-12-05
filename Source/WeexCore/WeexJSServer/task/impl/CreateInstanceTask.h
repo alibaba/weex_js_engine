@@ -7,7 +7,8 @@
 
 
 #include <WeexCore/WeexJSServer/task/WeexTask.h>
-#include <WeexCore/WeexJSServer/object/args/ExeJsArgs.h>
+#include <WeexCore/WeexJSServer/object/args/InitFrameworkArgs.h>
+
 class CreateInstanceTask : public WeexTask {
 public:
     CreateInstanceTask(const String &instanceId, const String &script);
@@ -17,10 +18,10 @@ public:
     void run(WeexRuntime *runtime) override ;
     std::string taskName() override { return "CreateInstanceTask"; }
 
-    void addExtraOptionArgs(std::vector<VALUE_WITH_TYPE*>& params);
+    void addExtraOptionArgs(std::vector<INIT_FRAMEWORK_PARAMS*>& params);
 private:
     std::vector<String> extraArgs;
-    std::unique_ptr<ExeJsArgs> exeJsArgs;
+    std::unique_ptr<InitFrameworkArgs> initExtraArgs;
     String script;
 };
 

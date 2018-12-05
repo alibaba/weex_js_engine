@@ -51,6 +51,7 @@ public:
 
 //    void initWXEnvironment(IPCArguments* arguments);
 
+    void addExtraOptions(std::vector<INIT_FRAMEWORK_PARAMS *> &params);
     void initWxEnvironment(std::vector<INIT_FRAMEWORK_PARAMS *> &params, bool forAppContext, bool isSave);
     void initFunctionForContext();
     void initFunctionForAppContext();

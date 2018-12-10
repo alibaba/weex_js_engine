@@ -17,7 +17,7 @@ class WeexRuntime {
 public:
     WeexCore::ScriptBridge* script_bridge_;
     std::unique_ptr<WeexObjectHolder> weexObjectHolder;
-    std::map<std::string, WeexObjectHolder *> weexLiteAppObjectHolderMap;
+    std::map<std::string, WeexObjectHolder *> appWorkerContextHolderMap; // Worker Context
 
     explicit WeexRuntime(bool isMultiProgress = true);
 

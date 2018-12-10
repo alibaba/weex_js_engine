@@ -11,9 +11,13 @@ class WeexObjectHolder {
 
 public:
     Strong<WeexGlobalObject> m_globalObject;
+
     std::map<std::string, WeexGlobalObject *> m_jsInstanceGlobalObjectMap;
 
-    std::map<std::string, WeexGlobalObject *> m_jsAppGlobalObjectMap;
+    std::map<std::string, WeexGlobalObject *> m_jsAppGlobalObjectMap; // App Context
+
+    WeexGlobalObject * m_jsAppPluginGlobalObject; // App Plugin Context
+
 
     ~WeexObjectHolder();
 

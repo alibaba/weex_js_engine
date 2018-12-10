@@ -46,7 +46,7 @@ int WeexRuntime::initAppFrameworkMultiProcess(const String &instanceId, const St
     if (pHolder == nullptr) {
         auto holder = new WeexObjectHolder(true);
         holder->initFromIPCArguments(arguments, 2, true);
-        weexLiteAppObjectHolderMap[instanceId.utf8().data()] = holder;
+        appWorkerContextHolderMap[instanceId.utf8().data()] = holder;
     }
 
     return _initAppFramework(instanceId, appFramework);
@@ -54,13 +54,14 @@ int WeexRuntime::initAppFrameworkMultiProcess(const String &instanceId, const St
 
 int WeexRuntime::initAppFramework(const String &instanceId, const String &appFramework,
                                   std::vector<INIT_FRAMEWORK_PARAMS *> &params) {
+    // Create Worker Context
     auto pHolder = getLightAppObjectHolder(instanceId);
     LOGE("Weex jsserver initAppFramework %s",instanceId.utf8().data());
     if (pHolder == nullptr) {
         auto holder = new WeexObjectHolder(is_multi_process_);
         holder->initFromParams(params, true);
         LOGE("Weex jsserver initAppFramework pHolder == null and id %s",instanceId.utf8().data());
-        weexLiteAppObjectHolderMap[instanceId.utf8().data()] = holder;
+        appWorkerContextHolderMap[instanceId.utf8().data()] = holder;
     }
     return _initAppFramework(instanceId, appFramework);
 }
@@ -71,12 +72,12 @@ int WeexRuntime::createAppContext(const String &instanceId, const String &jsBund
     } else {
         // new a global object
         // --------------------------------------------------
-        auto weexLiteAppObjectHolder = getLightAppObjectHolder(instanceId);
-        if (weexLiteAppObjectHolder == nullptr) {
+        auto appWorkerObjectHolder = getLightAppObjectHolder(instanceId);
+        if (appWorkerObjectHolder == nullptr) {
             return static_cast<int32_t>(false);
         }
         std::map<std::string, WeexGlobalObject *>::iterator it_find;
-        auto objectMap = weexLiteAppObjectHolder->m_jsAppGlobalObjectMap;
+        auto objectMap = appWorkerObjectHolder->m_jsAppGlobalObjectMap;
         it_find = objectMap.find(instanceId.utf8().data());
         if (it_find == objectMap.end()) {
             return static_cast<int32_t>(false);
@@ -89,7 +90,7 @@ int WeexRuntime::createAppContext(const String &instanceId, const String &jsBund
         VM &vm_global = VM::sharedInstance();
         JSLockHolder locker_global(&vm_global);
 
-        WeexGlobalObject *globalObject = weexLiteAppObjectHolder->cloneWeexObject(true, true);
+        WeexGlobalObject *globalObject = appWorkerObjectHolder->cloneWeexObject(true, true);
         weex::GlobalObjectDelegate *delegate = NULL;
         globalObject->SetScriptBridge(script_bridge_);
 
@@ -100,21 +101,11 @@ int WeexRuntime::createAppContext(const String &instanceId, const String &jsBund
         VM &thisVm = globalObject->vm();
         JSLockHolder locker_2(&thisVm);
 
-        // LOGE("Weex jsserver IPCJSMsg::CREATEAPPCONTEXT start00");
-        // --------------------------------------------------
-        // LOGE("start call __get_app_context_");
         PropertyName createInstanceContextProperty(Identifier::fromString(&vm, "__get_app_context__"));
         ExecState *state = globalObject_local->globalExec();
-        // LOGE("start call __get_app_context_ 11");
         JSValue createInstanceContextFunction = globalObject_local->get(state, createInstanceContextProperty);
-        // LOGE("start call __get_app_context_ 22");
         MarkedArgumentBuffer args;
-        // add __get_app_context_ aras
-        // args.append(String2JSValue(state, instanceId));
-        // JSValue optsObject = parseToObject(state, opts);
-        // args.append(optsObject);
-        // JSValue initDataObject = parseToObject(state, initData);
-        // args.append(initDataObject);
+
         CallData callData;
         CallType callType = getCallData(createInstanceContextFunction, callData);
         NakedPtr<Exception> returnedException;
@@ -122,19 +113,14 @@ int WeexRuntime::createAppContext(const String &instanceId, const String &jsBund
                            globalObject_local, args, returnedException);
         if (returnedException) {
             String exceptionInfo = exceptionToString(globalObject_local, returnedException->value());
-            // LOGE("getJSGlobalObject returnedException %s", exceptionInfo.utf8().data());
             return static_cast<int32_t>(false);
         }
         globalObject->resetPrototype(vm, ret);
         globalObject->id = instanceId.utf8().data();
         // --------------------------------------------------
 
-        weexLiteAppObjectHolder->m_jsInstanceGlobalObjectMap[instanceId.utf8().data()] = globalObject;
-//        VM& vm0 = globalObject->vm();
-//        JSLockHolder locker1(&vm0);
         if (!ExecuteJavaScript(globalObject, jsBundle, ("weex createAppContext"), true, "createAppContext",
                                instanceId.utf8().data())) {
-            // LOGE("createAppContext and ExecuteJavaScript Error");
             return static_cast<int32_t>(false);
         }
     }
@@ -144,42 +130,44 @@ int WeexRuntime::createAppContext(const String &instanceId, const String &jsBund
 std::unique_ptr<WeexJSResult> WeexRuntime::exeJSOnAppWithResult(const String &instanceId, const String &jsBundle) {
 
     std::unique_ptr<WeexJSResult> returnResult;
-    returnResult.reset(new WeexJSResult);
+//    returnResult.reset(new WeexJSResult);
+//
+//    if (instanceId == "") {
+//        return returnResult;
+//    } else {
+//        JSGlobalObject *globalObject = weexObjectHolder->m_jsInstanceGlobalObjectMap[instanceId.utf8().data()];
+//        if (globalObject == nullptr) {
+//            return returnResult;
+//        }
+//
+//        VM &vm_global = VM::sharedInstance();
+//        JSLockHolder locker_global(&vm_global);
+//        VM &vm = globalObject->vm();
+//        JSLockHolder locker(&vm);
+//
+//        SourceOrigin sourceOrigin(String::fromUTF8("(weex)"));
+//        NakedPtr<Exception> evaluationException;
+//        JSValue returnValue = evaluate(globalObject->globalExec(),
+//                                       makeSource(jsBundle, sourceOrigin, "execjs on App context"),
+//                                       JSValue(), evaluationException);
+//        if (evaluationException) {
+//            // String exceptionInfo = exceptionToString(globalObject, evaluationException.get()->value());
+//            // LOGE("EXECJSONINSTANCE exception:%s", exceptionInfo.utf8().data());
+//            ReportException(globalObject, evaluationException.get(), instanceId.utf8().data(), "execJSOnInstance");
+//            return returnResult;
+//        }
+//        globalObject->vm().drainMicrotasks();
+//        // LOGE("Weex jsserver IPCJSMsg::EXECJSONAPPWITHRESULT end");
+//        // WTF::String str = returnValue.toWTFString(globalObject->globalExec());
+//        const char *data = returnValue.toWTFString(globalObject->globalExec()).utf8().data();
+//        returnResult->length = strlen(data);
+//        char *buf = new char[returnResult->length + 1];
+//        strcpy(buf, data);
+//        returnResult->data.reset(buf);
+//        return returnResult;
+//    }
 
-    if (instanceId == "") {
-        return returnResult;
-    } else {
-        JSGlobalObject *globalObject = weexObjectHolder->m_jsInstanceGlobalObjectMap[instanceId.utf8().data()];
-        if (globalObject == nullptr) {
-            return returnResult;
-        }
-
-        VM &vm_global = VM::sharedInstance();
-        JSLockHolder locker_global(&vm_global);
-        VM &vm = globalObject->vm();
-        JSLockHolder locker(&vm);
-
-        SourceOrigin sourceOrigin(String::fromUTF8("(weex)"));
-        NakedPtr<Exception> evaluationException;
-        JSValue returnValue = evaluate(globalObject->globalExec(),
-                                       makeSource(jsBundle, sourceOrigin, "execjs on App context"),
-                                       JSValue(), evaluationException);
-        if (evaluationException) {
-            // String exceptionInfo = exceptionToString(globalObject, evaluationException.get()->value());
-            // LOGE("EXECJSONINSTANCE exception:%s", exceptionInfo.utf8().data());
-            ReportException(globalObject, evaluationException.get(), instanceId.utf8().data(), "execJSOnInstance");
-            return returnResult;
-        }
-        globalObject->vm().drainMicrotasks();
-        // LOGE("Weex jsserver IPCJSMsg::EXECJSONAPPWITHRESULT end");
-        // WTF::String str = returnValue.toWTFString(globalObject->globalExec());
-        const char *data = returnValue.toWTFString(globalObject->globalExec()).utf8().data();
-        returnResult->length = strlen(data);
-        char *buf = new char[returnResult->length + 1];
-        strcpy(buf, data);
-        returnResult->data.reset(buf);
-        return returnResult;
-    }
+  return returnResult;
 }
 
 int
@@ -188,14 +176,14 @@ WeexRuntime::callJSOnAppContext(const String &instanceId, const String &func, st
     if (instanceId == "") {
         return static_cast<int32_t>(false);
     } else {
-        auto weexLiteAppObjectHolder = getLightAppObjectHolder(instanceId);
-        if (weexLiteAppObjectHolder == nullptr) {
+        auto appWorkerObjectHolder = getLightAppObjectHolder(instanceId);
+        if (appWorkerObjectHolder == nullptr) {
 //            LOGE("Weex jsserver IPCJSMsg::CALLJSONAPPCONTEXT weexLiteAppObjectHolder is null");
             return static_cast<int32_t>(false);
         }
 
         std::map<std::string, WeexGlobalObject *>::iterator it_find;
-        auto objectMap = weexLiteAppObjectHolder->m_jsAppGlobalObjectMap;
+        auto objectMap = appWorkerObjectHolder->m_jsAppGlobalObjectMap;
         it_find = objectMap.find(instanceId.utf8().data());
         if (it_find == objectMap.end()) {
 //            LOGE("Weex jsserver IPCJSMsg::CALLJSONAPPCONTEXT mAppGlobalObjectMap donot contain globalObject");
@@ -251,12 +239,12 @@ int WeexRuntime::callJSOnAppContext(IPCArguments *arguments) {
         return static_cast<int32_t>(false);
     } else {
         std::map<std::string, WeexGlobalObject *>::iterator it_find;
-        auto weexLiteAppObjectHolder = getLightAppObjectHolder(instanceId);
-        if (weexLiteAppObjectHolder == nullptr) {
+        auto appWorkerObjectHolder = getLightAppObjectHolder(instanceId);
+        if (appWorkerObjectHolder == nullptr) {
 //            LOGE("callJSOnAppContext is running and id is %s and weexLiteAppObjectHolder is null", instanceId.utf8().data());
             return static_cast<int32_t>(false);
         }
-        auto objectMap = weexLiteAppObjectHolder->m_jsAppGlobalObjectMap;
+        auto objectMap = appWorkerObjectHolder->m_jsAppGlobalObjectMap;
         it_find = objectMap.find(instanceId.utf8().data());
         if (it_find == objectMap.end()) {
 //            LOGE("Weex jsserver IPCJSMsg::CALLJSONAPPCONTEXT mAppGlobalObjectMap donot contain globalObject");
@@ -302,11 +290,11 @@ int WeexRuntime::callJSOnAppContext(IPCArguments *arguments) {
 }
 
 int WeexRuntime::destroyAppContext(const String &instanceId) {
-    auto weexLiteAppObjectHolder = getLightAppObjectHolder(instanceId);
-    if (weexLiteAppObjectHolder == nullptr) {
+    auto appWorkerObjectHolder = getLightAppObjectHolder(instanceId);
+    if (appWorkerObjectHolder == nullptr) {
         return static_cast<int32_t>(false);
     }
-    auto objectMap = weexLiteAppObjectHolder->m_jsAppGlobalObjectMap;
+    auto objectMap = appWorkerObjectHolder->m_jsAppGlobalObjectMap;
     std::map<std::string, WeexGlobalObject *>::iterator it_find;
     it_find = objectMap.find(instanceId.utf8().data());
     if (it_find != objectMap.end()) {
@@ -317,7 +305,7 @@ int WeexRuntime::destroyAppContext(const String &instanceId) {
 
      LOGE("Weex jsserver IPCJSMsg::DESTORYAPPCONTEXT end1 %s",instanceId.utf8().data());
     std::map<std::string, WeexGlobalObject *>::iterator it_find_instance;
-    objectMap = weexLiteAppObjectHolder->m_jsInstanceGlobalObjectMap;
+    objectMap = appWorkerObjectHolder->m_jsInstanceGlobalObjectMap;
     it_find = objectMap.find(instanceId.utf8().data());
     if (it_find_instance != objectMap.end()) {
         // LOGE("Weex jsserver IPCJSMsg::DESTORYAPPCONTEXT mAppInstanceGlobalObjectMap donnot contain and return");
@@ -342,9 +330,9 @@ int WeexRuntime::destroyAppContext(const String &instanceId) {
 //    instanceGlobalObject->m_server = nullptr;
 //    instanceGlobalObject = NULL;
 
-    weexLiteAppObjectHolderMap.erase(instanceId.utf8().data());
-    delete weexLiteAppObjectHolder;
-    weexLiteAppObjectHolder = nullptr;
+    appWorkerContextHolderMap.erase(instanceId.utf8().data());
+    delete appWorkerObjectHolder;
+    appWorkerObjectHolder = nullptr;
     // LOGE("mAppInstanceGlobalObjectMap size:%d mAppGlobalObjectMap size:%d",
     //      mAppInstanceGlobalObjectMap.size(), mAppGlobalObjectMap.size());
     return static_cast<int32_t>(true);
@@ -899,8 +887,6 @@ int WeexRuntime::_initAppFramework(const String &instanceId, const String &appFr
     globalObject->id = instanceId.utf8().data();
     // LOGE("Weex jsserver IPCJSMsg::INITAPPFRAMEWORK 1");
     weexLiteAppObjectHolder->m_jsAppGlobalObjectMap[instanceId.utf8().data()] = globalObject;
-    weexLiteAppObjectHolder->m_jsInstanceGlobalObjectMap[instanceId.utf8().data()] = globalObject;
-    // LOGE("Weex jsserver IPCJSMsg::INITAPPFRAMEWORK 2");
     return static_cast<int32_t>(
             ExecuteJavaScript(globalObject,
                               appFramework,
@@ -982,12 +968,12 @@ void WeexRuntime::_getArgListFromJSParams(MarkedArgumentBuffer *obj, ExecState *
 }
 
 WeexObjectHolder *WeexRuntime::getLightAppObjectHolder(const String &instanceId) {
-    auto iterator = weexLiteAppObjectHolderMap.find(instanceId.utf8().data());
-    if (iterator == weexLiteAppObjectHolderMap.end()) {
+    auto iterator = appWorkerContextHolderMap.find(instanceId.utf8().data());
+    if (iterator == appWorkerContextHolderMap.end()) {
         return nullptr;
     }
 
-    return weexLiteAppObjectHolderMap.at(instanceId.utf8().data());
+    return appWorkerContextHolderMap.at(instanceId.utf8().data());
 }
 
 int WeexRuntime::exeTimerFunction(const String &instanceId, uint32_t timerFunction, JSGlobalObject *globalObject) {
@@ -1028,21 +1014,18 @@ void WeexRuntime::removeTimerFunction(const uint32_t timerFunction, JSGlobalObje
 }
 
 bool WeexRuntime::hasInstanceId(String &id) {
-    bool lightAppHasId = false;
 
-    auto iterator = weexLiteAppObjectHolderMap.find(id.utf8().data());
-    if (iterator != weexLiteAppObjectHolderMap.end()) {
-        lightAppHasId = true;
+    auto iterator = appWorkerContextHolderMap.find(id.utf8().data());
+    if (iterator != appWorkerContextHolderMap.end()) {
+        return true;
     }
 
-
-    bool weexHasId = false;
     auto it = weexObjectHolder->m_jsInstanceGlobalObjectMap.find(id.utf8().data());
     if (it != weexObjectHolder->m_jsInstanceGlobalObjectMap.end()) {
-        weexHasId = true;
+        return true;
     }
 
-    return weexHasId || lightAppHasId;
+    return false;
 }
 
 

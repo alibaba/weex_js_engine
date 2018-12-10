@@ -442,7 +442,7 @@ int PlatformSideInMultiProcess::AddElement(
 
 int PlatformSideInMultiProcess::Layout(const char *page_id, const char *ref,
                                        int top, int bottom, int left, int right,
-                                       int height, int width, int index) {
+                                       int height, int width, bool isRTL,int index) {
   WeexIPCClient *pClient = client_;
   
   IPCSender *sender = pClient->getSender();

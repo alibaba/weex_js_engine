@@ -122,9 +122,9 @@ int PlatformSideInMultiSo::AddElement(
 
 int PlatformSideInMultiSo::Layout(const char *page_id, const char *ref, int top,
                                   int bottom, int left, int right, int height,
-                                  int width, int index) {
+                                  int width, bool isRTL, int index) {
   return platform_expose_functions_->layout(page_id, ref, top, bottom, left,
-                                            right, height, width, index);
+                                            right, height, width,isRTL, index);
 }
 
 int PlatformSideInMultiSo::UpdateStyle(

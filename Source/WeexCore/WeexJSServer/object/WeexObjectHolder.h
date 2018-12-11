@@ -14,7 +14,7 @@ public:
 
     std::map<std::string, WeexGlobalObject *> m_jsInstanceGlobalObjectMap;
 
-    std::map<std::string, WeexGlobalObject *> m_jsAppGlobalObjectMap; // App Context
+    WeexGlobalObject * m_jsAppGlobalObject; // App Context
 
     WeexGlobalObject * m_jsAppPluginGlobalObject; // App Plugin Context
 

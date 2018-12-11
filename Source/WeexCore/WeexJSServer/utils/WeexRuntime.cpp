@@ -76,13 +76,8 @@ int WeexRuntime::createAppContext(const String &instanceId, const String &jsBund
         if (appWorkerObjectHolder == nullptr) {
             return static_cast<int32_t>(false);
         }
-        std::map<std::string, WeexGlobalObject *>::iterator it_find;
-        auto objectMap = appWorkerObjectHolder->m_jsAppGlobalObjectMap;
-        it_find = objectMap.find(instanceId.utf8().data());
-        if (it_find == objectMap.end()) {
-            return static_cast<int32_t>(false);
-        }
-        JSGlobalObject *globalObject_local = objectMap[instanceId.utf8().data()];
+
+        JSGlobalObject *globalObject_local = appWorkerObjectHolder->m_jsAppGlobalObject;
         if (globalObject_local == nullptr) {
             return static_cast<int32_t>(false);
         }
@@ -182,14 +177,7 @@ WeexRuntime::callJSOnAppContext(const String &instanceId, const String &func, st
             return static_cast<int32_t>(false);
         }
 
-        std::map<std::string, WeexGlobalObject *>::iterator it_find;
-        auto objectMap = appWorkerObjectHolder->m_jsAppGlobalObjectMap;
-        it_find = objectMap.find(instanceId.utf8().data());
-        if (it_find == objectMap.end()) {
-//            LOGE("Weex jsserver IPCJSMsg::CALLJSONAPPCONTEXT mAppGlobalObjectMap donot contain globalObject");
-            return static_cast<int32_t>(false);
-        }
-        JSGlobalObject *globalObject = objectMap[instanceId.utf8().data()];
+        JSGlobalObject *globalObject = appWorkerObjectHolder->m_jsAppGlobalObject;
         if (globalObject == NULL) {
 //            LOGE("Weex jsserver IPCJSMsg::CALLJSONAPPCONTEXT globalObject is null");
             return static_cast<int32_t>(false);
@@ -244,13 +232,8 @@ int WeexRuntime::callJSOnAppContext(IPCArguments *arguments) {
 //            LOGE("callJSOnAppContext is running and id is %s and weexLiteAppObjectHolder is null", instanceId.utf8().data());
             return static_cast<int32_t>(false);
         }
-        auto objectMap = appWorkerObjectHolder->m_jsAppGlobalObjectMap;
-        it_find = objectMap.find(instanceId.utf8().data());
-        if (it_find == objectMap.end()) {
-//            LOGE("Weex jsserver IPCJSMsg::CALLJSONAPPCONTEXT mAppGlobalObjectMap donot contain globalObject");
-            return static_cast<int32_t>(false);
-        }
-        JSGlobalObject *globalObject = objectMap[instanceId.utf8().data()];
+
+        JSGlobalObject *globalObject = appWorkerObjectHolder->m_jsAppGlobalObject;
         if (globalObject == NULL) {
 //            LOGE("Weex jsserver IPCJSMsg::CALLJSONAPPCONTEXT globalObject is null");
             return static_cast<int32_t>(false);
@@ -294,16 +277,10 @@ int WeexRuntime::destroyAppContext(const String &instanceId) {
     if (appWorkerObjectHolder == nullptr) {
         return static_cast<int32_t>(false);
     }
-    auto objectMap = appWorkerObjectHolder->m_jsAppGlobalObjectMap;
-    std::map<std::string, WeexGlobalObject *>::iterator it_find;
-    it_find = objectMap.find(instanceId.utf8().data());
-    if (it_find != objectMap.end()) {
-        // LOGE("Weex jsserver IPCJSMsg::DESTORYAPPCONTEXT mAppGlobalObjectMap donnot contain and return");
-        objectMap.erase(instanceId.utf8().data());
-    }
 
+    appWorkerObjectHolder->m_jsAppGlobalObject = nullptr;
 
-     LOGE("Weex jsserver IPCJSMsg::DESTORYAPPCONTEXT end1 %s",instanceId.utf8().data());
+    LOGE("Weex jsserver IPCJSMsg::DESTORYAPPCONTEXT end1 %s",instanceId.utf8().data());
     std::map<std::string, WeexGlobalObject *>::iterator it_find_instance;
     objectMap = appWorkerObjectHolder->m_jsInstanceGlobalObjectMap;
     it_find = objectMap.find(instanceId.utf8().data());
@@ -886,7 +863,7 @@ int WeexRuntime::_initAppFramework(const String &instanceId, const String &appFr
 
     globalObject->id = instanceId.utf8().data();
     // LOGE("Weex jsserver IPCJSMsg::INITAPPFRAMEWORK 1");
-    weexLiteAppObjectHolder->m_jsAppGlobalObjectMap[instanceId.utf8().data()] = globalObject;
+    weexLiteAppObjectHolder->m_jsAppGlobalObject = globalObject;
     return static_cast<int32_t>(
             ExecuteJavaScript(globalObject,
                               appFramework,

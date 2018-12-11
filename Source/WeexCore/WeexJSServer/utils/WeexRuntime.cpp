@@ -282,8 +282,8 @@ int WeexRuntime::destroyAppContext(const String &instanceId) {
 
     LOGE("Weex jsserver IPCJSMsg::DESTORYAPPCONTEXT end1 %s",instanceId.utf8().data());
     std::map<std::string, WeexGlobalObject *>::iterator it_find_instance;
-    objectMap = appWorkerObjectHolder->m_jsInstanceGlobalObjectMap;
-    it_find = objectMap.find(instanceId.utf8().data());
+    auto objectMap = appWorkerObjectHolder->m_jsInstanceGlobalObjectMap;
+    it_find_instance = objectMap.find(instanceId.utf8().data());
     if (it_find_instance != objectMap.end()) {
         // LOGE("Weex jsserver IPCJSMsg::DESTORYAPPCONTEXT mAppInstanceGlobalObjectMap donnot contain and return");
         objectMap.erase(instanceId.utf8().data());

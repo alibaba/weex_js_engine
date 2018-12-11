@@ -124,44 +124,7 @@ int WeexRuntime::createAppContext(const String &instanceId, const String &jsBund
 
 std::unique_ptr<WeexJSResult> WeexRuntime::exeJSOnAppWithResult(const String &instanceId, const String &jsBundle) {
 
-    std::unique_ptr<WeexJSResult> returnResult;
-//    returnResult.reset(new WeexJSResult);
-//
-//    if (instanceId == "") {
-//        return returnResult;
-//    } else {
-//        JSGlobalObject *globalObject = weexObjectHolder->m_jsInstanceGlobalObjectMap[instanceId.utf8().data()];
-//        if (globalObject == nullptr) {
-//            return returnResult;
-//        }
-//
-//        VM &vm_global = VM::sharedInstance();
-//        JSLockHolder locker_global(&vm_global);
-//        VM &vm = globalObject->vm();
-//        JSLockHolder locker(&vm);
-//
-//        SourceOrigin sourceOrigin(String::fromUTF8("(weex)"));
-//        NakedPtr<Exception> evaluationException;
-//        JSValue returnValue = evaluate(globalObject->globalExec(),
-//                                       makeSource(jsBundle, sourceOrigin, "execjs on App context"),
-//                                       JSValue(), evaluationException);
-//        if (evaluationException) {
-//            // String exceptionInfo = exceptionToString(globalObject, evaluationException.get()->value());
-//            // LOGE("EXECJSONINSTANCE exception:%s", exceptionInfo.utf8().data());
-//            ReportException(globalObject, evaluationException.get(), instanceId.utf8().data(), "execJSOnInstance");
-//            return returnResult;
-//        }
-//        globalObject->vm().drainMicrotasks();
-//        // LOGE("Weex jsserver IPCJSMsg::EXECJSONAPPWITHRESULT end");
-//        // WTF::String str = returnValue.toWTFString(globalObject->globalExec());
-//        const char *data = returnValue.toWTFString(globalObject->globalExec()).utf8().data();
-//        returnResult->length = strlen(data);
-//        char *buf = new char[returnResult->length + 1];
-//        strcpy(buf, data);
-//        returnResult->data.reset(buf);
-//        return returnResult;
-//    }
-
+  std::unique_ptr<WeexJSResult> returnResult;
   return returnResult;
 }
 
@@ -177,7 +140,7 @@ WeexRuntime::callJSOnAppContext(const String &instanceId, const String &func, st
             return static_cast<int32_t>(false);
         }
 
-        JSGlobalObject *globalObject = appWorkerObjectHolder->m_jsAppGlobalObject;
+        JSGlobalObject *globalObject = appWorkerObjectHolder->m_globalObject.get();
         if (globalObject == NULL) {
 //            LOGE("Weex jsserver IPCJSMsg::CALLJSONAPPCONTEXT globalObject is null");
             return static_cast<int32_t>(false);
@@ -406,66 +369,6 @@ int WeexRuntime::exeJS(const String &instanceId, const String &nameSpace, const 
     return static_cast<int32_t>(true);
 }
 
-//int WeexRuntime::exeJS(const String &instanceId, const String &nameSpace, const String &func, IPCArguments *arguments) {
-//    // LOGE("EXECJS func:%s", func.utf8().data());
-//
-//    String runFunc = func;
-//
-//    JSGlobalObject *globalObject;
-//    // fix instanceof Object error
-//    // if function is callJs on instance, should us Instance object to call __WEEX_CALL_JAVASCRIPT__
-//    if (std::strcmp("callJS", runFunc.utf8().data()) == 0) {
-//        globalObject = weexObjectHolder->m_jsInstanceGlobalObjectMap[instanceId.utf8().data()];
-//        if (globalObject == NULL) {
-//            globalObject = weexObjectHolder->m_globalObject.get();
-//        } else {
-//            WTF::String funcWString("__WEEX_CALL_JAVASCRIPT__");
-//            runFunc = funcWString;
-//        }
-//    } else {
-//        globalObject = weexObjectHolder->m_globalObject.get();
-//    }
-//    VM &vm = globalObject->vm();
-//    JSLockHolder locker(&vm);
-////    if (weexLiteAppObjectHolder.get() != nullptr) {
-////        VM & vm_global = *weexLiteAppObjectHolder->m_globalVM.get();
-////        JSLockHolder locker_global(&vm_global);
-////    }
-//
-//    MarkedArgumentBuffer obj;
-//    base::debug::TraceScope traceScope("weex", "exeJS", "function", runFunc.utf8().data());
-//    ExecState *state = globalObject->globalExec();
-//    _getArgListFromIPCArguments(&obj, state, arguments, 3);
-//
-//    Identifier funcIdentifier = Identifier::fromString(&vm, runFunc);
-//
-//    JSValue function;
-//    JSValue result;
-//    if (nameSpace.isEmpty()) {
-//        function = globalObject->get(state, funcIdentifier);
-//    } else {
-//        Identifier namespaceIdentifier = Identifier::fromString(&vm, nameSpace);
-//        JSValue master = globalObject->get(state, namespaceIdentifier);
-//        if (!master.isObject()) {
-//            return static_cast<int32_t>(false);
-//        }
-//        function = master.toObject(state)->get(state, funcIdentifier);
-//    }
-//    CallData callData;
-//    CallType callType = getCallData(function, callData);
-//    NakedPtr<Exception> returnedException;
-//    JSValue ret = call(state, function, callType, callData, globalObject, obj, returnedException);
-//
-//    globalObject->vm().drainMicrotasks();
-//
-//
-//    if (returnedException) {
-//        ReportException(globalObject, returnedException.get(), instanceId.utf8().data(), func.utf8().data());
-//        return static_cast<int32_t>(false);
-//    }
-//    return static_cast<int32_t>(true);
-//}
-
 inline void convertJSArrayToWeexJSResult(ExecState *state, JSValue &ret, WeexJSResult *jsResult) {
     if (ret.isUndefined() || ret.isNull() || !isJSArray(ret)) {
         // createInstance return whole source object, which is big, only accept array result
@@ -576,65 +479,6 @@ void WeexRuntime::exeJSWithCallback(const String &instanceId, const String &name
     auto result = exeJSWithResult(instanceId, nameSpace, func, params);
     script_bridge_->core_side()->OnReceivedResult(callback_id, result);
 }
-
-
-//std::unique_ptr<WeexJSResult> WeexRuntime::exeJSWithResult(const String &instanceId, const String &nameSpace, const String &func,
-//                                          IPCArguments *arguments) {
-//    WeexJSResult jsResult;
-//
-//    JSGlobalObject *globalObject;
-//    String runFunc = func;
-//    // fix instanceof Object error
-//    // if function is callJs should us Instance object to call __WEEX_CALL_JAVASCRIPT__
-//    if (std::strcmp("callJS", runFunc.utf8().data()) == 0) {
-//        globalObject = weexObjectHolder->m_jsInstanceGlobalObjectMap[instanceId.utf8().data()];
-//        if (globalObject == NULL) {
-//            globalObject = weexObjectHolder->m_globalObject.get();
-//        } else {
-//            WTF::String funcWString("__WEEX_CALL_JAVASCRIPT__");
-//            runFunc = funcWString;
-//        }
-//    } else {
-//        globalObject = weexObjectHolder->m_globalObject.get();
-//    }
-//    VM &vm = globalObject->vm();
-//    JSLockHolder locker(&vm);
-//
-//    base::debug::TraceScope traceScope("weex", "exeJSWithResult", "function", runFunc.utf8().data());
-//
-//    MarkedArgumentBuffer obj;
-//    ExecState *state = globalObject->globalExec();
-//
-//    _getArgListFromIPCArguments(&obj, state, arguments, 3);
-//
-//
-//    Identifier funcIdentifier = Identifier::fromString(&vm, runFunc);
-//    JSValue function;
-//    JSValue result;
-//    if (nameSpace.isEmpty()) {
-//        function = globalObject->get(state, funcIdentifier);
-//    } else {
-//        Identifier namespaceIdentifier = Identifier::fromString(&vm, nameSpace);
-//        JSValue master = globalObject->get(state, namespaceIdentifier);
-//        if (!master.isObject()) {
-//            return jsResult;
-//        }
-//        function = master.toObject(state)->get(state, funcIdentifier);
-//    }
-//    CallData callData;
-//    CallType callType = getCallData(function, callData);
-//    NakedPtr<Exception> returnedException;
-//    JSValue ret = call(state, function, callType, callData, globalObject, obj, returnedException);
-//    globalObject->vm().drainMicrotasks();
-//
-//    if (returnedException) {
-//        ReportException(globalObject, returnedException.get(), instanceId.utf8().data(), func.utf8().data());
-//        return jsResult;
-//    }
-//    convertJSArrayToWeexJSResult(state, ret, jsResult);
-//    return jsResult;
-//}
-
 
 std::unique_ptr<WeexJSResult> WeexRuntime::exeJSOnInstance(const String &instanceId, const String &script) {
     std::unique_ptr<WeexJSResult> returnResult;

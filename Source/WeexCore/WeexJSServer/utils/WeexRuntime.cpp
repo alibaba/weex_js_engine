@@ -389,6 +389,11 @@ int WeexRuntime::exeJS(const String &instanceId, const String &nameSpace, const 
     JSGlobalObject *globalObject;
     // fix instanceof Object error
     // if function is callJs on instance, should us Instance object to call __WEEX_CALL_JAVASCRIPT__
+
+    if(std::strcmp("switchInteractionLog", runFunc.utf8().data()) == 0) {
+        return 1;
+    }
+
     if (std::strcmp("callJS", runFunc.utf8().data()) == 0) {
         globalObject = weexObjectHolder->m_jsInstanceGlobalObjectMap[instanceId.utf8().data()];
         if (globalObject == NULL) {
@@ -431,7 +436,7 @@ int WeexRuntime::exeJS(const String &instanceId, const String &nameSpace, const 
     NakedPtr<Exception> returnedException;
     JSValue ret = call(state, function, callType, callData, globalObject, obj, returnedException);
 
-    globalObject->vm().drainMicrotasks();
+    vm.drainMicrotasks();
 
 
     if (returnedException) {

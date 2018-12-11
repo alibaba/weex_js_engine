@@ -233,7 +233,7 @@ int WeexRuntime::callJSOnAppContext(IPCArguments *arguments) {
             return static_cast<int32_t>(false);
         }
 
-        JSGlobalObject *globalObject = appWorkerObjectHolder->m_jsAppGlobalObject;
+        JSGlobalObject *globalObject = appWorkerObjectHolder->m_globalObject.get();
         if (globalObject == NULL) {
 //            LOGE("Weex jsserver IPCJSMsg::CALLJSONAPPCONTEXT globalObject is null");
             return static_cast<int32_t>(false);

@@ -121,17 +121,20 @@ int WeexRuntime::createAppContext(const String &instanceId, const String &jsBund
           LOGE("appWorkerObjectHolder is null");
           return static_cast<int32_t>(false);
         }
+      LOGE("appWorkerObjectHolder not null");
 
-        JSGlobalObject *worker_globalObject = appWorkerObjectHolder->m_globalObject.get();
+      JSGlobalObject *worker_globalObject = appWorkerObjectHolder->m_globalObject.get();
         if (worker_globalObject == nullptr) {
           LOGE("worker_globalObject is null");
           return static_cast<int32_t>(false);
         }
+      LOGE("worker_globalObject not null");
+
 
         VM &vm_global = VM::sharedInstance();
-        JSLockHolder locker_global(&vm_global);
-
       LOGE("create vm");
+      JSLockHolder locker_global(&vm_global);
+
 
       WeexGlobalObject *app_globalObject = appWorkerObjectHolder->cloneWeexObject(true, true);
       LOGE("clone app global object");

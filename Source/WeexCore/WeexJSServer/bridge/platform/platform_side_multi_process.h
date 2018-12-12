@@ -63,8 +63,9 @@ class PlatformSideInMultiProcess : public WeexCore::PlatformBridge::PlatformSide
                  std::set<std::string>* events, const WXCoreMargin& margins,
                  const WXCorePadding& paddings,
                  const WXCoreBorderWidth& borders, bool willLayout) override;
-  int Layout(const char* page_id, const char* ref, float top, float bottom,
-             float left, float right, float height, float width, int index) override;
+  int Layout(const char* page_id, const char* ref, float top,
+                       float bottom, float left, float right, float height,
+                       float width, bool isRTL, int index) override;
 
   int UpdateStyle(
       const char* pageId, const char* ref,

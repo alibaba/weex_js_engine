@@ -440,9 +440,9 @@ int PlatformSideInMultiProcess::AddElement(
   return result->get<int>();
 }
 
-int PlatformSideInMultiProcess::Layout(const char *page_id, const char *ref,
-                                       int top, int bottom, int left, int right,
-                                       int height, int width, int index) {
+int PlatformSideInMultiProcess::Layout(const char* page_id, const char* ref, float top,
+                       float bottom, float left, float right, float height,
+                       float width, bool isRTL, int index) {
   WeexIPCClient *pClient = client_;
   
   IPCSender *sender = pClient->getSender();
@@ -456,6 +456,7 @@ int PlatformSideInMultiProcess::Layout(const char *page_id, const char *ref,
   serializer->add(right);
   serializer->add(height);
   serializer->add(width);
+  serializer->add(isRTL);
   serializer->add(index);
   std::unique_ptr<IPCBuffer> buffer = serializer->finish();
   std::unique_ptr<IPCResult> result = sender->send(buffer.get());

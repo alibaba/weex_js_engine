@@ -91,9 +91,27 @@ int WeexRuntime::createAppContext(const String &instanceId, const String &jsBund
     if (instanceId == "") {
         return static_cast<int32_t>(false);
     } else {
+        LOGE("createAppContext instanceId is %s", instanceId.utf8().data());
+        String pre = instanceId.substring(0, 6);
+        LOGE("pre is %s", pre.utf8().data());
+        String get_context_fun_name = "";
+        String final_instanceId = "";
+        if (pre == "plugin") {
+            LOGE("__get_plugin_context__");
+            get_context_fun_name = "__get_plugin_context__";
+            final_instanceId = instanceId.substring(6, instanceId.length()-6);
+        } else {
+            LOGE("__get_app_context__");
+            get_context_fun_name = "__get_app_context__";
+            final_instanceId = instanceId;
+        }
+
+        LOGE("final_instanceId is %s", final_instanceId.utf8().data());
+
+
         // new a global object
         // --------------------------------------------------
-        auto appWorkerObjectHolder = getLightAppObjectHolder(instanceId);
+        auto appWorkerObjectHolder = getLightAppObjectHolder(final_instanceId);
         if (appWorkerObjectHolder == nullptr) {
             return static_cast<int32_t>(false);
         }
@@ -117,7 +135,7 @@ int WeexRuntime::createAppContext(const String &instanceId, const String &jsBund
         VM &thisVm = app_globalObject->vm();
         JSLockHolder locker_2(&thisVm);
 
-        PropertyName createInstanceContextProperty(Identifier::fromString(&vm, "__get_app_context__"));
+        PropertyName createInstanceContextProperty(Identifier::fromString(&vm, get_context_fun_name));
         ExecState *state = worker_globalObject->globalExec();
         JSValue createInstanceContextFunction = worker_globalObject->get(state, createInstanceContextProperty);
         MarkedArgumentBuffer args;
@@ -132,11 +150,11 @@ int WeexRuntime::createAppContext(const String &instanceId, const String &jsBund
             return static_cast<int32_t>(false);
         }
         app_globalObject->resetPrototype(vm, ret);
-        app_globalObject->id = instanceId.utf8().data();
+        app_globalObject->id = final_instanceId.utf8().data();
         // --------------------------------------------------
 
         if (!ExecuteJavaScript(app_globalObject, jsBundle, ("weex createAppContext"), true, "createAppContext",
-                               instanceId.utf8().data())) {
+                               final_instanceId.utf8().data())) {
             return static_cast<int32_t>(false);
         }
     }

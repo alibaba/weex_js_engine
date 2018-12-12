@@ -91,8 +91,13 @@ int WeexRuntime::createAppContext(const String &instanceId, const String &jsBund
     if (instanceId == "") {
         return static_cast<int32_t>(false);
     } else {
-        LOGE("createAppContext instanceId is %s", instanceId.utf8().data());
+        LOGE("createAppContext");
+        LOGE("instanceId is %s", instanceId.utf8().data());
         String pre = instanceId.substring(0, 6);
+        if (instanceId.length() > 5) {
+            pre = instanceId.substring(0, 6);
+        }
+
         LOGE("pre is %s", pre.utf8().data());
         String get_context_fun_name = "";
         String final_instanceId = "";

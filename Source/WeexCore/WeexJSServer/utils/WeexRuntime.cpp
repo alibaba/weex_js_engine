@@ -158,9 +158,15 @@ int WeexRuntime::createAppContext(const String &instanceId, const String &jsBund
         app_globalObject->id = final_instanceId.utf8().data();
         // --------------------------------------------------
 
+        LOGE("ExecuteJavaScript , id is %s, app globalobject address is %p", final_instanceId.utf8().data(), app_globalObject);
+
+
         if (!ExecuteJavaScript(app_globalObject, jsBundle, ("weex createAppContext"), true, "createAppContext",
                                final_instanceId.utf8().data())) {
+            LOGE("ExecuteJavaScript failed");
             return static_cast<int32_t>(false);
+        } else {
+          LOGE("ExecuteJavaScript success");
         }
     }
     return static_cast<int32_t>(true);

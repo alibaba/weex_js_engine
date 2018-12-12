@@ -177,7 +177,7 @@ void WeexGlobalObject::initFunctionForContext() {
             {"clearNativeTimeout",    JSC::Function, NoIntrinsic, {(intptr_t) static_cast<NativeFunction>(functionNativeClearTimeout),  (intptr_t) (1)}},
             {"clearNativeInterval",   JSC::Function, NoIntrinsic, {(intptr_t) static_cast<NativeFunction>(functionNativeClearInterval),  (intptr_t) (1)}},
             { "console", DontEnum|PropertyCallback, NoIntrinsic, { (intptr_t) static_cast<LazyPropertyCallback>(createWeexConsoleProperty), (intptr_t)(0) } },
-            {"__updateComponentData",     JSC::Function, NoIntrinsic, {(intptr_t) static_cast<NativeFunction>(functionUpdateComponentData),       (intptr_t) (2)}},
+            {"__updateComponentData",     JSC::Function, NoIntrinsic, {(intptr_t) static_cast<NativeFunction>(functionUpdateComponentData),       (intptr_t) (3)}},
     };
     reifyStaticProperties(vm, JSEventTargetPrototypeTableValues, *this);
 }
@@ -209,7 +209,7 @@ void WeexGlobalObject::initFunction() {
             {"setIntervalWeex",       JSC::Function, NoIntrinsic, {(intptr_t) static_cast<NativeFunction>(functionSetIntervalWeex),     (intptr_t) (3)}},
             {"clearIntervalWeex",     JSC::Function, NoIntrinsic, {(intptr_t) static_cast<NativeFunction>(functionClearIntervalWeex),   (intptr_t) (1)}},
             {"callT3DLinkNative",     JSC::Function, NoIntrinsic, {(intptr_t) static_cast<NativeFunction>(functionT3DLinkNative),       (intptr_t) (2)}},
-            {"__updateComponentData",     JSC::Function, NoIntrinsic, {(intptr_t) static_cast<NativeFunction>(functionUpdateComponentData),       (intptr_t) (2)}},
+            {"__updateComponentData",     JSC::Function, NoIntrinsic, {(intptr_t) static_cast<NativeFunction>(functionUpdateComponentData),       (intptr_t) (3)}},
 //            {"setNativeTimeout",      JSC::Function, NoIntrinsic, {(intptr_t) static_cast<NativeFunction>(functionNativeSetTimeout),    (intptr_t) (2)}},
 //            {"setNativeInterval",     JSC::Function, NoIntrinsic, {(intptr_t) static_cast<NativeFunction>(functionNativeSetInterval),  (intptr_t) (2)}},
 //            {"clearNativeTimeout",    JSC::Function, NoIntrinsic, {(intptr_t) static_cast<NativeFunction>(functionNativeClearTimeout),  (intptr_t) (1)}},

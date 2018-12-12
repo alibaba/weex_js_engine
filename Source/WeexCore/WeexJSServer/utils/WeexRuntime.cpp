@@ -118,40 +118,53 @@ int WeexRuntime::createAppContext(const String &instanceId, const String &jsBund
         // --------------------------------------------------
         auto appWorkerObjectHolder = getLightAppObjectHolder(final_instanceId);
         if (appWorkerObjectHolder == nullptr) {
-            return static_cast<int32_t>(false);
+          LOGE("appWorkerObjectHolder is null");
+          return static_cast<int32_t>(false);
         }
 
         JSGlobalObject *worker_globalObject = appWorkerObjectHolder->m_globalObject.get();
         if (worker_globalObject == nullptr) {
-            return static_cast<int32_t>(false);
+          LOGE("worker_globalObject is null");
+          return static_cast<int32_t>(false);
         }
 
         VM &vm_global = VM::sharedInstance();
         JSLockHolder locker_global(&vm_global);
 
-        WeexGlobalObject *app_globalObject = appWorkerObjectHolder->cloneWeexObject(true, true);
-        weex::GlobalObjectDelegate *delegate = NULL;
-        app_globalObject->SetScriptBridge(script_bridge_);
+      LOGE("create vm");
 
+      WeexGlobalObject *app_globalObject = appWorkerObjectHolder->cloneWeexObject(true, true);
+      LOGE("clone app global object");
+      weex::GlobalObjectDelegate *delegate = NULL;
+        app_globalObject->SetScriptBridge(script_bridge_);
+      LOGE("set script bridge");
         VM &vm = worker_globalObject->vm();
+      LOGE("get vm");
 
         JSLockHolder locker_1(&vm);
 
         VM &thisVm = app_globalObject->vm();
-        JSLockHolder locker_2(&thisVm);
+      LOGE("create this vm");
+      JSLockHolder locker_2(&thisVm);
 
         PropertyName createInstanceContextProperty(Identifier::fromString(&vm, get_context_fun_name));
+      LOGE("get createInstanceContextProperty");
         ExecState *state = worker_globalObject->globalExec();
-        JSValue createInstanceContextFunction = worker_globalObject->get(state, createInstanceContextProperty);
-        MarkedArgumentBuffer args;
+      LOGE("get state");
+      JSValue createInstanceContextFunction = worker_globalObject->get(state, createInstanceContextProperty);
+      LOGE("get createInstanceContextFunction");
+      MarkedArgumentBuffer args;
 
-        CallData callData;
+      CallData callData;
         CallType callType = getCallData(createInstanceContextFunction, callData);
-        NakedPtr<Exception> returnedException;
+      LOGE("get callType");
+      NakedPtr<Exception> returnedException;
         JSValue ret = call(state, createInstanceContextFunction, callType, callData,
                            worker_globalObject, args, returnedException);
-        if (returnedException) {
-            String exceptionInfo = exceptionToString(worker_globalObject, returnedException->value());
+      LOGE("call createInstanceContextFunction");
+      if (returnedException) {
+        LOGE("call returnedException");
+        String exceptionInfo = exceptionToString(worker_globalObject, returnedException->value());
             return static_cast<int32_t>(false);
         }
         app_globalObject->resetPrototype(vm, ret);
@@ -165,10 +178,9 @@ int WeexRuntime::createAppContext(const String &instanceId, const String &jsBund
                                final_instanceId.utf8().data())) {
             LOGE("ExecuteJavaScript failed");
             return static_cast<int32_t>(false);
-        } else {
-          LOGE("ExecuteJavaScript success");
         }
     }
+    LOGE("call createInstanceContextFunction success");
     return static_cast<int32_t>(true);
 }
 

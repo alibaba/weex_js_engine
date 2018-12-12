@@ -14,11 +14,6 @@ public:
 
     std::map<std::string, WeexGlobalObject *> m_jsInstanceGlobalObjectMap;
 
-    WeexGlobalObject * m_jsAppGlobalObject; // App Context
-
-    WeexGlobalObject * m_jsAppPluginGlobalObject; // App Plugin Context
-
-
     ~WeexObjectHolder();
 
 

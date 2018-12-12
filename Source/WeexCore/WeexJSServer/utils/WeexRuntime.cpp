@@ -66,6 +66,27 @@ int WeexRuntime::initAppFramework(const String &instanceId, const String &appFra
     return _initAppFramework(instanceId, appFramework);
 }
 
+int WeexRuntime::_initAppFramework(const String &instanceId, const String &appFramework) {
+  VM &vm = VM::sharedInstance();
+  JSLockHolder locker_global(&vm);
+
+  auto appWorkerObjectHolder = getLightAppObjectHolder(instanceId);
+  if (appWorkerObjectHolder == nullptr) {
+    return static_cast<int32_t>(false);
+  }
+  WeexGlobalObject *globalObject = appWorkerObjectHolder->m_globalObject.get();
+  globalObject->SetScriptBridge(script_bridge_);
+
+  globalObject->id = instanceId.utf8().data();
+  return static_cast<int32_t>(
+      ExecuteJavaScript(globalObject,
+                        appFramework,
+                        "(app framework)",
+                        true,
+                        "initAppFramework",
+                        instanceId.utf8().data()));
+}
+
 int WeexRuntime::createAppContext(const String &instanceId, const String &jsBundle) {
     if (instanceId == "") {
         return static_cast<int32_t>(false);
@@ -77,7 +98,7 @@ int WeexRuntime::createAppContext(const String &instanceId, const String &jsBund
             return static_cast<int32_t>(false);
         }
 
-        JSGlobalObject *globalObject_local = appWorkerObjectHolder->m_jsAppGlobalObject;
+        JSGlobalObject *globalObject_local = appWorkerObjectHolder->m_globalObject.get();
         if (globalObject_local == nullptr) {
             return static_cast<int32_t>(false);
         }
@@ -240,8 +261,6 @@ int WeexRuntime::destroyAppContext(const String &instanceId) {
     if (appWorkerObjectHolder == nullptr) {
         return static_cast<int32_t>(false);
     }
-
-    appWorkerObjectHolder->m_jsAppGlobalObject = nullptr;
 
     LOGE("Weex jsserver IPCJSMsg::DESTORYAPPCONTEXT end1 %s",instanceId.utf8().data());
     std::map<std::string, WeexGlobalObject *>::iterator it_find_instance;
@@ -692,29 +711,6 @@ int WeexRuntime::_initFramework(const String &source) {
 
     setJSFVersion(globalObject);
     return true;
-}
-
-int WeexRuntime::_initAppFramework(const String &instanceId, const String &appFramework) {
-    VM &vm = VM::sharedInstance();
-    JSLockHolder locker_global(&vm);
-
-    auto weexLiteAppObjectHolder = getLightAppObjectHolder(instanceId);
-    if (weexLiteAppObjectHolder == nullptr) {
-        return static_cast<int32_t>(false);
-    }
-    WeexGlobalObject *globalObject = weexLiteAppObjectHolder->m_globalObject.get();
-    globalObject->SetScriptBridge(script_bridge_);
-
-    globalObject->id = instanceId.utf8().data();
-    // LOGE("Weex jsserver IPCJSMsg::INITAPPFRAMEWORK 1");
-    weexLiteAppObjectHolder->m_jsAppGlobalObject = globalObject;
-    return static_cast<int32_t>(
-            ExecuteJavaScript(globalObject,
-                              appFramework,
-                              "(app framework)",
-                              true,
-                              "initAppFramework",
-                              instanceId.utf8().data()));
 }
 
 void

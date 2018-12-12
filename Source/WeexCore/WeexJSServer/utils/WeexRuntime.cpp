@@ -74,12 +74,12 @@ int WeexRuntime::_initAppFramework(const String &instanceId, const String &appFr
   if (appWorkerObjectHolder == nullptr) {
     return static_cast<int32_t>(false);
   }
-  WeexGlobalObject *globalObject = appWorkerObjectHolder->m_globalObject.get();
-  globalObject->SetScriptBridge(script_bridge_);
+  WeexGlobalObject *worker_globalObject = appWorkerObjectHolder->m_globalObject.get();
+  worker_globalObject->SetScriptBridge(script_bridge_);
 
-  globalObject->id = instanceId.utf8().data();
+  worker_globalObject->id = instanceId.utf8().data();
   return static_cast<int32_t>(
-      ExecuteJavaScript(globalObject,
+      ExecuteJavaScript(worker_globalObject,
                         appFramework,
                         "(app framework)",
                         true,
@@ -98,44 +98,44 @@ int WeexRuntime::createAppContext(const String &instanceId, const String &jsBund
             return static_cast<int32_t>(false);
         }
 
-        JSGlobalObject *globalObject_local = appWorkerObjectHolder->m_globalObject.get();
-        if (globalObject_local == nullptr) {
+        JSGlobalObject *worker_globalObject = appWorkerObjectHolder->m_globalObject.get();
+        if (worker_globalObject == nullptr) {
             return static_cast<int32_t>(false);
         }
 
         VM &vm_global = VM::sharedInstance();
         JSLockHolder locker_global(&vm_global);
 
-        WeexGlobalObject *globalObject = appWorkerObjectHolder->cloneWeexObject(true, true);
+        WeexGlobalObject *app_globalObject = appWorkerObjectHolder->cloneWeexObject(true, true);
         weex::GlobalObjectDelegate *delegate = NULL;
-        globalObject->SetScriptBridge(script_bridge_);
+        app_globalObject->SetScriptBridge(script_bridge_);
 
-        VM &vm = globalObject_local->vm();
+        VM &vm = worker_globalObject->vm();
 
         JSLockHolder locker_1(&vm);
 
-        VM &thisVm = globalObject->vm();
+        VM &thisVm = app_globalObject->vm();
         JSLockHolder locker_2(&thisVm);
 
         PropertyName createInstanceContextProperty(Identifier::fromString(&vm, "__get_app_context__"));
-        ExecState *state = globalObject_local->globalExec();
-        JSValue createInstanceContextFunction = globalObject_local->get(state, createInstanceContextProperty);
+        ExecState *state = worker_globalObject->globalExec();
+        JSValue createInstanceContextFunction = worker_globalObject->get(state, createInstanceContextProperty);
         MarkedArgumentBuffer args;
 
         CallData callData;
         CallType callType = getCallData(createInstanceContextFunction, callData);
         NakedPtr<Exception> returnedException;
         JSValue ret = call(state, createInstanceContextFunction, callType, callData,
-                           globalObject_local, args, returnedException);
+                           worker_globalObject, args, returnedException);
         if (returnedException) {
-            String exceptionInfo = exceptionToString(globalObject_local, returnedException->value());
+            String exceptionInfo = exceptionToString(worker_globalObject, returnedException->value());
             return static_cast<int32_t>(false);
         }
-        globalObject->resetPrototype(vm, ret);
-        globalObject->id = instanceId.utf8().data();
+        app_globalObject->resetPrototype(vm, ret);
+        app_globalObject->id = instanceId.utf8().data();
         // --------------------------------------------------
 
-        if (!ExecuteJavaScript(globalObject, jsBundle, ("weex createAppContext"), true, "createAppContext",
+        if (!ExecuteJavaScript(app_globalObject, jsBundle, ("weex createAppContext"), true, "createAppContext",
                                instanceId.utf8().data())) {
             return static_cast<int32_t>(false);
         }
@@ -161,27 +161,27 @@ WeexRuntime::callJSOnAppContext(const String &instanceId, const String &func, st
             return static_cast<int32_t>(false);
         }
 
-        JSGlobalObject *globalObject = appWorkerObjectHolder->m_globalObject.get();
-        if (globalObject == NULL) {
-//            LOGE("Weex jsserver IPCJSMsg::CALLJSONAPPCONTEXT globalObject is null");
+        JSGlobalObject *worker_globalObject = appWorkerObjectHolder->m_globalObject.get();
+        if (worker_globalObject == NULL) {
+//            LOGE("Weex jsserver IPCJSMsg::CALLJSONAPPCONTEXT worker_globalObject is null");
             return static_cast<int32_t>(false);
         }
 //        LOGE("Weex jsserver IPCJSMsg::CALLJSONAPPCONTEXT1");
         VM &vm_global = VM::sharedInstance();
         JSLockHolder locker_global(&vm_global);
 
-        VM &vm = globalObject->vm();
+        VM &vm = worker_globalObject->vm();
         JSLockHolder locker(&vm);
 //        LOGE("Weex jsserver IPCJSMsg::CALLJSONAPPCONTEXT2");
         MarkedArgumentBuffer obj;
-        ExecState *state = globalObject->globalExec();
+        ExecState *state = worker_globalObject->globalExec();
         _getArgListFromJSParams(&obj, state, params);
 //        LOGE("Weex jsserver IPCJSMsg::CALLJSONAPPCONTEXT3");
         Identifier funcIdentifier = Identifier::fromString(&vm, func);
 
         JSValue function;
         JSValue result;
-        function = globalObject->get(state, funcIdentifier);
+        function = worker_globalObject->get(state, funcIdentifier);
         CallData callData;
         CallType callType = getCallData(function, callData);
         NakedPtr<Exception> returnedException;
@@ -189,13 +189,13 @@ WeexRuntime::callJSOnAppContext(const String &instanceId, const String &func, st
         if (function.isEmpty()) {
             LOGE("Weex jsserver IPCJSMsg::CALLJSONAPPCONTEXT js funtion is empty");
         }
-        JSValue ret = call(state, function, callType, callData, globalObject, obj, returnedException);
+        JSValue ret = call(state, function, callType, callData, worker_globalObject, obj, returnedException);
         // LOGE("Weex jsserver IPCJSMsg::CALLJSONAPPCONTEXT end");
         if (returnedException) {
-            ReportException(globalObject, returnedException.get(), instanceId.utf8().data(), func.utf8().data());
+            ReportException(worker_globalObject, returnedException.get(), instanceId.utf8().data(), func.utf8().data());
             return static_cast<int32_t>(false);
         }
-        globalObject->vm().drainMicrotasks();
+        worker_globalObject->vm().drainMicrotasks();
         return static_cast<int32_t>(true);
     }
 }
@@ -217,27 +217,27 @@ int WeexRuntime::callJSOnAppContext(IPCArguments *arguments) {
             return static_cast<int32_t>(false);
         }
 
-        JSGlobalObject *globalObject = appWorkerObjectHolder->m_globalObject.get();
-        if (globalObject == NULL) {
-//            LOGE("Weex jsserver IPCJSMsg::CALLJSONAPPCONTEXT globalObject is null");
+        JSGlobalObject *worker_globalObject = appWorkerObjectHolder->m_globalObject.get();
+        if (worker_globalObject == NULL) {
+//            LOGE("Weex jsserver IPCJSMsg::CALLJSONAPPCONTEXT worker_globalObject is null");
             return static_cast<int32_t>(false);
         }
 //        LOGE("Weex jsserver IPCJSMsg::CALLJSONAPPCONTEXT1");
         VM &vm_global = VM::sharedInstance();
         JSLockHolder locker_global(&vm_global);
 
-        VM &vm = globalObject->vm();
+        VM &vm = worker_globalObject->vm();
         JSLockHolder locker(&vm);
         // LOGE("Weex jsserver IPCJSMsg::CALLJSONAPPCONTEXT2");
         MarkedArgumentBuffer obj;
-        ExecState *state = globalObject->globalExec();
+        ExecState *state = worker_globalObject->globalExec();
         _getArgListFromIPCArguments(&obj, state, arguments, 2);
         // LOGE("Weex jsserver IPCJSMsg::CALLJSONAPPCONTEXT3");
         Identifier funcIdentifier = Identifier::fromString(&vm, func);
 
         JSValue function;
         JSValue result;
-        function = globalObject->get(state, funcIdentifier);
+        function = worker_globalObject->get(state, funcIdentifier);
         CallData callData;
         CallType callType = getCallData(function, callData);
         NakedPtr<Exception> returnedException;
@@ -245,13 +245,13 @@ int WeexRuntime::callJSOnAppContext(IPCArguments *arguments) {
         if (function.isEmpty()) {
             LOGE("Weex jsserver IPCJSMsg::CALLJSONAPPCONTEXT js funtion is empty");
         }
-        JSValue ret = call(state, function, callType, callData, globalObject, obj, returnedException);
+        JSValue ret = call(state, function, callType, callData, worker_globalObject, obj, returnedException);
         // LOGE("Weex jsserver IPCJSMsg::CALLJSONAPPCONTEXT end");
         if (returnedException) {
-            ReportException(globalObject, returnedException.get(), instanceId.utf8().data(), func.utf8().data());
+            ReportException(worker_globalObject, returnedException.get(), instanceId.utf8().data(), func.utf8().data());
             return static_cast<int32_t>(false);
         }
-        globalObject->vm().drainMicrotasks();
+        worker_globalObject->vm().drainMicrotasks();
         return static_cast<int32_t>(true);
     }
 }

@@ -101,7 +101,7 @@ int WeexRuntime::createAppContext(const String &instanceId, const String &jsBund
         if (pre == "plugin_") {
             LOGE("createAppContext __get_plugin_context__");
             get_context_fun_name = "__get_plugin_context__";
-            final_instanceId = instanceId.substring(6, instanceId.length()-6);
+            final_instanceId = instanceId.substring(7, instanceId.length()-7);
         } else {
             LOGE("createAppContext __get_app_context__");
             get_context_fun_name = "__get_app_context__";

@@ -91,70 +91,99 @@ int WeexRuntime::createAppContext(const String &instanceId, const String &jsBund
     if (instanceId == "") {
         return static_cast<int32_t>(false);
     } else {
-        String pre = instanceId.substring(0, 7);
-        if (instanceId.length() > 6) {
-            pre = instanceId.substring(0, 7);
+        LOGE("createAppContext");
+        LOGE("instanceId is %s", instanceId.utf8().data());
+        String pre = instanceId.substring(0, 6);
+        if (instanceId.length() > 5) {
+            pre = instanceId.substring(0, 6);
         }
 
+        LOGE("pre is %s", pre.utf8().data());
         String get_context_fun_name = "";
         String final_instanceId = "";
-        if (pre == "plugin_") {
+        if (pre == "plugin") {
+            LOGE("__get_plugin_context__");
             get_context_fun_name = "__get_plugin_context__";
-            final_instanceId = instanceId.substring(7, instanceId.length() - 7);
+            final_instanceId = instanceId.substring(6, instanceId.length()-6);
         } else {
+            LOGE("__get_app_context__");
             get_context_fun_name = "__get_app_context__";
             final_instanceId = instanceId;
         }
+
+        LOGE("final_instanceId is %s", final_instanceId.utf8().data());
+
 
         // new a global object
         // --------------------------------------------------
         auto appWorkerObjectHolder = getLightAppObjectHolder(final_instanceId);
         if (appWorkerObjectHolder == nullptr) {
+          LOGE("appWorkerObjectHolder is null");
           return static_cast<int32_t>(false);
         }
+      LOGE("appWorkerObjectHolder not null");
 
-        JSGlobalObject *worker_globalObject = appWorkerObjectHolder->m_globalObject.get();
+      JSGlobalObject *worker_globalObject = appWorkerObjectHolder->m_globalObject.get();
         if (worker_globalObject == nullptr) {
+          LOGE("worker_globalObject is null");
           return static_cast<int32_t>(false);
         }
+      LOGE("worker_globalObject not null");
+
 
         VM &vm_global = VM::sharedInstance();
-        JSLockHolder locker_global(&vm_global);
+      LOGE("create vm");
+      JSLockHolder locker_global(&vm_global);
 
-        WeexGlobalObject *app_globalObject = appWorkerObjectHolder->cloneWeexObject(true, true);
-        weex::GlobalObjectDelegate *delegate = NULL;
+
+      WeexGlobalObject *app_globalObject = appWorkerObjectHolder->cloneWeexObject(true, true);
+      LOGE("clone app global object");
+      weex::GlobalObjectDelegate *delegate = NULL;
         app_globalObject->SetScriptBridge(script_bridge_);
+      LOGE("set script bridge");
         VM &vm = worker_globalObject->vm();
+      LOGE("get vm");
 
         JSLockHolder locker_1(&vm);
 
         VM &thisVm = app_globalObject->vm();
-        JSLockHolder locker_2(&thisVm);
+      LOGE("create this vm");
+      JSLockHolder locker_2(&thisVm);
 
         PropertyName createInstanceContextProperty(Identifier::fromString(&vm, get_context_fun_name));
+      LOGE("get createInstanceContextProperty");
         ExecState *state = worker_globalObject->globalExec();
-        JSValue createInstanceContextFunction = worker_globalObject->get(state, createInstanceContextProperty);
-        MarkedArgumentBuffer args;
+      LOGE("get state");
+      JSValue createInstanceContextFunction = worker_globalObject->get(state, createInstanceContextProperty);
+      LOGE("get createInstanceContextFunction");
+      MarkedArgumentBuffer args;
 
-        CallData callData;
+      CallData callData;
         CallType callType = getCallData(createInstanceContextFunction, callData);
-        NakedPtr<Exception> returnedException;
+      LOGE("get callType");
+      NakedPtr<Exception> returnedException;
         JSValue ret = call(state, createInstanceContextFunction, callType, callData,
                            worker_globalObject, args, returnedException);
-        if (returnedException) {
-            String exceptionInfo = exceptionToString(worker_globalObject, returnedException->value());
+      LOGE("call createInstanceContextFunction");
+      if (returnedException) {
+        LOGE("call returnedException");
+        String exceptionInfo = exceptionToString(worker_globalObject, returnedException->value());
             return static_cast<int32_t>(false);
         }
-
         app_globalObject->resetPrototype(vm, ret);
         app_globalObject->id = final_instanceId.utf8().data();
         // --------------------------------------------------
 
+        LOGE("ExecuteJavaScript , id is %s, app globalobject address is %p", final_instanceId.utf8().data(), app_globalObject);
+
+
         if (!ExecuteJavaScript(app_globalObject, jsBundle, ("weex createAppContext"), true, "createAppContext",
                                final_instanceId.utf8().data())) {
+            LOGE("ExecuteJavaScript failed");
             return static_cast<int32_t>(false);
         }
     }
+    LOGE("call createInstanceContextFunction success");
     return static_cast<int32_t>(true);
 }
 

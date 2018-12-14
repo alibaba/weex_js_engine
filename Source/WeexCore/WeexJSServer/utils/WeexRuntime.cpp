@@ -93,15 +93,15 @@ int WeexRuntime::createAppContext(const String &instanceId, const String &jsBund
     } else {
         LOGE("createAppContext");
         LOGE("instanceId is %s", instanceId.utf8().data());
-        String pre = instanceId.substring(0, 6);
-        if (instanceId.length() > 5) {
-            pre = instanceId.substring(0, 6);
+        String pre = instanceId.substring(0, 7);
+        if (instanceId.length() > 6) {
+            pre = instanceId.substring(0, 7);
         }
 
         LOGE("pre is %s", pre.utf8().data());
         String get_context_fun_name = "";
         String final_instanceId = "";
-        if (pre == "plugin") {
+        if (pre == "plugin_") {
             LOGE("__get_plugin_context__");
             get_context_fun_name = "__get_plugin_context__";
             final_instanceId = instanceId.substring(6, instanceId.length()-6);

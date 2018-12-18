@@ -91,7 +91,7 @@ int WeexRuntime::createAppContext(const String &instanceId, const String &jsBund
     if (instanceId == "") {
         return static_cast<int32_t>(false);
     } else {
-        String pre = instanceId.substring(0, 7);
+        String pre = "";
         if (instanceId.length() > 6) {
             pre = instanceId.substring(0, 7);
         }

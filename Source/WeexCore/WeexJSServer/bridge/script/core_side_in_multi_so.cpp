@@ -157,6 +157,10 @@ void CoreSideInMultiSo::SetJSVersion(const char *js_version) {
 void CoreSideInMultiSo::OnReceivedResult(long callback_id, std::unique_ptr<WeexJSResult>& result) {
   functions_exposed_by_core_->funcOnReceivedResult(callback_id, result);
 }
+
+void CoreSideInMultiSo::UpdateComponentData(const char* page_id, const char* cid, const char* json_data) {
+  functions_exposed_by_core_->funcUpdateComponentData(page_id, cid, json_data);
+}
 }  // namespace js
 }  // namespace bridge
 }  // namespace weex

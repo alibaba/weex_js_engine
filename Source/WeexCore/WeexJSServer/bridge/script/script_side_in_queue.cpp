@@ -151,7 +151,8 @@ namespace weex {
             int ScriptSideInQueue::CreateInstance(const char *instanceId, const char *func,
                                                   const char *script, const char *opts,
                                                   const char *initData,
-                                                  const char *extendsApi) {
+                                                  const char *extendsApi,
+                                                  std::vector<INIT_FRAMEWORK_PARAMS*>& params) {
                 LOGD(
                         "CreateInstance id = %s, func = %s, script = %s, opts = %s, initData = "
                         "%s, extendsApi = %s",
@@ -162,7 +163,7 @@ namespace weex {
                     return 0;
                 }
                 CreateInstanceTask *task = new CreateInstanceTask(String::fromUTF8(instanceId),
-                                                                  string);
+                                                                  string, params);
 
                 task->addExtraArg(String::fromUTF8(func));
                 task->addExtraArg(String::fromUTF8(opts));

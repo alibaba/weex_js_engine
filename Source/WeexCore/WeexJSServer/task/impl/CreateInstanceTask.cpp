@@ -9,8 +9,9 @@ void CreateInstanceTask::addExtraArg(String arg) {
     extraArgs.push_back(arg);
 }
 
-CreateInstanceTask::CreateInstanceTask(const String &instanceId, const String &script) : WeexTask(instanceId) {
+CreateInstanceTask::CreateInstanceTask(const String &instanceId, const String &script, std::vector<INIT_FRAMEWORK_PARAMS*>& params) : WeexTask(instanceId) {
     this->script = script;
+    initExtraArgs.reset(new InitFrameworkArgs(params));
 }
 
 void CreateInstanceTask::run(WeexRuntime *runtime) {
@@ -18,6 +19,6 @@ void CreateInstanceTask::run(WeexRuntime *runtime) {
         return;
 
     runtime->createInstance(instanceId, extraArgs.at(0), this->script, extraArgs.at(1), extraArgs.at(2),
-                            extraArgs.at(3));
-
+                            extraArgs.at(3), initExtraArgs->params);
 }
+

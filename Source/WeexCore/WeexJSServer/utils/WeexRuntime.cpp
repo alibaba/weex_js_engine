@@ -346,13 +346,14 @@ int WeexRuntime::exeCTimeCallback(const String &source) {
 
 int WeexRuntime::exeJS(const String &instanceId, const String &nameSpace, const String &func,
                        std::vector<VALUE_WITH_TYPE *> &params) {
-//    LOGE("EXECJS func:%s and params size is %d", func.utf8().data(), params.size());
+    //LOGE("jsengine shopp EXECJS func:%s and params size is %d", func.utf8().data(), params.size());
 
     String runFunc = func;
 
     JSGlobalObject *globalObject;
     // fix instanceof Object error
     // if function is callJs on instance, should us Instance object to call __WEEX_CALL_JAVASCRIPT__
+
     if (std::strcmp("callJS", runFunc.utf8().data()) == 0) {
         globalObject = weexObjectHolder->m_jsInstanceGlobalObjectMap[instanceId.utf8().data()];
         if (globalObject == NULL) {
@@ -395,7 +396,7 @@ int WeexRuntime::exeJS(const String &instanceId, const String &nameSpace, const 
     NakedPtr<Exception> returnedException;
     JSValue ret = call(state, function, callType, callData, globalObject, obj, returnedException);
 
-    globalObject->vm().drainMicrotasks();
+    vm.drainMicrotasks();
 
 
     if (returnedException) {
@@ -608,7 +609,8 @@ int WeexRuntime::updateGlobalConfig(const String &config) {
 
 int WeexRuntime::createInstance(const String &instanceId, const String &func, const String &script, const String &opts,
                                 const String &initData,
-                                const String &extendsApi) {
+                                const String &extendsApi,
+                                std::vector<INIT_FRAMEWORK_PARAMS*>& params) {
     JSGlobalObject *impl_globalObject = weexObjectHolder->m_globalObject.get();
     JSGlobalObject *globalObject;
     if (instanceId == "") {
@@ -625,6 +627,7 @@ int WeexRuntime::createInstance(const String &instanceId, const String &func, co
 //            }
 
             temp_object = weexObjectHolder->cloneWeexObject(true, false);
+            temp_object->addExtraOptions(params);
             temp_object->id = instanceId.utf8().data();
             VM &vm = temp_object->vm();
             temp_object->SetScriptBridge(script_bridge_);
@@ -776,11 +779,11 @@ void WeexRuntime::_getArgListFromJSParams(MarkedArgumentBuffer *obj, ExecState *
                 break;
             case ParamsType::STRING: {
                 WeexString *ipcstr = paramsObject->value.string;
+                const String &string2String = weexString2String(ipcstr);
                 obj->append(jString2JSValue(state, ipcstr->content, ipcstr->length));
             }
                 break;
             case ParamsType::JSONSTRING: {
-
                 const WeexString *ipcstr = paramsObject->value.string;
                 const String &string = weexString2String(ipcstr);
                 String str = jString2String(ipcstr->content, ipcstr->length);

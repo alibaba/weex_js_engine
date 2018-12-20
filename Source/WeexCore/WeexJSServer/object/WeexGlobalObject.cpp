@@ -113,6 +113,19 @@ void WeexGlobalObject::SetScriptBridge(WeexCore::ScriptBridge *script_bridge) {
     script_bridge_ = script_bridge;
 }
 
+void WeexGlobalObject::addExtraOptions(std::vector<INIT_FRAMEWORK_PARAMS *> &params) {
+    VM &vm = this->vm();
+    JSNonFinalObject *WXExtraOption = SimpleObject::create(vm, this);
+    for (int i = 0; i < params.size(); i++) {
+        INIT_FRAMEWORK_PARAMS *param = params[i];
+
+        String &&type = String::fromUTF8(param->type->content);
+        String &&value = String::fromUTF8(param->value->content);
+        addString(vm, WXExtraOption, param->type->content, WTFMove(value));
+    }
+    addValue(vm, "WXExtraOption", WXExtraOption);
+}
+
 void WeexGlobalObject::initWxEnvironment(std::vector<INIT_FRAMEWORK_PARAMS *> &params, bool forAppContext, bool isSave) {
     VM &vm = this->vm();
     JSNonFinalObject *WXEnvironment = SimpleObject::create(vm, this);
@@ -345,10 +358,7 @@ JSFUNCTION functionT3DLinkNative(ExecState *state) {
 
 JSFUNCTION functionCallNativeModule(ExecState *state) {
     base::debug::TraceScope traceScope("weex", "callNativeModule");
-
-
     WeexGlobalObject *globalObject = static_cast<WeexGlobalObject *>(state->lexicalGlobalObject());
-
     Args instanceId;
     Args moduleChar;
     Args methodChar;
@@ -359,6 +369,7 @@ JSFUNCTION functionCallNativeModule(ExecState *state) {
     getStringArgsFromState(state, 2, methodChar);
     getWsonOrJsonArgsFromState(state, 3, arguments);
     getWsonOrJsonArgsFromState(state, 4, options);
+
     auto result = globalObject->js_bridge()->core_side()->CallNativeModule(instanceId.getValue(),
                                                                            moduleChar.getValue(),
                                                                            methodChar.getValue(),
@@ -366,7 +377,6 @@ JSFUNCTION functionCallNativeModule(ExecState *state) {
                                                                            arguments.getLength(),
                                                                            options.getValue(),
                                                                            options.getLength());
-
     JSValue ret;
     switch (result->type) {
         case ParamsType::DOUBLE:

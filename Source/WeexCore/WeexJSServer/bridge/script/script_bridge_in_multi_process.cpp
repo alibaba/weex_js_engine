@@ -393,9 +393,30 @@ namespace weex {
                 const char *opts = GetUTF8StringFromIPCArg(arguments, 3);
                 const char *initData = GetUTF8StringFromIPCArg(arguments, 4);
                 const char *extendsApi = GetUTF8StringFromIPCArg(arguments, 5);
-
+                size_t startCount = 6;
+                size_t count = arguments->getCount();
+                std::vector<INIT_FRAMEWORK_PARAMS*> params;
+                for (size_t i = startCount; i < count; i += 2) {
+                    if (arguments->getType(i) != IPCType::BYTEARRAY) {
+                        continue;
+                    }
+                    if (arguments->getType(1 + i) != IPCType::BYTEARRAY) {
+                        continue;
+                    }
+                    const IPCByteArray* ba = arguments->getByteArray(1 + i);
+                    const IPCByteArray* ba_type = arguments->getByteArray(i);
+                    auto init_framework_params =
+                            (INIT_FRAMEWORK_PARAMS*)malloc(sizeof(INIT_FRAMEWORK_PARAMS));
+                    if (init_framework_params == nullptr) {
+                        break;
+                    }
+                    memset(init_framework_params, 0, sizeof(INIT_FRAMEWORK_PARAMS));
+                    init_framework_params->type = IPCByteArrayToWeexByteArray(ba_type);
+                    init_framework_params->value = IPCByteArrayToWeexByteArray(ba);
+                    params.push_back(init_framework_params);
+                }
                 return createInt32Result(Instance()->script_side()->CreateInstance(
-                        instanceID, func, script, opts, initData, extendsApi));
+                        instanceID, func, script, opts, initData, extendsApi,params));
             }
 
             std::unique_ptr<IPCResult> ScriptBridgeInMultiProcess::DestroyInstance(

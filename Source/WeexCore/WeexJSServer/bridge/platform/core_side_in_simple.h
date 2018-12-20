@@ -74,7 +74,8 @@ class CoreSideInSimple : public WeexCore::PlatformBridge::CoreSide {
                                   std::vector<VALUE_WITH_TYPE *> &param) override;
     int CreateInstance(const char *instanceId, const char *func,
                        const char *script, const char *opts, const char *initData,
-                       const char *extendsApi) override;
+                       const char *extendsApi,
+                       std::vector<INIT_FRAMEWORK_PARAMS*>& params) override;
     const char *ExecJSOnInstance(const char *instanceId, const char *script) override;
     int DestroyInstance(const char *instanceId) override;
     int UpdateGlobalConfig(const char *config) override;

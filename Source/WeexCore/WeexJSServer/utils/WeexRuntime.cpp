@@ -627,11 +627,12 @@ int WeexRuntime::createInstance(const String &instanceId, const String &func, co
 //            }
 
             temp_object = weexObjectHolder->cloneWeexObject(true, false);
+            VM &vm = temp_object->vm();
+            JSLockHolder locker(&vm);
             temp_object->addExtraOptions(params);
             temp_object->id = instanceId.utf8().data();
-            VM &vm = temp_object->vm();
             temp_object->SetScriptBridge(script_bridge_);
-            JSLockHolder locker(&vm);
+
 
             // --------------------------------------------------
 

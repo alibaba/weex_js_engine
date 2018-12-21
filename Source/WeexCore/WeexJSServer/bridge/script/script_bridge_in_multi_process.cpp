@@ -415,8 +415,10 @@ namespace weex {
                     init_framework_params->value = IPCByteArrayToWeexByteArray(ba);
                     params.push_back(init_framework_params);
                 }
-                return createInt32Result(Instance()->script_side()->CreateInstance(
-                        instanceID, func, script, opts, initData, extendsApi,params));
+                auto result = createInt32Result(Instance()->script_side()->CreateInstance(
+                                        instanceID, func, script, opts, initData, extendsApi,params));
+                freeInitFrameworkParams(params);
+                return result;
             }
 
             std::unique_ptr<IPCResult> ScriptBridgeInMultiProcess::DestroyInstance(

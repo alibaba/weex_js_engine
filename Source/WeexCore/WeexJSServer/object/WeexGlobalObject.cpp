@@ -117,6 +117,9 @@ void WeexGlobalObject::SetScriptBridge(WeexCore::ScriptBridge *script_bridge) {
 }
 
 void WeexGlobalObject::addExtraOptions(std::vector<INIT_FRAMEWORK_PARAMS *> &params) {
+    if(params.size() <= 0) {
+        return;
+    }
     VM &vm = this->vm();
     JSNonFinalObject *WXExtraOption = SimpleObject::create(vm, this);
     for (int i = 0; i < params.size(); i++) {

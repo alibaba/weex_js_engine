@@ -28,6 +28,7 @@
 #include "BPlatform.h"
 #include <cstdlib>
 #include <thread>
+#include <malloc.h>
 
 namespace bmalloc {
     
@@ -84,8 +85,8 @@ void* DebugHeap::malloc(size_t size)
 
 void* DebugHeap::memalign(size_t alignment, size_t size, bool crashOnFailure)
 {
-    void* result;
-    if (posix_memalign(&result, alignment, size)) {
+    void* result = ::memalign(alignment, size);
+    if (!result) {//if (posix_memalign(&result, alignment, size)) {
         if (crashOnFailure)
             BCRASH();
         return nullptr;

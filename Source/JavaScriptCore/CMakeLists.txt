@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.12)
-include(WebKitCommon)
+include(WeexCommon)
 set_property(DIRECTORY . PROPERTY FOLDER "JavaScriptCore")
 
 set(JavaScriptCore_INCLUDE_DIRECTORIES
@@ -48,8 +48,7 @@ set(JavaScriptCore_SYSTEM_INCLUDE_DIRECTORIES
 )
 
 set(JavaScriptCore_SOURCES
-        Compatible.cpp
-        API/JSBase.cpp
+    API/JSBase.cpp
     API/JSCTestRunnerUtils.cpp
     API/JSCallbackConstructor.cpp
     API/JSCallbackFunction.cpp
@@ -1048,6 +1047,7 @@ set(JavaScriptCore_LIBRARIES
     WTF${DEBUG_SUFFIX}
     ${ICU_I18N_LIBRARIES}
     ${LLVM_LIBRARIES}
+    atomic
 )
 
 set(JavaScriptCore_SCRIPTS_SOURCES_DIR "${JAVASCRIPTCORE_DIR}/Scripts")
@@ -1154,6 +1154,7 @@ add_executable(LLIntOffsetsExtractor
     ${DERIVED_SOURCES_JAVASCRIPTCORE_DIR}/LLIntDesiredOffsets.h ${DERIVED_SOURCES_JAVASCRIPTCORE_DIR}/Bytecodes.h
 )
 target_link_libraries(LLIntOffsetsExtractor WTF)
+target_include_directories(LLIntOffsetsExtractor PRIVATE ${JavaScriptCore_INCLUDE_DIRECTORIES})
 
 # The build system will execute asm.rb every time LLIntOffsetsExtractor's mtime is newer than
 # LLIntAssembly.h's mtime. The problem we have here is: asm.rb has some built-in optimization
@@ -1173,7 +1174,7 @@ add_custom_command(
     MAIN_DEPENDENCY ${JAVASCRIPTCORE_DIR}/offlineasm/asm.rb
     DEPENDS LLIntOffsetsExtractor ${LLINT_ASM} ${OFFLINE_ASM} ${DERIVED_SOURCES_JAVASCRIPTCORE_DIR}/InitBytecodes.asm
     COMMAND ${RUBY_EXECUTABLE} ${JAVASCRIPTCORE_DIR}/offlineasm/asm.rb -I${DERIVED_SOURCES_JAVASCRIPTCORE_DIR}/ ${JAVASCRIPTCORE_DIR}/llint/LowLevelInterpreter.asm $<TARGET_FILE:LLIntOffsetsExtractor> ${DERIVED_SOURCES_JAVASCRIPTCORE_DIR}/${LLIntOutput} ${OFFLINE_ASM_ARGS}
-    COMMAND ${CMAKE_COMMAND} -E touch_nocreate ${DERIVED_SOURCES_JAVASCRIPTCORE_DIR}/${LLIntOutput}
+   COMMAND ${CMAKE_COMMAND} -E touch_nocreate ${DERIVED_SOURCES_JAVASCRIPTCORE_DIR}/${LLIntOutput}
     WORKING_DIRECTORY ${DERIVED_SOURCES_JAVASCRIPTCORE_DIR}
     VERBATIM)
 
@@ -1195,7 +1196,7 @@ if (MSVC)
 else ()
     list(APPEND JavaScriptCore_HEADERS
         ${DERIVED_SOURCES_JAVASCRIPTCORE_DIR}/LLIntAssembly.h
-    )
+        )
 endif ()
 
 # WebAssembly generator
@@ -1525,31 +1526,42 @@ if (WTF_CPU_X86)
         )
 endif ()
 
-WEBKIT_INCLUDE_CONFIG_FILES_IF_EXISTS()
+WEEX_CREATE_FORWARDING_HEADERS(JavaScriptCore DIRECTORIES ${JavaScriptCore_FORWARDING_HEADERS_DIRECTORIES} FILES ${JavaScriptCore_FORWARDING_HEADERS_FILES})
+WEEX_WRAP_SOURCELIST(${JavaScriptCore_SOURCES})
+set(platform_file ${CMAKE_CURRENT_SOURCE_DIR}/Platform${PORT}.cmake)
+if (EXISTS ${platform_file})
+    message(STATUS "Using platform-specific CMakeLists: ${platform_file}")
+    include(${platform_file})
+endif ()
 
-WEBKIT_CREATE_FORWARDING_HEADERS(JavaScriptCore DIRECTORIES ${JavaScriptCore_FORWARDING_HEADERS_DIRECTORIES} FILES ${JavaScriptCore_FORWARDING_HEADERS_FILES})
 
-target_include_directories(LLIntOffsetsExtractor PRIVATE ${JavaScriptCore_INCLUDE_DIRECTORIES})
+#add_subdirectory(shell)
+set(JavaScriptCore_LIBRARY_TYPE SHARED)
+add_library(JavaScriptCore ${JavaScriptCore_LIBRARY_TYPE}
+    ${JavaScriptCore_HEADERS}
+    ${JavaScriptCore_SOURCES})
+include_directories(SYSTEM ${JavaScriptCore_SYSTEM_INCLUDE_DIRECTORIES})
 
-add_subdirectory(shell)
+target_include_directories(JavaScriptCore PUBLIC "$<BUILD_INTERFACE:${JavaScriptCore_INCLUDE_DIRECTORIES}>")
+#add_dependencies(JavaScriptCore WTF${DEBUG_SUFFIX})
+target_link_libraries(JavaScriptCore ${JavaScriptCore_LIBRARIES})
+if (${JavaScriptCore_LIBRARY_TYPE} STREQUAL "SHARED")
+    set_target_properties(JavaScriptCore
+        PROPERTIES NO_SONAME
+        TRUE)
 
-WEBKIT_WRAP_SOURCELIST(${JavaScriptCore_SOURCES})
-WEBKIT_FRAMEWORK(JavaScriptCore)
-#set_target_properties(JavaScriptCore PROPERTIES OUTPUT_NAME "libJavaScriptCore")
-set_target_properties(JavaScriptCore
-        PROPERTIES
-        SKIP_BUILD_RPATH 1
-        )
+    add_custom_command(
+        TARGET JavaScriptCore
+        POST_BUILD
+        COMMAND cp $<TARGET_FILE:JavaScriptCore> ${CMAKE_SOURCE_DIR}/libJavaScriptCore.so
+        VERBATIM
+    )
+endif ()
 
-#if ("${JavaScriptCore_LIBRARY_TYPE}" MATCHES "SHARED")
-#    target_link_libraries(JavaScriptCore
-#            ${LIBSTDCPLUS}
-#            )
-#endif ()
-set_target_properties(JavaScriptCore
-        PROPERTIES
-        LINK_FLAGS "-Wl,-soname,libJavaScriptCore.so"
-        )
+#set_target_properties(JavaScriptCore
+    #PROPERTIES COMPILE_FLAGS
+    #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility=hidden")
+add_definitions(-DBUILDING_JavaScriptCore=1)
 
 MESSAGE("JavaScriptCore_LIBRARY_TYPE: ${JavaScriptCore_LIBRARY_TYPE}")
 if (NOT "${PORT}" STREQUAL "Mac")
@@ -1564,25 +1576,3 @@ endif ()
 
 add_custom_target(stageSharedScripts DEPENDS ${JavaScriptCore_SCRIPTS})
 add_dependencies(JavaScriptCore stageSharedScripts)
-
-if (MSVC)
-    add_custom_command(
-        TARGET JavaScriptCore
-        PRE_BUILD
-        COMMAND ${PERL_EXECUTABLE} ${WEBKIT_LIBRARIES_DIR}/tools/scripts/auto-version.pl ${DERIVED_SOURCES_DIR}
-        VERBATIM)
-
-    add_custom_command(
-        TARGET JavaScriptCore
-        POST_BUILD
-        COMMAND ${PERL_EXECUTABLE} ${WEBKIT_LIBRARIES_DIR}/tools/scripts/version-stamp.pl ${DERIVED_SOURCES_DIR} $<TARGET_FILE:JavaScriptCore>
-        VERBATIM)
-endif ()
-if ("${JavaScriptCore_LIBRARY_TYPE}" MATCHES "SHARED")
-    add_custom_command(
-            TARGET JavaScriptCore
-            POST_BUILD
-            COMMAND ${CMAKE_STRIP} libJavaScriptCore.so -o ${CMAKE_SOURCE_DIR}/libJavaScriptCore.so
-            VERBATIM
-    )
-endif ()

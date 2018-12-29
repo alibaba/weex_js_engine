@@ -279,13 +279,15 @@ set(WTF_SOURCES
 
     unicode/WTFUTF8.cpp
     ../icu/ICUCompatible.cpp
+    linux/CurrentProcessMemoryStatus.cpp
+    linux/MemoryPressureHandlerLinux.cpp
 )
 
-if ("${CMAKE_BUILD_ENGINE}" STREQUAL "gcc")
-    set_source_files_properties(../icu/ICUCompatible.cpp PROPERTIES COMPILE_FLAGS -fno-lto)
-else ()
+#if ("${CMAKE_BUILD_ENGINE}" STREQUAL "gcc")
+    #set_source_files_properties(../icu/ICUCompatible.cpp PROPERTIES COMPILE_FLAGS -fno-lto)
+    #else ()
     # FIXME
-endif()
+    #endif()
 
 set(WTF_INCLUDE_DIRECTORIES
     "${BMALLOC_DIR}"
@@ -346,24 +348,23 @@ else ()
     )
 endif ()
 
-WEBKIT_INCLUDE_CONFIG_FILES_IF_EXISTS()
-
-WEBKIT_WRAP_SOURCELIST(${WTF_SOURCES})
-WEBKIT_FRAMEWORK(WTF)
-
-if (MSVC)
-    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /SUBSYSTEM:WINDOWS")
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /SUBSYSTEM:WINDOWS")
-
-    add_custom_command(
-        TARGET WTF
-        PRE_BUILD
-        COMMAND ${PERL_EXECUTABLE} ${WEBKIT_LIBRARIES_DIR}/tools/scripts/auto-version.pl ${DERIVED_SOURCES_DIR}
-        VERBATIM)
-
-    add_custom_command(
-        TARGET WTF
-        POST_BUILD
-        COMMAND ${PERL_EXECUTABLE} ${WEBKIT_LIBRARIES_DIR}/tools/scripts/version-stamp.pl ${DERIVED_SOURCES_DIR} $<TARGET_FILE:WTF>
-        VERBATIM)
+set(platform_file ${CMAKE_CURRENT_SOURCE_DIR}/Platform${PORT}.cmake)
+if (EXISTS ${platform_file})
+    message(STATUS "Using platform-specific CMakeLists: ${platform_file}")
+    include(${platform_file})
 endif ()
+
+add_library(WTF SHARED ${WTF_HEADERS} ${WTF_SOURCES})
+set_target_properties(WTF PROPERTIES NO_SONAME TRUE)
+target_include_directories(WTF PUBLIC "$<BUILD_INTERFACE:${WTF_INCLUDE_DIRECTORIES}>")
+target_link_libraries(WTF ${WTF_LIBRARIES})
+set_target_properties(WTF 
+PROPERTIES                                                                        
+LINK_FLAGS "-Wl,--no-undefined -Wl,-soname,libWTF.so"
+)
+add_custom_command(
+    TARGET WTF 
+    POST_BUILD
+    COMMAND cp $<TARGET_FILE:WTF> ${CMAKE_SOURCE_DIR}/libWTF.so
+   VERBATIM
+)

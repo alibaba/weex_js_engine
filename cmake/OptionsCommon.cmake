@@ -1,5 +1,4 @@
 add_definitions(-DBUILDING_WITH_CMAKE=1)
-add_definitions(-DHAVE_CONFIG_H=1)
 
 # CODE_GENERATOR_PREPROCESSOR_WITH_LINEMARKERS only matters with GCC >= 4.7.0.  Since this
 # version, -P does not output empty lines, which currently breaks make_names.pl in

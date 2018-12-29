@@ -1,4 +1,4 @@
-include(WebKitCommon)
+include(WeexCommon)
 set_property(DIRECTORY . PROPERTY FOLDER "bmalloc")
 
 set(bmalloc_INCLUDE_DIRECTORIES
@@ -31,7 +31,7 @@ set(bmalloc_LIBRARIES
     ${CMAKE_DL_LIBS}
 )
 
-WEBKIT_WRAP_SOURCELIST(${bmalloc_SOURCES})
+WEEX_WRAP_SOURCELIST(${bmalloc_SOURCES})
 include_directories(${bmalloc_INCLUDE_DIRECTORIES})
 add_library(bmalloc STATIC ${bmalloc_SOURCES})
 target_link_libraries(bmalloc ${bmalloc_LIBRARIES})

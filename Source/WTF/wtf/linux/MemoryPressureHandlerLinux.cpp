@@ -117,7 +117,7 @@ MemoryPressureHandler::EventFDPoller::EventFDPoller(int fd, std::function<void (
     }, this, nullptr);
     g_source_attach(m_source.get(), nullptr);
 #else
-    m_threadID = createThread("WTF: MemoryPressureHandler", [this] { readAndNotify(); }
+    m_threadID = createThread("WTF: MemoryPressureHandler", [this] { readAndNotify(); });
 #endif
 }
 

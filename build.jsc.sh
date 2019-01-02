@@ -124,7 +124,7 @@ cd build${TARGET_WORD_BITS}
 cmake -G Ninja -DCMAKE_BUILD_TYPE=MinSizeRel .. && cmake --build .
 
 cd ../
-result=$("$GCC_PATH/$GCC_TOOL_PRENAME-readelf" -a libweexjss.so | grep -i "build id")
+result=$("$GCC_PATH/$GCC_TOOL_PRENAME-readelf" -a libWTF.so | grep -i "build id")
 substr=${result#*: }
 echo $substr
 dir=$HOME/so_backup/$substr

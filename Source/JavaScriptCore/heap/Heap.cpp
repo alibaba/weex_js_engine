@@ -2742,4 +2742,8 @@ void Heap::performIncrement(size_t bytes)
     m_incrementBalance -= bytesVisited;
 }
 
+    void Heap::setTimerThread() {
+        m_machineThreads->setTimerThread();
+    }
+
 } // namespace JSC

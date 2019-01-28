@@ -274,7 +274,7 @@ public:
 
     void didAllocateBlock(size_t capacity);
     void didFreeBlock(size_t capacity);
-    
+    void setTimerThread();
     bool mutatorShouldBeFenced() const { return m_mutatorShouldBeFenced; }
     const bool* addressOfMutatorShouldBeFenced() const { return &m_mutatorShouldBeFenced; }
     

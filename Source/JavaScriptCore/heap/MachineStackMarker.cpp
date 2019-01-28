@@ -580,7 +580,7 @@ std::pair<void*, size_t> MachineThreads::Thread::captureStack(void* stackTop)
     return std::make_pair(begin, endWithRedZone - begin);
 }
 
-SUPPRESS_ASAN
+    SUPPRESS_ASAN
 static void copyMemory(void* dst, const void* src, size_t size)
 {
     size_t dstAsSize = reinterpret_cast<size_t>(dst);
@@ -642,7 +642,7 @@ bool MachineThreads::tryCopyOtherThreadStacks(const AbstractLocker&, void* buffe
 
     Thread* previousThread = nullptr;
     for (Thread* thread = m_registeredThreads; thread; index++) {
-        if (*thread != platformThread) {
+        if (*thread != platformThread && *thread != this->m_timer_thread) {
             bool success = thread->suspend();
 #if OS(DARWIN)
             if (!success) {
@@ -704,7 +704,11 @@ bool MachineThreads::tryCopyOtherThreadStacks(const AbstractLocker&, void* buffe
     return *size <= capacity;
 }
 
-static void growBuffer(size_t size, void** buffer, size_t* capacity)
+void MachineThreads::setTimerThread() {
+    this->m_timer_thread = currentPlatformThread();
+}
+
+    static void growBuffer(size_t size, void** buffer, size_t* capacity)
 {
     if (*buffer)
         fastFree(*buffer);

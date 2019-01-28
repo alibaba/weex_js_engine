@@ -72,7 +72,6 @@ public:
         ~Thread();
 
         static Thread* createForCurrentThread();
-
         struct Registers {
             void* stackPointer() const;
 #if ENABLE(SAMPLING_PROFILER)
@@ -122,7 +121,7 @@ public:
     Lock& getLock() { return m_registeredThreadsMutex; }
     Thread* threadsListHead(const AbstractLocker&) const { ASSERT(m_registeredThreadsMutex.isLocked()); return m_registeredThreads; }
     Thread* machineThreadForCurrentThread();
-
+    void setTimerThread();
 private:
     void gatherFromCurrentThread(ConservativeRoots&, JITStubRoutineSet&, CodeBlockSet&, CurrentThreadState&);
 
@@ -133,7 +132,7 @@ private:
 
     template<typename PlatformThread>
     void removeThreadIfFound(PlatformThread);
-
+    PlatformThread m_timer_thread;
     Lock m_registeredThreadsMutex;
     Thread* m_registeredThreads;
     WTF::ThreadSpecificKey m_threadSpecificForMachineThreads;

@@ -237,12 +237,15 @@ void HeapTimer::timerDidFire()
         return;
     m_apiLock->lock();
 
-    if (!m_apiLock->vm()) {
+    const auto vm = m_apiLock->vm();
+    if (!vm) {
         // The VM has been destroyed, so we should just give up.
         m_apiLock->unlock();
         m_isScheduled = false;
         return;
     }
+
+    vm->heap.setTimerThread();
 
     {
         JSLockHolder locker(m_vm);

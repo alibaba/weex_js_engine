@@ -46,7 +46,14 @@ echo $BUILD_ENGINE
 export BUILD_ENGINE=$BUILD_ENGINE
 export NDK_ROOT=`dirname $(which ndk-build)`
 echo $NDK_ROOT
-export APILEVEL=14
+export APILEVEL=16
+
+if [ $TARGET == 'arm64' ]; then
+    APILEVEL=21
+fi
+
+echo $APILEVEL
+
 HOST=$(uname -s)-$(uname -m)
 export HOST=$(echo $HOST | tr '[:upper:]' '[:lower:]')
 #export TOOLCHAIN_PATH=$NDK_ROOT/toolchains/llvm/prebuilt/$HOST/bin
@@ -85,7 +92,7 @@ if [ $TARGET = "arm" ]; then
     export GCC_PATH=$TOOLCHAIN_PATH/bin
     export GCC_TOOL_PRENAME=arm-linux-androideabi
     export BINARY_PATH=$TOOLCHAIN_PATH/arm-linux-androideabi/bin
-    export DEFAULT_LIBRARY="-lc++_static -lc++abi -lunwind -landroid_support"
+    export DEFAULT_LIBRARY="-lc++_shared -lc++abi -lunwind -landroid_support"
     export WTF_CPU=ARM
     export GCC_COMPILER_FLAGS="-march=armv7-a -mthumb -mfpu=neon -mfloat-abi=softfp"
     echo "building arm $BINARY_PATH"
@@ -97,7 +104,7 @@ elif [ $TARGET = "arm64" ]; then
     export GCC_PATH=$TOOLCHAIN_PATH/bin
     export GCC_TOOL_PRENAME=aarch64-linux-android
     export BINARY_PATH=$GCC_PATH/aarch64-linux-android/bin
-    export DEFAULT_LIBRARY="-lc++_static -lc++abi -landroid_support"
+    export DEFAULT_LIBRARY="-lc++_shared -lc++abi"
     export WTF_CPU=ARM64
     export GCC_COMPILER_FLAGS=""
     echo 'building arm64'
@@ -110,7 +117,7 @@ elif [ $TARGET = "x86" ]; then
     export GCC_TOOL_PRENAME=i686-linux-android
     #`dirname $(find $NDK_ROOT/toolchains $NDK_ROOT/build  -name 'i686*' -name '*-g++' | sort  -r| head -n 1)`/../
     export BINARY_PATH=$TOOLCHAIN_PATH/i686-linux-android/bin
-    export DEFAULT_LIBRARY="-lc++_static -lc++abi -landroid_support"
+    export DEFAULT_LIBRARY="-lc++_shared -lc++abi -landroid_support"
     export WTF_CPU=X86_64
     export GCC_COMPILER_FLAGS="-mtune=generic"
     echo 'building x86'

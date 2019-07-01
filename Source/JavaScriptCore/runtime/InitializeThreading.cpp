@@ -45,6 +45,7 @@
 #include <wtf/Threading.h>
 #include <wtf/dtoa.h>
 #include <wtf/dtoa/cached-powers.h>
+#include <heap/HeapTimer.h>
 
 using namespace WTF;
 
@@ -55,6 +56,7 @@ void initializeThreading()
     static std::once_flag initializeThreadingOnceFlag;
 
     std::call_once(initializeThreadingOnceFlag, []{
+        HeapTimer::startTimerThread();
         WTF::initializeThreading();
         Options::initialize();
 #if ENABLE(WRITE_BARRIER_PROFILING)

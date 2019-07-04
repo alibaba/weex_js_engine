@@ -134,7 +134,7 @@ cd ../
 result=$("$GCC_PATH/$GCC_TOOL_PRENAME-readelf" -a libWTF.so | grep -i "build id")
 substr=${result#*: }
 echo $substr
-dir=$HOME/so_backup/$substr
+dir=$HOME/so_backup/$substr/$TARGET_ABI
 if [ -d "$dir" ]; then
     cp lib* $dir
 else

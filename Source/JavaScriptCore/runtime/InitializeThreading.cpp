@@ -56,6 +56,8 @@ void initializeThreading()
     static std::once_flag initializeThreadingOnceFlag;
 
     std::call_once(initializeThreadingOnceFlag, []{
+        Options::enableRestrictedOptions(true);
+        WTF::initializeMainThread();
         HeapTimer::startTimerThread();
         WTF::initializeThreading();
         Options::initialize();

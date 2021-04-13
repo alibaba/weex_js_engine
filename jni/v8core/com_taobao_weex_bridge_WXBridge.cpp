@@ -5,6 +5,7 @@
 #include <v8.h>
 #include <assert.h>
 #include <fcntl.h>
+#include <string.h>
 
 
 jclass jBridgeClazz;

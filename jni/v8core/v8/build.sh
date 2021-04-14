@@ -13,12 +13,18 @@ fi
 # If not defined ANDROID_TOOLCHAIN, it search the ndk directory and find the gcc-4.4.3 to compile v8.
 if [ -z "$ANDROID_TOOLCHAIN" ]; then
     if [ "$TARGET_ARCH" = "x86" ]; then
-        TOOLCHAIN_PATH=`dirname $(find $NDK_ROOT/toolchains $NDK_ROOT/build  -name 'i686*' -name '*-g++' | sort -r | head -n 1)`
+        if [ -z "$TOOLCHAIN_PATH" ]; then
+		    TOOLCHAIN_PATH=`dirname $(find $NDK_ROOT/toolchains $NDK_ROOT/build  -name 'i686*' -name '*-g++' | sort -r | head -n 1)`
+        fi
     elif [ "$TARGET_ARCH" = "armeabi" ]; then
-        TOOLCHAIN_PATH=`dirname $(find $NDK_ROOT/toolchains $NDK_ROOT/build  -name 'arm*' -name '*-g++' | sort  -r| head -n 1)`
+        if [ -z "$TOOLCHAIN_PATH" ]; then
+		    TOOLCHAIN_PATH=`dirname $(find $NDK_ROOT/toolchains $NDK_ROOT/build  -name 'arm*' -name '*-g++' | sort  -r| head -n 1)`
+        fi
         EXTRA_OPTION="armv7=false vfp2=off vfp3=off"
     elif [ "$TARGET_ARCH" = "armeabi-v7a" ]; then
-        TOOLCHAIN_PATH=`dirname $(find $NDK_ROOT/toolchains $NDK_ROOT/build  -name 'arm*' -name '*-g++' | sort  -r| head -n 1)`
+        if [ -z "$TOOLCHAIN_PATH" ]; then		
+            TOOLCHAIN_PATH=`dirname $(find $NDK_ROOT/toolchains $NDK_ROOT/build  -name 'arm*' -name '*-g++' | sort  -r| head -n 1)`
+        fi
         EXTRA_OPTION="armv7=true vfp2=on vfp3=on"
     else
         echo "unsupported platform " "$TARGET_ARCH" 1>&2
